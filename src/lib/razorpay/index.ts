@@ -1,0 +1,10 @@
+import "server-only";
+import Razorpay from "razorpay";
+
+export const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
+});
+
+export { verifyPaymentSignature, verifyWebhookSignature } from "./utils";
+export { paiseToRupees, formatINR } from "@/lib/currency";

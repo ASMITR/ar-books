@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+
   turbopack: {
     rules: {
       "*.css": {
@@ -11,6 +9,22 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+      },
+      {
+        protocol: "https",
+        hostname: "storage.googleapis.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+    ],
   },
 };
 
