@@ -36,24 +36,23 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
     <AdminShell
       title="Orders"
       subtitle={`${orders.length} order${orders.length !== 1 ? "s" : ""}${status ? ` · ${status}` : ""}`}
-      action={
-        <div className="flex gap-1.5">
-          {filters.map((f) => (
-            <Link
-              key={f.value}
-              href={f.value ? `/admin/orders?status=${f.value}` : "/admin/orders"}
-              className={`text-[12px] font-body font-semibold px-3 py-2 rounded-lg border transition-all ${
-                (status ?? "") === f.value
-                  ? "bg-[#0a0a0a] text-white border-[#0a0a0a] shadow-sm"
-                  : "border-[#E8E6E1] text-[#888] hover:border-[#0a0a0a] hover:text-[#0a0a0a] bg-white"
-              }`}
-            >
-              {f.label}
-            </Link>
-          ))}
-        </div>
-      }
     >
+      {/* Filter pills */}
+      <div className="flex gap-1.5 flex-wrap mb-5">
+        {filters.map((f) => (
+          <Link
+            key={f.value}
+            href={f.value ? `/admin/orders?status=${f.value}` : "/admin/orders"}
+            className={`text-[12px] font-body font-semibold px-3 py-2 rounded-lg border transition-all ${
+              (status ?? "") === f.value
+                ? "bg-[#0a0a0a] text-white border-[#0a0a0a] shadow-sm"
+                : "border-[#E8E6E1] text-[#888] hover:border-[#0a0a0a] hover:text-[#0a0a0a] bg-white"
+            }`}
+          >
+            {f.label}
+          </Link>
+        ))}
+      </div>
       <div className="bg-white border border-[#E8E6E1] rounded-xl overflow-hidden shadow-sm">
         {orders.length === 0 ? (
           <div className="py-20 text-center">
@@ -61,7 +60,7 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm font-body">
+            <table className="w-full text-sm font-body min-w-[560px]">
               <thead>
                 <tr className="border-b border-[#F0EEE9] bg-[#FAFAF8]">
                   <th className="text-left px-5 py-3.5 text-[10.5px] uppercase tracking-[0.08em] text-[#b0aca6] font-semibold">Order</th>

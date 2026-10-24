@@ -61,7 +61,7 @@ export default function AdminBooksPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full font-body">
+            <table className="w-full font-body min-w-[640px]">
               <thead>
                 <tr className="border-b border-[#F0EEE9] bg-[#FAFAF8]">
                   <th className="text-left px-5 py-4 text-[12px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Cover</th>

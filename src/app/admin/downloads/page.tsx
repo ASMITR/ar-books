@@ -23,7 +23,7 @@ export default async function AdminDownloadsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm font-body">
+            <table className="w-full text-sm font-body min-w-[580px]">
               <thead>
                 <tr className="border-b border-[#F0EFEB]">
                   <th className="text-left px-5 py-3.5 text-[11px] uppercase tracking-wider text-[#bbb] font-medium">Book</th>

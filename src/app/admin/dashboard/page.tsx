@@ -75,28 +75,26 @@ export default async function AdminDashboardPage() {
     >
       <div className="space-y-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {stats.map(({ label, value, icon: Icon, accent, bg }) => (
-            <div key={label} className="bg-white rounded-xl border border-[#E8E6E1] p-5 flex items-center gap-4 shadow-sm">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: bg + "15" }}>
-                <Icon size={20} style={{ color: accent }} />
+            <div key={label} className="bg-white rounded-xl border border-[#E8E6E1] p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-sm">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: bg + "15" }}>
+                <Icon size={18} style={{ color: accent }} />
               </div>
               <div className="min-w-0">
-                <p className="text-[12px] font-body font-semibold uppercase tracking-[0.07em] text-[#b0aca6] leading-none mb-1.5">{label}</p>
-                <p className="font-heading text-[22px] font-bold text-[#0a0a0a] leading-none">{value}</p>
+                <p className="text-[11px] sm:text-[12px] font-body font-semibold uppercase tracking-[0.07em] text-[#b0aca6] leading-none mb-1.5">{label}</p>
+                <p className="font-heading text-[18px] sm:text-[22px] font-bold text-[#0a0a0a] leading-none">{value}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
           {/* Recent orders */}
           <div className="lg:col-span-2 bg-white border border-[#E8E6E1] rounded-xl overflow-hidden shadow-sm">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#F0EEE9] bg-[#FAFAF8]">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-[#F0EEE9] bg-[#FAFAF8]">
               <h2 className="font-heading text-[15px] font-bold text-[#0a0a0a] tracking-tight">Recent Orders</h2>
-              <Link href="/admin/orders" className="text-[13px] font-body text-[#789185] hover:underline font-semibold">
-                View all →
-              </Link>
+              <Link href="/admin/orders" className="text-[13px] font-body text-[#789185] hover:underline font-semibold">View all →</Link>
             </div>
             {recentOrders.length === 0 ? (
               <div className="px-6 py-14 text-center">
@@ -105,29 +103,25 @@ export default async function AdminDashboardPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full font-body">
+                <table className="w-full font-body min-w-[520px]">
                   <thead>
                     <tr className="border-b border-[#F0EEE9] bg-[#FAFAF8]">
-                      <th className="text-left px-6 py-3.5 text-[12px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Order</th>
-                      <th className="text-left px-4 py-3.5 text-[12px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Customer</th>
-                      <th className="text-left px-4 py-3.5 text-[12px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Date</th>
-                      <th className="text-left px-4 py-3.5 text-[12px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Total</th>
-                      <th className="text-left px-4 py-3.5 text-[12px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Status</th>
+                      {["Order", "Customer", "Date", "Total", "Status"].map(h => (
+                        <th key={h} className="text-left px-4 sm:px-6 py-3 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold first:pl-4 sm:first:pl-6">{h}</th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#F4F3F0]">
                     {recentOrders.map((order) => (
                       <tr key={order.id} className="hover:bg-[#FAFAF8] transition-colors">
-                        <td className="px-6 py-3.5">
-                          <Link href={`/admin/orders/${order.id}`} className="text-[#789185] hover:underline font-semibold text-[13px]">
-                            {order.orderNumber}
-                          </Link>
+                        <td className="px-4 sm:px-6 py-3">
+                          <Link href={`/admin/orders/${order.id}`} className="text-[#789185] hover:underline font-semibold text-[13px]">{order.orderNumber}</Link>
                         </td>
-                        <td className="px-4 py-3.5 text-[#666] max-w-[160px] truncate text-[13px]">{order.customerEmail}</td>
-                        <td className="px-4 py-3.5 text-[#aaa] whitespace-nowrap text-[13px]">{formatDate(order.createdAt)}</td>
-                        <td className="px-4 py-3.5 font-semibold text-[#0a0a0a] text-[13px]">{formatINR(order.totalPaise)}</td>
-                        <td className="px-4 py-3.5">
-                          <span className={`inline-flex items-center px-2.5 py-1 text-[12px] rounded-full font-semibold ${statusStyles[order.paymentStatus] ?? "bg-gray-100 text-gray-600"}`}>
+                        <td className="px-4 py-3 text-[#666] max-w-[140px] truncate text-[13px]">{order.customerEmail}</td>
+                        <td className="px-4 py-3 text-[#aaa] whitespace-nowrap text-[13px]">{formatDate(order.createdAt)}</td>
+                        <td className="px-4 py-3 font-semibold text-[#0a0a0a] text-[13px]">{formatINR(order.totalPaise)}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center px-2.5 py-1 text-[11px] rounded-full font-semibold ${statusStyles[order.paymentStatus] ?? "bg-gray-100 text-gray-600"}`}>
                             {order.paymentStatus}
                           </span>
                         </td>
@@ -147,11 +141,7 @@ export default async function AdminDashboardPage() {
               </div>
               <div className="p-2">
                 {quickActions.map(({ href, label, icon: Icon, color }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-[#F4F3F0] transition-colors group"
-                  >
+                  <Link key={href} href={href} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-[#F4F3F0] transition-colors group">
                     <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: color + "18" }}>
                       <Icon size={16} style={{ color }} />
                     </div>
@@ -171,7 +161,7 @@ export default async function AdminDashboardPage() {
                   { label: "Total orders", value: orders.length },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex justify-between items-center">
-                    <span className="text-[13.5px] font-body text-[#888]">{label}</span>
+                    <span className="text-[13px] font-body text-[#888]">{label}</span>
                     <span className="text-[15px] font-heading font-bold text-[#0a0a0a]">{value}</span>
                   </div>
                 ))}

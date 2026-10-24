@@ -24,9 +24,9 @@ export default async function AdminCustomersPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm font-body">
+            <table className="w-full text-sm font-body min-w-[500px]">
               <thead>
-                <tr className="border-b border-[#F0EFEB]">
+                <tr className="border-b border-[#F0EFEB] bg-[#FAFAF8]">
                   <th className="text-left px-5 py-3.5 text-[11px] uppercase tracking-wider text-[#bbb] font-medium">Name</th>
                   <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-wider text-[#bbb] font-medium">Email</th>
                   <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-wider text-[#bbb] font-medium">Verified</th>

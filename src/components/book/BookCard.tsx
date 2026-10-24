@@ -55,19 +55,19 @@ export function BookCard({ book }: BookCardProps) {
             </span>
           )}
         </div>
-        <div className="flex gap-2 mt-2">
+        <div className="flex flex-col gap-2 mt-2">
           <Link
             href={`/books/${book.slug}`}
-            className="flex-1 text-center text-xs font-body font-medium uppercase tracking-wider border border-[#080808] px-3 py-2 hover:bg-[#080808] hover:text-white transition-colors"
+            className="w-full text-center text-xs font-body font-bold uppercase tracking-wider bg-[#080808] text-white px-3 py-2.5 hover:bg-[#789185] transition-colors"
           >
-            Details
+            Buy Now
           </Link>
           <button
             onClick={handleAddToCart}
             disabled={inCart}
-            className="flex-1 text-xs font-body font-medium uppercase tracking-wider bg-[#FFC928] text-[#080808] px-3 py-2 hover:bg-[#F2B916] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full text-xs font-body font-medium uppercase tracking-wider border border-[#080808] text-[#080808] px-3 py-2 hover:bg-[#080808] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {inCart ? "In Cart" : "Add to Cart"}
+            {inCart ? "✓ In Cart" : "Add to Cart"}
           </button>
         </div>
       </div>

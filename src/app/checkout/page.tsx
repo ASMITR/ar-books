@@ -120,7 +120,11 @@ export default function CheckoutPage() {
           }
         },
         modal: {
-          ondismiss: () => setLoading(false),
+          ondismiss: () => {
+            setError("Payment was cancelled. Your cart has been saved.");
+            setLoading(false);
+            router.push("/cart");
+          },
         },
       });
 

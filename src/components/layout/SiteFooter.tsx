@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { BrandStripeDivider } from "@/components/shared/BrandStripeDivider";
 
 export function SiteFooter() {
@@ -10,7 +9,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Image src="/Main_Logo.png" alt="AR Books" width={160} height={48} className="h-10 w-auto brightness-0 invert" />
+            <p className="font-heading text-3xl font-bold text-white mb-4">AR Books</p>
             <p className="text-sm text-[#777777] leading-relaxed max-w-xs">
               Original eBooks by Asmit Rajaramkar — ideas, skills, and stories delivered directly to you.
             </p>

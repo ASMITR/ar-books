@@ -71,89 +71,65 @@ export default function AdminCategoriesPage() {
             </button>
           </div>
         ) : (
-          <table className="w-full text-sm font-body">
-            <thead>
-              <tr className="border-b border-[#F0EEE9] bg-[#FAFAF8]">
-                <th className="text-left px-5 py-3.5 text-[10.5px] uppercase tracking-[0.08em] text-[#b0aca6] font-semibold">Name</th>
-                <th className="text-left px-4 py-3.5 text-[10.5px] uppercase tracking-[0.08em] text-[#b0aca6] font-semibold">Slug</th>
-                <th className="text-left px-4 py-3.5 text-[10.5px] uppercase tracking-[0.08em] text-[#b0aca6] font-semibold">Description</th>
-                <th className="text-left px-4 py-3.5 text-[10.5px] uppercase tracking-[0.08em] text-[#b0aca6] font-semibold">Visibility</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#F4F3F0]">
-              {categories.map((cat) => (
-                <tr key={cat.id} className="hover:bg-[#FAFAF8] transition-colors">
-                  <td className="px-5 py-3.5 font-semibold text-[#0a0a0a] text-[13px]">{cat.name}</td>
-                  <td className="px-4 py-3.5 text-[#aaa] font-mono text-xs bg-transparent">{cat.slug}</td>
-                  <td className="px-4 py-3.5 text-[#888] text-xs max-w-[240px] truncate">{cat.description || "—"}</td>
-                  <td className="px-4 py-3.5">
-                    <span className={`inline-flex items-center px-2.5 py-1 text-[11px] rounded-full font-semibold ring-1 ${
-                      cat.visible ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : "bg-slate-50 text-slate-500 ring-slate-200"
-                    }`}>
-                      {cat.visible ? "Visible" : "Hidden"}
-                    </span>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm font-body min-w-[480px]">
+              <thead>
+                <tr className="border-b border-[#F0EEE9] bg-[#FAFAF8]">
+                  <th className="text-left px-5 py-3.5 text-[10.5px] uppercase tracking-[0.08em] text-[#b0aca6] font-semibold">Name</th>
+                  <th className="text-left px-4 py-3.5 text-[10.5px] uppercase tracking-[0.08em] text-[#b0aca6] font-semibold">Slug</th>
+                  <th className="text-left px-4 py-3.5 text-[10.5px] uppercase tracking-[0.08em] text-[#b0aca6] font-semibold">Description</th>
+                  <th className="text-left px-4 py-3.5 text-[10.5px] uppercase tracking-[0.08em] text-[#b0aca6] font-semibold">Visibility</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[#F4F3F0]">
+                {categories.map((cat) => (
+                  <tr key={cat.id} className="hover:bg-[#FAFAF8] transition-colors">
+                    <td className="px-5 py-3.5 font-semibold text-[#0a0a0a] text-[13px]">{cat.name}</td>
+                    <td className="px-4 py-3.5 text-[#aaa] font-mono text-xs">{cat.slug}</td>
+                    <td className="px-4 py-3.5 text-[#888] text-xs max-w-[240px] truncate">{cat.description || "—"}</td>
+                    <td className="px-4 py-3.5">
+                      <span className={`inline-flex items-center px-2.5 py-1 text-[11px] rounded-full font-semibold ring-1 ${
+                        cat.visible ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : "bg-slate-50 text-slate-500 ring-slate-200"
+                      }`}>
+                        {cat.visible ? "Visible" : "Hidden"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
       <AdminModal open={open} onClose={() => setOpen(false)} title="Add Category" subtitle="Create a new book category">
         <form onSubmit={handleAdd} className="p-6 flex flex-col gap-4">
-              <div>
-                <label className={labelCls}>Name *</label>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  autoFocus
-                  placeholder="e.g. Self Help"
-                  className={inputCls}
-                />
-                {name && (
-                  <p className="text-[11px] text-[#9e9a94] mt-1.5 font-body">
-                    Slug: <span className="font-mono text-[#789185]">{slugify(name)}</span>
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className={labelCls}>Description</label>
-                <input
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Optional description"
-                  className={inputCls}
-                />
-              </div>
-              {error && (
-                <div className="flex items-center gap-2 text-xs text-red-600 font-body bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
-                  <AlertCircle size={12} className="shrink-0" />
-                  {error}
-                </div>
-              )}
-              <div className="flex gap-3 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="flex-1 border border-[#E8E6E1] text-[#666] font-body text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-[#F7F6F3] hover:border-[#D0CEC9] transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-[#0a0a0a] text-white font-body text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-[#222] transition-colors disabled:opacity-50 shadow-sm"
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Adding…
-                    </span>
-                  ) : "Add Category"}
-                </button>
-              </div>
+          <div>
+            <label className={labelCls}>Name *</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} required autoFocus placeholder="e.g. Self Help" className={inputCls} />
+            {name && (
+              <p className="text-[11px] text-[#9e9a94] mt-1.5 font-body">
+                Slug: <span className="font-mono text-[#789185]">{slugify(name)}</span>
+              </p>
+            )}
+          </div>
+          <div>
+            <label className={labelCls}>Description</label>
+            <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional description" className={inputCls} />
+          </div>
+          {error && (
+            <div className="flex items-center gap-2 text-xs text-red-600 font-body bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
+              <AlertCircle size={12} className="shrink-0" />{error}
+            </div>
+          )}
+          <div className="flex gap-3 pt-1">
+            <button type="button" onClick={() => setOpen(false)} className="flex-1 border border-[#E8E6E1] text-[#666] font-body text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-[#F7F6F3] transition-all">
+              Cancel
+            </button>
+            <button type="submit" disabled={loading} className="flex-1 bg-[#0a0a0a] text-white font-body text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-[#222] transition-colors disabled:opacity-50 shadow-sm">
+              {loading ? <span className="flex items-center justify-center gap-2"><span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />Adding…</span> : "Add Category"}
+            </button>
+          </div>
         </form>
       </AdminModal>
     </AdminShell>

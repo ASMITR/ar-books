@@ -21,9 +21,9 @@ export default async function AdminPaymentsPage() {
   return (
     <AdminShell title="Payments" subtitle="All verified payments from Razorpay">
       <div className="space-y-5">
-        <div className="grid grid-cols-2 gap-4 max-w-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-sm mb-5">
           {stats.map(({ label, value, icon: Icon, accent }) => (
-            <div key={label} className="bg-white rounded-xl border border-[#E9E7E2] p-5 flex items-center gap-4">
+            <div key={label} className="bg-white rounded-xl border border-[#E9E7E2] p-4 sm:p-5 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: accent + "15" }}>
                 <Icon size={18} style={{ color: accent }} />
               </div>
@@ -42,7 +42,7 @@ export default async function AdminPaymentsPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm font-body">
+              <table className="w-full text-sm font-body min-w-[560px]">
                 <thead>
                   <tr className="border-b border-[#F0EFEB]">
                     <th className="text-left px-5 py-3.5 text-[11px] uppercase tracking-wider text-[#bbb] font-medium">Order</th>

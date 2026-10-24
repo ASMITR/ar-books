@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
-import { User } from "lucide-react";
+import { User, Upload } from "lucide-react";
 import { AdminModal } from "@/components/admin/AdminModal";
 
 interface AuthorProfile { authorBio?: string; authorPhotoUrl?: string; }
@@ -14,8 +14,27 @@ export default function AdminProfilePage() {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<AuthorProfile>({});
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true); setError(null);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("type", "cover");
+      const res = await fetch("/api/admin/upload", { method: "POST", body: form });
+      const json = await res.json();
+      if (!json.success) throw new Error("Upload failed");
+      setDraft((p) => ({ ...p, authorPhotoUrl: json.data.secureUrl }));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally { setUploading(false); }
+  };
 
   useEffect(() => {
     fetch("/api/admin/settings").then((r) => r.json()).then((json) => {
@@ -68,8 +87,8 @@ export default function AdminProfilePage() {
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-[11px] font-body uppercase tracking-wider text-[#bbb] mb-1">Photo URL</p>
-              <p className="text-xs font-body text-[#666] break-all">{profile.authorPhotoUrl || <span className="text-[#ccc]">Not set</span>}</p>
+              <p className="text-[11px] font-body uppercase tracking-wider text-[#bbb] mb-1">Author Photo</p>
+              <p className="text-xs font-body text-[#666]">{profile.authorPhotoUrl ? "Photo uploaded" : <span className="text-[#ccc]">Not set</span>}</p>
             </div>
           </div>
           <div>
@@ -88,9 +107,32 @@ export default function AdminProfilePage() {
                 <textarea value={draft.authorBio ?? ""} onChange={(e) => setDraft((p) => ({ ...p, authorBio: e.target.value }))} rows={6} autoFocus placeholder="Write a short biography..." className={`${inputCls} resize-none`} />
               </div>
               <div>
-                <label className="block text-xs font-body uppercase tracking-wider text-[#aaa] mb-1.5">Author Photo URL</label>
-                <input value={draft.authorPhotoUrl ?? ""} onChange={(e) => setDraft((p) => ({ ...p, authorPhotoUrl: e.target.value }))} placeholder="https://..." className={inputCls} />
-                <p className="text-xs text-[#bbb] mt-1">Upload to Firebase Storage and paste the public URL.</p>
+                <label className="block text-xs font-body uppercase tracking-wider text-[#aaa] mb-1.5">Author Photo</label>
+                <div className="flex items-center gap-3">
+                  {draft.authorPhotoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={draft.authorPhotoUrl} alt="Preview" className="w-14 h-14 rounded-full object-cover border border-[#E9E7E2] shrink-0" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-[#F5F4F0] border border-[#E9E7E2] flex items-center justify-center shrink-0">
+                      <User size={20} className="text-[#ddd]" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                    <button
+                      type="button"
+                      onClick={() => fileRef.current?.click()}
+                      disabled={uploading}
+                      className="flex items-center gap-2 border border-[#E9E7E2] text-[#555] font-body text-xs px-3 py-2 rounded-lg hover:bg-[#FAFAF9] transition-colors disabled:opacity-50"
+                    >
+                      <Upload size={12} />
+                      {uploading ? "Uploading…" : "Upload Photo"}
+                    </button>
+                    {draft.authorPhotoUrl && (
+                      <p className="text-[11px] text-[#bbb] mt-1 truncate">{draft.authorPhotoUrl}</p>
+                    )}
+                  </div>
+                </div>
               </div>
               {success && <p className="text-xs text-emerald-600 font-body">Profile saved.</p>}
               {error && <p className="text-xs text-red-600 font-body">{error}</p>}
