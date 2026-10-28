@@ -1,5 +1,5 @@
 import { getStoreSettings } from "@/lib/firebase/firestore";
-import { Mail, MessageSquare, Clock, ArrowRight } from "lucide-react";
+import { Mail, Clock, MessageSquare, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -12,142 +12,193 @@ export default async function ContactPage() {
   const settings = await getStoreSettings();
   const supportEmail = settings?.supportEmail ?? "support@arbooks.in";
 
-  const inputCls = "w-full border border-[#E9E7E2] bg-[#FAF9F6] px-4 py-3 text-sm font-body focus:outline-none focus:border-[#789185] focus:ring-2 focus:ring-[#789185]/10 transition-colors";
+  const inputCls =
+    "w-full border border-[#E6DFD5] bg-[#FFFCF7] px-3.5 py-2.5 text-[13px] font-body text-[#242824] placeholder:text-[#A8B5A0] focus:outline-none focus:border-[#203A2B] focus:ring-2 focus:ring-[#203A2B]/10 transition-colors rounded-sm";
 
   return (
-    <>
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="bg-[#FAF9F6] border-b border-[#E9E7E2]">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          <p className="text-xs font-body uppercase tracking-[0.2em] text-[#789185] mb-2">Get in Touch</p>
-          <h1 className="font-heading text-4xl sm:text-5xl font-bold text-[#080808]">Contact & Support</h1>
-          <p className="font-body text-[#777777] mt-2 max-w-md">
-            Questions, feedback, or purchase support — I&apos;m happy to help.
-          </p>
-        </div>
-      </section>
+    <div className="bg-[#F5EFE6] min-h-screen">
 
-      {/* ── Main ─────────────────────────────────────────────────────────── */}
-      <section className="bg-white py-14 lg:py-20">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-
-            {/* Left — Info */}
-            <div className="flex flex-col gap-6">
+      {/* ── Page header ───────────────────────────────────────────────────── */}
+      <section className="bg-[#FFFCF7] border-b border-[#E6DFD5]">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-8">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="w-1 h-7 rounded-full bg-[#203A2B]" />
               <div>
-                <h2 className="font-heading text-2xl sm:text-3xl font-bold text-[#080808] mb-3">How Can I Help?</h2>
-                <p className="font-body text-[#777777] leading-relaxed">
-                  Whether you have a question about a purchase, need help downloading your eBook, or just want to share feedback — reach out and I&apos;ll get back to you as soon as possible.
-                </p>
-              </div>
-
-              {/* Info cards */}
-              <div className="flex flex-col gap-3">
-                <div className="group bg-[#FAF9F6] border border-[#E9E7E2] p-5 flex gap-4 items-start hover:border-[#789185] transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-[#789185]/10 border border-[#789185]/20 flex items-center justify-center shrink-0">
-                    <Mail size={16} className="text-[#789185]" />
-                  </div>
-                  <div>
-                    <p className="font-body font-semibold text-[#080808] mb-1">Email Support</p>
-                    <a
-                      href={`mailto:${supportEmail}`}
-                      className="font-body text-[#789185] hover:text-[#080808] transition-colors text-sm"
-                    >
-                      {supportEmail}
-                    </a>
-                  </div>
-                </div>
-
-                <div className="group bg-[#FAF9F6] border border-[#E9E7E2] p-5 flex gap-4 items-start hover:border-[#789185] transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-[#789185]/10 border border-[#789185]/20 flex items-center justify-center shrink-0">
-                    <Clock size={16} className="text-[#789185]" />
-                  </div>
-                  <div>
-                    <p className="font-body font-semibold text-[#080808] mb-1">Response Time</p>
-                    <p className="font-body text-sm text-[#777777]">Typical response within 24–48 hours.</p>
-                  </div>
-                </div>
-
-                <div className="group bg-[#FAF9F6] border border-[#E9E7E2] p-5 flex gap-4 items-start hover:border-[#789185] transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-[#789185]/10 border border-[#789185]/20 flex items-center justify-center shrink-0">
-                    <MessageSquare size={16} className="text-[#789185]" />
-                  </div>
-                  <div>
-                    <p className="font-body font-semibold text-[#080808] mb-2">Common Questions</p>
-                    <ul className="text-sm font-body text-[#777777] flex flex-col gap-1">
-                      {["Download issues after purchase", "Refund and cancellation requests", "Account access problems", "Book content feedback"].map((q) => (
-                        <li key={q} className="flex items-center gap-2">
-                          <span className="w-1 h-1 rounded-full bg-[#789185] shrink-0" />{q}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* Purchase tip */}
-              <div className="bg-[#FFC928]/15 border border-[#FFC928]/40 p-5">
-                <p className="font-heading text-base font-bold text-[#080808] mb-1">Purchase Support Tip</p>
-                <p className="font-body text-sm text-[#555]">
-                  Include your order number (e.g. <span className="font-medium">ARB-...</span>) in your message so I can assist you quickly.
+                <h1 className="font-heading text-[22px] sm:text-[26px] font-bold text-[#242824] leading-none">
+                  Contact
+                </h1>
+                <p className="font-body text-[11px] text-[#A8B5A0] mt-1 tracking-wide">
+                  Questions, feedback, or purchase support
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {/* Right — Form */}
-            <div className="bg-[#FAF9F6] border border-[#E9E7E2] p-7 sm:p-9">
-              <h2 className="font-heading text-2xl font-bold text-[#080808] mb-6">Send a Message</h2>
+      {/* ── Main ──────────────────────────────────────────────────────────── */}
+      <section className="py-10 lg:py-14">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6 lg:gap-10 items-start">
+
+            {/* ── Form ────────────────────────────────────────────────────── */}
+            <div className="bg-[#FFFCF7] border border-[#E6DFD5] rounded-sm px-6 sm:px-8 py-8">
+              <div className="mb-7">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-1 h-5 rounded-full bg-[#203A2B]" />
+                  <p className="text-[10px] font-body font-bold uppercase tracking-[0.2em] text-[#A8B5A0]">Send a Message</p>
+                </div>
+                <h2 className="font-heading text-[22px] sm:text-[26px] font-bold text-[#242824] leading-tight">
+                  How can I help you?
+                </h2>
+                <p className="font-body text-[13px] text-[#777] mt-1.5 leading-relaxed">
+                  Whether it&apos;s a purchase issue, download problem, or just feedback — I&apos;ll get back to you within 24–48 hours.
+                </p>
+              </div>
+
               <form action={`mailto:${supportEmail}`} method="GET" className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Your Name</label>
+                    <label className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
+                      Your Name
+                    </label>
                     <input name="name" required placeholder="Full name" className={inputCls} />
                   </div>
                   <div>
-                    <label className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Email Address</label>
+                    <label className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
+                      Email Address
+                    </label>
                     <input name="email" type="email" required placeholder="your@email.com" className={inputCls} />
                   </div>
                 </div>
+
                 <div>
-                  <label className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Subject</label>
+                  <label className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
+                    Subject
+                  </label>
                   <input name="subject" required placeholder="e.g. Download issue with order ARB-..." className={inputCls} />
                 </div>
+
                 <div>
-                  <label className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Message</label>
-                  <textarea name="body" required rows={5} placeholder="Describe your question or issue..." className={`${inputCls} resize-none`} />
+                  <label className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
+                    Message
+                  </label>
+                  <textarea
+                    name="body"
+                    required
+                    rows={5}
+                    placeholder="Describe your question or issue in detail..."
+                    className={`${inputCls} resize-none`}
+                  />
                 </div>
+
                 <button
                   type="submit"
-                  className="bg-[#080808] text-white font-body text-xs font-bold uppercase tracking-widest px-6 py-4 hover:bg-[#789185] transition-colors"
+                  className="inline-flex items-center justify-center gap-2 bg-[#203A2B] text-[#FFFCF7] font-body text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-3 hover:bg-[#315B55] active:scale-[0.98] transition-all rounded-sm"
                 >
-                  Send Message
+                  Send Message <ArrowRight size={13} />
                 </button>
-                <p className="text-xs text-[#777777] font-body">
-                  This opens your email client. Or email directly:{" "}
-                  <a href={`mailto:${supportEmail}`} className="text-[#789185] hover:text-[#080808] transition-colors">{supportEmail}</a>
+
+                <p className="text-[11px] font-body text-[#A8B5A0]">
+                  This opens your email client. Or write directly to{" "}
+                  <a href={`mailto:${supportEmail}`} className="text-[#203A2B] hover:underline">
+                    {supportEmail}
+                  </a>
                 </p>
               </form>
             </div>
 
+            {/* ── Sidebar ─────────────────────────────────────────────────── */}
+            <aside className="flex flex-col gap-4 lg:sticky lg:top-28">
+
+              {/* Email */}
+              <div className="bg-[#FFFCF7] border border-[#E6DFD5] rounded-sm p-5 flex gap-4 items-start hover:border-[#203A2B]/40 hover:shadow-sm transition-all duration-200">
+                <div className="w-9 h-9 rounded-sm bg-[#203A2B]/8 border border-[#203A2B]/15 flex items-center justify-center shrink-0">
+                  <Mail size={15} className="text-[#203A2B]" />
+                </div>
+                <div>
+                  <p className="font-heading text-[13px] font-bold text-[#242824] mb-0.5">Email Support</p>
+                  <a
+                    href={`mailto:${supportEmail}`}
+                    className="font-body text-[12px] text-[#203A2B] hover:underline break-all"
+                  >
+                    {supportEmail}
+                  </a>
+                </div>
+              </div>
+
+              {/* Response time */}
+              <div className="bg-[#FFFCF7] border border-[#E6DFD5] rounded-sm p-5 flex gap-4 items-start hover:border-[#203A2B]/40 hover:shadow-sm transition-all duration-200">
+                <div className="w-9 h-9 rounded-sm bg-[#203A2B]/8 border border-[#203A2B]/15 flex items-center justify-center shrink-0">
+                  <Clock size={15} className="text-[#203A2B]" />
+                </div>
+                <div>
+                  <p className="font-heading text-[13px] font-bold text-[#242824] mb-0.5">Response Time</p>
+                  <p className="font-body text-[12px] text-[#777]">Typically within 24–48 hours.</p>
+                </div>
+              </div>
+
+              {/* Common questions */}
+              <div className="bg-[#FFFCF7] border border-[#E6DFD5] rounded-sm p-5 flex gap-4 items-start hover:border-[#203A2B]/40 hover:shadow-sm transition-all duration-200">
+                <div className="w-9 h-9 rounded-sm bg-[#203A2B]/8 border border-[#203A2B]/15 flex items-center justify-center shrink-0">
+                  <MessageSquare size={15} className="text-[#203A2B]" />
+                </div>
+                <div>
+                  <p className="font-heading text-[13px] font-bold text-[#242824] mb-2">Common Topics</p>
+                  <ul className="flex flex-col gap-1.5">
+                    {[
+                      "Download issues after purchase",
+                      "Refund & cancellation requests",
+                      "Account access problems",
+                      "Book content feedback",
+                    ].map((q) => (
+                      <li key={q} className="flex items-center gap-2 font-body text-[12px] text-[#777]">
+                        <span className="w-1 h-1 rounded-full bg-[#C6A66B] shrink-0" />
+                        {q}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Tip */}
+              <div className="bg-[#203A2B]/6 border border-[#203A2B]/15 rounded-sm p-5">
+                <p className="font-heading text-[13px] font-bold text-[#242824] mb-1">💡 Purchase Support Tip</p>
+                <p className="font-body text-[12px] text-[#555] leading-relaxed">
+                  Include your order number (e.g. <span className="font-semibold text-[#203A2B]">ARB-...</span>) so I can assist you faster.
+                </p>
+              </div>
+
+            </aside>
           </div>
         </div>
       </section>
 
-      {/* ── CTA ──────────────────────────────────────────────────────────── */}
-      <section className="bg-[#FFC928] py-14">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div>
-            <p className="text-xs font-body uppercase tracking-[0.2em] text-[#080808]/60 mb-2">While You&apos;re Here</p>
-            <h2 className="font-heading text-3xl sm:text-4xl font-bold text-[#080808]">Browse the book catalog.</h2>
+      {/* ── CTA ───────────────────────────────────────────────────────────── */}
+      <section className="bg-[#FFFCF7] border-t border-[#E6DFD5] py-12 lg:py-14">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-sm bg-[#203A2B] px-8 sm:px-12 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="absolute top-0 right-0 w-72 h-72 bg-[#315B55] rounded-full blur-3xl opacity-25 -translate-y-1/2 translate-x-1/4" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-4 h-px bg-[#C6A66B]" />
+                <p className="text-[10px] font-body font-bold uppercase tracking-[0.2em] text-[#A8B5A0]">While You&apos;re Here</p>
+              </div>
+              <h2 className="font-heading text-[26px] sm:text-[32px] font-bold text-[#FFFCF7] leading-tight">
+                Browse the book catalog.
+              </h2>
+            </div>
+            <Link
+              href="/books"
+              className="relative z-10 shrink-0 inline-flex items-center gap-2.5 bg-[#C6A66B] text-[#242824] font-body text-[11px] font-bold uppercase tracking-[0.15em] px-7 py-3.5 hover:bg-[#d4b77e] transition-colors rounded-sm"
+            >
+              Explore Books <ArrowRight size={13} />
+            </Link>
           </div>
-          <Link
-            href="/books"
-            className="shrink-0 inline-flex items-center gap-2 bg-[#080808] text-white font-body text-xs font-bold uppercase tracking-widest px-8 py-4 hover:bg-[#789185] transition-colors"
-          >
-            Explore My Books <ArrowRight size={14} />
-          </Link>
         </div>
       </section>
-    </>
+
+    </div>
   );
 }

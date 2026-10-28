@@ -2,12 +2,21 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Trash2, ShoppingCart, ArrowRight } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { formatINR } from "@/lib/currency";
 
 export default function CartPage() {
   const { items, removeItem, totalPaise } = useCart();
+  const requireAuth = useRequireAuth();
+  const router = useRouter();
+
+  const handleCheckout = () => {
+    if (!requireAuth()) return;
+    router.push("/checkout");
+  };
 
   return (
     <>
@@ -105,12 +114,12 @@ export default function CartPage() {
                     <span>Total</span>
                     <span>{formatINR(totalPaise)}</span>
                   </div>
-                  <Link
-                    href="/checkout"
-                    className="block w-full text-center bg-[#080808] text-white font-body text-xs font-bold uppercase tracking-widest px-6 py-4 hover:bg-[#789185] transition-colors"
+                  <button
+                    onClick={handleCheckout}
+                    className="block w-full text-center bg-[#203A2B] text-[#FFFCF7] font-body text-xs font-bold uppercase tracking-widest px-6 py-4 hover:bg-[#315B55] transition-colors"
                   >
                     Proceed to Checkout
-                  </Link>
+                  </button>
                   <p className="text-[11px] font-body text-[#777777] text-center mt-3">
                     Secure payment via Razorpay
                   </p>

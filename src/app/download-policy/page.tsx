@@ -1,44 +1,125 @@
+import { PolicyLayout } from "@/components/shared/PolicyLayout";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Digital Download Policy" };
+export const metadata: Metadata = {
+  title: "Digital Download Policy",
+  description: "How digital eBook downloads work, access terms, security, and personal use restrictions.",
+};
 
 export default function DownloadPolicyPage() {
   return (
-    <div className="bg-[#FAF9F6] min-h-screen">
-      <div className="bg-[#789185] py-12">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="font-heading text-5xl font-bold text-white">Digital Download Policy</h1>
-          <p className="font-body text-white/70 mt-2">Last updated: January 2025</p>
-        </div>
-      </div>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
-        <div className="bg-white border border-[#E9E7E2] p-8 flex flex-col gap-8 font-body text-[#777777] leading-relaxed">
-          <section>
-            <h2 className="font-heading text-2xl font-bold text-[#080808] mb-3">How Downloads Work</h2>
-            <p>After your payment is verified, your purchased eBook is immediately available in your personal library at <a href="/account/library" className="text-[#789185] underline">My Library</a>. You can download it at any time by signing in to your account.</p>
-          </section>
-          <section>
-            <h2 className="font-heading text-2xl font-bold text-[#080808] mb-3">File Format</h2>
-            <p>All eBooks are delivered as PDF files. PDFs can be read on any device using a free PDF reader such as Adobe Acrobat Reader, Apple Books, Google Drive, or any modern browser.</p>
-          </section>
-          <section>
-            <h2 className="font-heading text-2xl font-bold text-[#080808] mb-3">Download Access</h2>
-            <p>Your purchased eBooks remain in your library as long as your account is active. You may re-download your purchases at any time from My Library or Download History. There is no expiry on your access to purchased titles.</p>
-          </section>
-          <section>
-            <h2 className="font-heading text-2xl font-bold text-[#080808] mb-3">Security</h2>
-            <p>Download links are generated securely on the server and are tied to your verified account. PDF files are stored in private cloud storage and are never publicly accessible. Each download request is authenticated and logged.</p>
-          </section>
-          <section>
-            <h2 className="font-heading text-2xl font-bold text-[#080808] mb-3">Personal Use Only</h2>
-            <p>Downloaded eBooks are licensed for your personal use only. Sharing, redistributing, or reselling downloaded files is strictly prohibited and constitutes a violation of copyright law.</p>
-          </section>
-          <section>
-            <h2 className="font-heading text-2xl font-bold text-[#080808] mb-3">Download Issues</h2>
-            <p>If you experience any issues downloading your eBook, please contact us via the <a href="/contact" className="text-[#789185] underline">Contact page</a> with your order number and we will assist you promptly.</p>
-          </section>
-        </div>
-      </div>
-    </div>
+    <PolicyLayout
+      title="Digital Download Policy"
+      subtitle="Everything you need to know about accessing, downloading, and using your purchased eBooks."
+      lastUpdated="January 2025"
+      effectiveDate="January 2025"
+      relatedLinks={[
+        { label: "Refund Policy", href: "/refund-policy" },
+        { label: "Terms & Conditions", href: "/terms" },
+        { label: "Contact Us", href: "/contact" },
+      ]}
+      sections={[
+        {
+          title: "How Downloads Work",
+          content: (
+            <>
+              <p>After your payment is verified by Razorpay and confirmed by our server, your purchased eBook is immediately made available in your personal library at <a href="/account/library" className="text-[#203A2B] underline">My Library</a>. The fulfilment process works as follows:</p>
+              <ul className="list-disc list-inside flex flex-col gap-1.5 mt-2">
+                <li>Payment is processed by Razorpay and a webhook notification is sent to our server.</li>
+                <li>Our server cryptographically verifies the webhook signature before processing.</li>
+                <li>A download entitlement is created and linked to your account.</li>
+                <li>You receive an order confirmation email.</li>
+                <li>The eBook appears in your library, ready to download.</li>
+              </ul>
+              <p className="mt-2">If your eBook does not appear within 15 minutes of payment, please contact us with your order number.</p>
+            </>
+          ),
+        },
+        {
+          title: "File Format & Compatibility",
+          content: (
+            <>
+              <p>All eBooks are delivered as <strong>PDF (Portable Document Format)</strong> files. PDFs are universally compatible and can be read on virtually any device using free software:</p>
+              <ul className="list-disc list-inside flex flex-col gap-1.5 mt-2">
+                <li><strong>Windows/Mac:</strong> Adobe Acrobat Reader, browser-based PDF viewer.</li>
+                <li><strong>iOS:</strong> Apple Books, Adobe Acrobat, Files app.</li>
+                <li><strong>Android:</strong> Google Drive, Adobe Acrobat, any PDF reader app.</li>
+                <li><strong>Any device:</strong> Google Drive, Dropbox, or any modern web browser.</li>
+              </ul>
+              <p className="mt-2">We do not offer alternative file formats (EPUB, MOBI, etc.) at this time. Please ensure you can open PDF files before purchasing. Inability to open a PDF is not grounds for a refund.</p>
+            </>
+          ),
+        },
+        {
+          title: "Download Access & Availability",
+          content: (
+            <>
+              <p>Your purchased eBooks remain accessible in your library for as long as your account is active and in good standing. Key access terms:</p>
+              <ul className="list-disc list-inside flex flex-col gap-1.5 mt-2">
+                <li>There is <strong>no expiry</strong> on your access to purchased titles while your account remains active.</li>
+                <li>You may re-download your purchases at any time from <a href="/account/library" className="text-[#203A2B] underline">My Library</a>.</li>
+                <li>Access may be revoked if your account is suspended or terminated for violation of our Terms & Conditions.</li>
+                <li>Access will be revoked if a refund is issued for a specific title.</li>
+                <li>We reserve the right to modify or discontinue the platform with reasonable notice. In such an event, we will make reasonable efforts to ensure you can download your purchased files before discontinuation.</li>
+              </ul>
+            </>
+          ),
+        },
+        {
+          title: "Download Link Security",
+          content: (
+            <>
+              <p>All download links are generated securely on the server and are protected by multiple layers of security:</p>
+              <ul className="list-disc list-inside flex flex-col gap-1.5 mt-2">
+                <li><strong>Authentication required:</strong> You must be signed in to your account to generate a download link.</li>
+                <li><strong>Entitlement verification:</strong> The server verifies your purchase entitlement before generating any link.</li>
+                <li><strong>Short-lived signed URLs:</strong> Download links are time-limited signed URLs (valid for 1 hour) generated by Firebase Storage. They cannot be reused after expiry.</li>
+                <li><strong>Account-bound:</strong> Links are tied to your verified account and cannot be used by others.</li>
+                <li><strong>Logged:</strong> Every download request is logged with timestamp and account information for security auditing.</li>
+                <li><strong>Private storage:</strong> PDF files are stored in private Firebase Storage buckets with no public access rules. Files are never directly accessible via a public URL.</li>
+              </ul>
+            </>
+          ),
+        },
+        {
+          title: "Personal Use Licence",
+          content: (
+            <>
+              <p>Downloaded eBooks are licensed for your <strong>personal, non-commercial use only</strong>. You expressly agree that you will not:</p>
+              <ul className="list-disc list-inside flex flex-col gap-1.5 mt-2">
+                <li>Share, upload, or distribute the downloaded file to any other person or platform.</li>
+                <li>Sell, resell, or sublicense the file.</li>
+                <li>Use the content for commercial purposes.</li>
+                <li>Remove or alter any copyright notices, watermarks, or metadata embedded in the file.</li>
+                <li>Use the content to train AI or machine learning models.</li>
+              </ul>
+              <p className="mt-2">Violation of this licence constitutes copyright infringement and may result in account termination and legal action under applicable intellectual property laws.</p>
+            </>
+          ),
+        },
+        {
+          title: "Limitation of Liability for Download Issues",
+          content: (
+            <>
+              <p>While we make every effort to ensure reliable download access, we are not liable for:</p>
+              <ul className="list-disc list-inside flex flex-col gap-1.5 mt-2">
+                <li>Temporary unavailability of the download service due to maintenance, infrastructure issues, or events beyond our control.</li>
+                <li>Loss of downloaded files from your personal device — we strongly recommend keeping a backup copy.</li>
+                <li>Compatibility issues with your specific device, operating system, or PDF reader software.</li>
+                <li>Internet connectivity issues on your end that prevent downloading.</li>
+                <li>Data loss on your device after a successful download.</li>
+              </ul>
+              <p className="mt-2">We are not responsible for any loss of data, files, or content that occurs on your personal device after a successful download. It is your responsibility to maintain backups of your purchased files.</p>
+            </>
+          ),
+        },
+        {
+          title: "Download Issues & Support",
+          content: (
+            <p>If you experience any issues downloading your eBook — including missing files, corrupted downloads, or access errors — please contact us via the <a href="/contact" className="text-[#203A2B] underline">Contact page</a> with your order number (format: <strong>ARB-...</strong>) and a description of the issue. We will investigate and respond within 1–3 business days.</p>
+          ),
+        },
+      ]}
+    />
   );
 }

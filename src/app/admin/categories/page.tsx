@@ -8,7 +8,7 @@ import { AdminModal } from "@/components/admin/AdminModal";
 
 interface Category { id: string; name: string; slug: string; description?: string; sortOrder: number; visible: boolean }
 
-const inputCls = "w-full border border-[#E8E6E1] rounded-lg px-3.5 py-2.5 text-sm font-body text-[#0a0a0a] placeholder:text-[#c0bdb8] bg-white focus:outline-none focus:border-[#789185] focus:ring-3 focus:ring-[#789185]/10 transition-all";
+const inputCls = "w-full border border-[#E6E3DD] rounded-lg px-3.5 py-2.5 text-sm font-body text-[#080808] placeholder:text-[#c0bdb8] bg-white focus:outline-none focus:border-[#789185] focus:ring-2 focus:ring-[#789185]/10 transition-all";
 const labelCls = "block text-[11px] font-body font-semibold uppercase tracking-[0.08em] text-[#9e9a94] mb-1.5";
 
 export default function AdminCategoriesPage() {
@@ -52,17 +52,17 @@ export default function AdminCategoriesPage() {
       action={
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 bg-[#0a0a0a] text-white text-[12.5px] font-body font-semibold px-4 py-2.5 rounded-lg hover:bg-[#222] transition-colors shadow-sm"
+          className="flex items-center gap-2 bg-[#FFC928] text-[#080808] text-[13px] font-body font-semibold px-4 py-2.5 rounded-lg hover:bg-[#F2B916] transition-colors shadow-sm"
         >
-          <PlusCircle size={13} />
+          <PlusCircle size={14} />
           Add Category
         </button>
       }
     >
-      <div className="bg-white border border-[#E8E6E1] rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-[#E6E3DD] rounded-xl overflow-hidden shadow-sm">
         {categories.length === 0 ? (
           <div className="py-20 text-center">
-            <div className="w-12 h-12 rounded-xl bg-[#F4F3F0] flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 rounded-xl bg-[#F2F0EC] flex items-center justify-center mx-auto mb-4">
               <Tag size={20} className="text-[#ccc]" />
             </div>
             <p className="text-sm font-body text-[#bbb] mb-2">No categories yet.</p>
@@ -74,17 +74,17 @@ export default function AdminCategoriesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm font-body min-w-[480px]">
               <thead>
-                <tr className="border-b border-[#F0EEE9] bg-[#FAFAF8]">
-                  <th className="text-left px-5 py-3.5 text-[10.5px] uppercase tracking-[0.08em] text-[#b0aca6] font-semibold">Name</th>
-                  <th className="text-left px-4 py-3.5 text-[10.5px] uppercase tracking-[0.08em] text-[#b0aca6] font-semibold">Slug</th>
-                  <th className="text-left px-4 py-3.5 text-[10.5px] uppercase tracking-[0.08em] text-[#b0aca6] font-semibold">Description</th>
-                  <th className="text-left px-4 py-3.5 text-[10.5px] uppercase tracking-[0.08em] text-[#b0aca6] font-semibold">Visibility</th>
+                <tr className="border-b border-[#EDE9E3] bg-[#FAF9F6]">
+                  <th className="text-left px-5 py-3.5 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Name</th>
+                  <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Slug</th>
+                  <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Description</th>
+                  <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Visibility</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F4F3F0]">
+              <tbody className="divide-y divide-[#F2F0EC]">
                 {categories.map((cat) => (
-                  <tr key={cat.id} className="hover:bg-[#FAFAF8] transition-colors">
-                    <td className="px-5 py-3.5 font-semibold text-[#0a0a0a] text-[13px]">{cat.name}</td>
+                  <tr key={cat.id} className="hover:bg-[#FAF9F6] transition-colors">
+                    <td className="px-5 py-3.5 font-semibold text-[#080808] text-[13px]">{cat.name}</td>
                     <td className="px-4 py-3.5 text-[#aaa] font-mono text-xs">{cat.slug}</td>
                     <td className="px-4 py-3.5 text-[#888] text-xs max-w-[240px] truncate">{cat.description || "—"}</td>
                     <td className="px-4 py-3.5">
@@ -123,11 +123,11 @@ export default function AdminCategoriesPage() {
             </div>
           )}
           <div className="flex gap-3 pt-1">
-            <button type="button" onClick={() => setOpen(false)} className="flex-1 border border-[#E8E6E1] text-[#666] font-body text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-[#F7F6F3] transition-all">
+            <button type="button" onClick={() => setOpen(false)} className="flex-1 border border-[#E6E3DD] text-[#666] font-body text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-[#F2F0EC] transition-all">
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="flex-1 bg-[#0a0a0a] text-white font-body text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-[#222] transition-colors disabled:opacity-50 shadow-sm">
-              {loading ? <span className="flex items-center justify-center gap-2"><span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />Adding…</span> : "Add Category"}
+            <button type="submit" disabled={loading} className="flex-1 bg-[#FFC928] text-[#080808] font-body text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-[#F2B916] transition-colors disabled:opacity-50 shadow-sm">
+              {loading ? <span className="flex items-center justify-center gap-2"><span className="w-3.5 h-3.5 border-2 border-[#080808]/20 border-t-[#080808] rounded-full animate-spin" />Adding…</span> : "Add Category"}
             </button>
           </div>
         </form>

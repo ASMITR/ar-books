@@ -1,13 +1,43 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import Image from "next/image";
 import { getFeaturedBooks, getVisibleCategories, getStoreSettings } from "@/lib/firebase/firestore";
 import { BookCard } from "@/components/book/BookCard";
 import { BookCover } from "@/components/book/BookCover";
+import { NewsletterForm } from "@/components/home/NewsletterForm";
 import { formatINR } from "@/lib/currency";
-import { BookOpen, Star, Download, ArrowRight, Sparkles } from "lucide-react";
-import { TestimonialsCarousel } from "@/components/shared/TestimonialsCarousel";
+import {
+  ArrowRight, BookOpen, Users, ShieldCheck, Heart,
+  Sparkles, CheckCircle, Headphones, Star,
+} from "lucide-react";
+
+const CATEGORY_IMAGES: Record<string, string> = {
+  "self-development": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&q=85",
+  "finance":          "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=85",
+  "technology":       "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=85",
+  "fiction":          "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&q=85",
+  "non-fiction":      "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=600&q=85",
+  "self-help":        "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&q=85",
+  "romance":          "https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=600&q=85",
+  "classics":         "https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=600&q=85",
+  "business":         "https://images.unsplash.com/photo-1664575602554-2087b04935a5?w=600&q=85",
+  "history":          "https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=600&q=85",
+};
+const FALLBACK_CAT = "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&q=85";
+
+// Subtle category sub-labels
+const CAT_SUBLABELS: Record<string, string> = {
+  "self-development": "Grow Every Day",
+  "finance":          "Build Wealth",
+  "technology":       "Think Digital",
+  "fiction":          "Explore Stories",
+  "non-fiction":      "Expand Knowledge",
+  "self-help":        "Better Yourself",
+  "romance":          "Feel the Love",
+  "classics":         "Timeless Reads",
+  "business":         "Lead & Succeed",
+  "history":          "Learn the Past",
+};
 
 export default async function HomePage() {
   const [featuredBooks, categories, settings] = await Promise.all([
@@ -16,375 +46,367 @@ export default async function HomePage() {
     getStoreSettings(),
   ]);
 
-  const heroBook = featuredBooks[0];
-  const secondBook = featuredBooks[1];
-  const thirdBook = featuredBooks[2];
+  const heroBook   = featuredBooks[0];
+  const book2      = featuredBooks[1];
+  const book3      = featuredBooks[2];
 
   return (
     <>
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#FAF9F6]">
-        {/* Background decorative elements */}
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-[#789185]/8 -skew-x-6 translate-x-20 hidden lg:block" />
-        <div className="absolute top-20 right-40 w-72 h-72 rounded-full bg-[#FFC928]/10 blur-3xl hidden lg:block" />
-        <div className="absolute bottom-10 left-10 w-48 h-48 rounded-full bg-[#789185]/10 blur-2xl hidden lg:block" />
+      {/* ════════════════════════════════════════════════════════════════
+          HERO
+      ════════════════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden bg-[#F5EFE6] min-h-[520px] lg:min-h-[600px]">
 
-        <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        {/* ── Right-side hero lifestyle image — desktop only ── */}
+        <div className="hidden lg:block absolute inset-y-0 right-0 w-[58%] overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&q=90"
+            alt="Books on a wooden table with warm natural light"
+            className="w-full h-full object-cover object-center"
+          />
+          {/* Gradient fade into cream on the left edge */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#F5EFE6]/80 via-[#F5EFE6]/20 to-transparent" />
+          {/* Subtle bottom vignette */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#F5EFE6]/30 via-transparent to-transparent" />
+        </div>
 
-            {/* Left */}
-            <div className="flex flex-col gap-6 order-2 lg:order-1">
-              <div className="inline-flex items-center gap-2 bg-[#FFC928]/20 border border-[#FFC928]/40 px-4 py-2 w-fit">
-                <Sparkles size={14} className="text-[#F2B916]" />
-                <span className="text-xs font-body font-semibold uppercase tracking-widest text-[#080808]">
-                  Asmit Rajaramkar — Author
-                </span>
+        {/* ── Content ── */}
+        <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-[48%_52%] min-h-[520px] lg:min-h-[600px]">
+
+            {/* Left — text column: solid cream bg on mobile so text is always readable */}
+            <div className="flex flex-col justify-center gap-6 py-16 lg:py-20 pr-0 lg:pr-12 bg-[#F5EFE6] lg:bg-transparent">
+
+              {/* Eyebrow */}
+              <div className="inline-flex items-center gap-2 w-fit">
+                <span className="w-6 h-px bg-[#315B55]" />
+                <p className="text-[10px] font-body font-bold uppercase tracking-[0.25em] text-[#315B55]">
+                  Discover · Read · Grow
+                </p>
               </div>
 
-              <h1 className="font-heading text-5xl sm:text-6xl lg:text-7xl font-bold text-[#080808] leading-[0.95]">
-                {settings?.homepageSettings?.heroHeadline ?? (
+              {/* Headline */}
+              <h1 className="font-heading text-[44px] sm:text-[56px] lg:text-[64px] font-bold text-[#242824] leading-[1.0] tracking-tight">
+                {settings?.homepageSettings?.heroHeadline ? (
+                  settings.homepageSettings.heroHeadline
+                ) : (
                   <>
-                    WHAT WILL<br />
-                    <span className="text-[#789185]">YOU DISCOVER</span><br />
-                    NEXT?
+                    Books for<br />
+                    <span className="text-[#203A2B]">Every Mind</span><br />
+                    &amp; Moment.
                   </>
                 )}
               </h1>
 
-              <p className="font-body text-[#777777] text-lg leading-relaxed max-w-lg">
+              {/* Sub-text */}
+              <p className="font-body text-[#777970] text-[15px] leading-[1.7] max-w-[380px]">
                 {settings?.homepageSettings?.heroSubtext ??
-                  "Explore new ideas, build useful skills, and discover fresh perspectives through carefully crafted books."}
+                  "Your next favourite story is just a page away. Handpicked books for curious minds."}
               </p>
 
-              <div className="flex flex-wrap gap-3 pt-2">
+              {/* CTAs */}
+              <div className="flex flex-wrap gap-3 pt-1">
                 <Link
                   href="/books"
-                  className="inline-flex items-center gap-2 bg-[#080808] text-white font-body text-xs font-bold uppercase tracking-widest px-8 py-4 hover:bg-[#789185] transition-colors"
+                  className="inline-flex items-center gap-2.5 bg-[#203A2B] text-[#FFFCF7] font-body text-[11px] font-bold uppercase tracking-[0.15em] px-7 py-3.5 hover:bg-[#315B55] transition-colors duration-200 shadow-sm"
                 >
-                  Explore Books <ArrowRight size={14} />
+                  Shop Now <ArrowRight size={13} />
                 </Link>
                 <Link
-                  href="/about"
-                  className="inline-block border-2 border-[#080808] text-[#080808] font-body text-xs font-bold uppercase tracking-widest px-8 py-4 hover:bg-[#080808] hover:text-white transition-colors"
+                  href="/books"
+                  className="inline-flex items-center gap-2.5 border border-[#242824]/50 text-[#242824] font-body text-[11px] font-bold uppercase tracking-[0.15em] px-7 py-3.5 hover:bg-[#242824] hover:text-[#FFFCF7] hover:border-[#242824] transition-colors duration-200"
                 >
-                  About the Author
+                  Explore Collection
                 </Link>
               </div>
 
-              {/* Mini stats */}
-              <div className="flex flex-wrap gap-6 pt-4 border-t border-[#E9E7E2]">
-                <div>
-                  <p className="font-heading text-3xl font-bold text-[#080808]">{featuredBooks.length}+</p>
-                  <p className="text-xs font-body text-[#777777] uppercase tracking-wide">Books Published</p>
+              {/* Social proof strip */}
+              <div className="flex items-center gap-4 pt-2">
+                <div className="flex -space-x-2">
+                  {["#A8B5A0","#C6A66B","#315B55","#203A2B"].map((c, i) => (
+                    <div
+                      key={i}
+                      className="w-7 h-7 rounded-full border-2 border-[#F5EFE6] flex items-center justify-center text-[#FFFCF7] text-[9px] font-bold"
+                      style={{ backgroundColor: c }}
+                    >
+                      {["A","R","B","S"][i]}
+                    </div>
+                  ))}
                 </div>
-                <div className="w-px bg-[#E9E7E2]" />
                 <div>
-                  <p className="font-heading text-3xl font-bold text-[#080808]">{categories.length}+</p>
-                  <p className="text-xs font-body text-[#777777] uppercase tracking-wide">Subjects Covered</p>
-                </div>
-                <div className="w-px bg-[#E9E7E2]" />
-                <div>
-                  <p className="font-heading text-3xl font-bold text-[#080808]">100%</p>
-                  <p className="text-xs font-body text-[#777777] uppercase tracking-wide">Digital & Instant</p>
+                  <div className="flex items-center gap-0.5 mb-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={10} className="fill-[#C6A66B] text-[#C6A66B]" />
+                    ))}
+                  </div>
+                  <p className="text-[10px] font-body text-[#777970]">Loved by 500+ readers</p>
                 </div>
               </div>
             </div>
 
-            {/* Right — stacked books */}
-            <div className="relative flex items-center justify-center order-1 lg:order-2 min-h-[280px] sm:min-h-[360px] lg:min-h-[480px]">
-              {thirdBook && (
-                <div className="absolute left-4 sm:left-8 top-8 opacity-50 rotate-[-8deg] scale-90">
-                  <BookCover src={thirdBook.coverImageUrl} title={thirdBook.title} size="lg" />
-                </div>
-              )}
-              {secondBook && (
-                <div className="absolute right-4 sm:right-8 top-4 opacity-70 rotate-[6deg] scale-95">
-                  <BookCover src={secondBook.coverImageUrl} title={secondBook.title} size="lg" />
-                </div>
-              )}
-              {heroBook && (
-                <div className="relative z-10 drop-shadow-2xl">
-                  <BookCover src={heroBook.coverImageUrl} title={heroBook.title} size="xl" perspective />
-                  <div className="absolute -bottom-4 -right-4 bg-[#FFC928] text-[#080808] font-body text-sm font-bold px-4 py-2 shadow-lg">
-                    {formatINR(heroBook.pricePaise)}
+            {/* Right — floating book cards (desktop only) */}
+            <div className="hidden lg:flex items-center justify-center relative">
+              {/* Floating book stack */}
+              <div className="relative flex items-end gap-5 pb-10">
+                {book3 && (
+                  <div className="opacity-50 rotate-[-7deg] translate-y-6 transition-transform hover:translate-y-4 duration-300">
+                    <BookCover src={book3.coverImageUrl} title={book3.title} size="md" />
                   </div>
-                </div>
-              )}
-              {!heroBook && (
-                <div className="text-[#E9E7E2] font-heading text-xl text-center px-8">
-                  Add books in the admin dashboard.
-                </div>
-              )}
+                )}
+                {heroBook && (
+                  <div className="relative drop-shadow-2xl z-10 transition-transform hover:-translate-y-2 duration-300">
+                    <BookCover src={heroBook.coverImageUrl} title={heroBook.title} size="xl" perspective />
+                    {/* New Arrivals badge */}
+                    <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-[#203A2B] flex flex-col items-center justify-center shadow-xl border-2 border-[#FFFCF7]/20">
+                      <span className="text-[#FFFCF7] text-[8px] font-body font-bold uppercase leading-tight tracking-wide text-center">New<br />Arrivals</span>
+                    </div>
+                    {/* Price tag */}
+                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-[#C6A66B] text-[#242824] font-body text-[11px] font-bold px-4 py-1.5 shadow-lg whitespace-nowrap">
+                      {formatINR(heroBook.pricePaise)}
+                    </div>
+                  </div>
+                )}
+                {book2 && (
+                  <div className="opacity-50 rotate-[6deg] translate-y-6 transition-transform hover:translate-y-4 duration-300">
+                    <BookCover src={book2.coverImageUrl} title={book2.title} size="md" />
+                  </div>
+                )}
+                {!heroBook && (
+                  <p className="text-[#A8B5A0] font-heading text-base text-center px-8">
+                    Add books in the admin dashboard.
+                  </p>
+                )}
+              </div>
             </div>
+
           </div>
         </div>
       </section>
 
-      {/* ── Stats Strip ──────────────────────────────────────────────────── */}
-      <section className="relative bg-[#080808] py-12 overflow-hidden">
-        {/* animated gradient orbs */}
-        <div className="absolute -top-10 left-1/4 w-64 h-64 rounded-full bg-[#789185]/20 blur-3xl animate-pulse" />
-        <div className="absolute -bottom-10 right-1/4 w-64 h-64 rounded-full bg-[#FFC928]/10 blur-3xl animate-pulse [animation-delay:1s]" />
-
-        <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/10 border border-white/10">
+      {/* ════════════════════════════════════════════════════════════════
+          BENEFITS BAR
+      ════════════════════════════════════════════════════════════════ */}
+      <section className="bg-[#FFFCF7] border-y border-[#E6DFD5] shadow-sm">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: <BookOpen size={18} />, label: "eBooks Available", value: `${featuredBooks.length}+` },
-              { icon: <Star size={18} />, label: "Happy Readers", value: "500+" },
-              { icon: <Download size={18} />, label: "Instant Download", value: "Always" },
-              { icon: <Sparkles size={18} />, label: "New Titles", value: "Monthly" },
-            ].map((s, i) => (
+              { Icon: Sparkles,     title: "Carefully Curated",  sub: "Books selected with care",      color: "#203A2B" },
+              { Icon: CheckCircle,  title: "Quality Content",    sub: "Ideas worth discovering",        color: "#315B55" },
+              { Icon: ShieldCheck,  title: "Secure Shopping",    sub: "Safe & encrypted checkout",      color: "#203A2B" },
+              { Icon: Headphones,   title: "Reader Support",     sub: "Help whenever you need it",      color: "#315B55" },
+            ].map(({ Icon, title, sub, color }, i) => (
               <div
-                key={s.label}
-                className="group flex flex-col items-center gap-2 bg-[#080808] px-4 py-6 sm:px-6 sm:py-8 hover:bg-[#111] transition-colors duration-300 cursor-default"
-                style={{ animationDelay: `${i * 120}ms` }}
+                key={title}
+                className={`flex items-center gap-4 px-6 py-5 ${i < 3 ? "border-r border-[#E6DFD5]" : ""} ${i >= 2 ? "border-t border-[#E6DFD5] lg:border-t-0" : ""}`}
               >
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#FFC928]/10 border border-[#FFC928]/30 flex items-center justify-center text-[#FFC928] group-hover:bg-[#FFC928]/20 group-hover:scale-110 transition-all duration-300">
-                  {s.icon}
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: `${color}15` }}
+                >
+                  <Icon size={18} strokeWidth={1.5} style={{ color }} />
                 </div>
-                <p className="font-heading text-2xl sm:text-3xl font-bold text-white group-hover:text-[#FFC928] transition-colors duration-300">{s.value}</p>
-                <p className="text-[10px] sm:text-[11px] font-body text-white/40 uppercase tracking-[0.15em] text-center">{s.label}</p>
+                <div>
+                  <p className="font-body text-[12px] font-bold text-[#242824] uppercase tracking-wide leading-tight">{title}</p>
+                  <p className="font-body text-[11px] text-[#777970] mt-0.5 leading-snug">{sub}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── About the Author ─────────────────────────────────────────────── */}
-      <section className="bg-white py-16 lg:py-24">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            {/* Photo */}
-            <div className="relative order-1">
-              <div className="absolute -top-4 -left-4 w-full h-full border-2 border-[#FFC928] hidden sm:block" />
-              <div className="relative bg-[#FAF9F6] flex items-center justify-center min-h-[320px] sm:min-h-[400px] overflow-hidden">
-                {settings?.authorPhotoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={settings.authorPhotoUrl}
-                    alt="Asmit Rajaramkar"
-                    className="w-full h-full object-cover max-h-[400px]"
-                  />
-                ) : (
-                  <div className="text-[#E9E7E2] font-heading text-lg text-center px-8">
-                    Author photo can be added via the admin dashboard.
-                  </div>
-                )}
-              </div>
-            </div>
+      {/* ════════════════════════════════════════════════════════════════
+          BROWSE BY CATEGORY
+      ════════════════════════════════════════════════════════════════ */}
+      {categories.length > 0 && (
+        <section className="bg-[#FFFCF7] py-12 lg:py-14">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
 
-            {/* Text */}
-            <div className="order-2 flex flex-col gap-6">
+            {/* Section header */}
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-10">
               <div>
-                <p className="text-xs font-body uppercase tracking-[0.2em] text-[#789185] mb-2">Meet the Author</p>
-                <h2 className="font-heading text-4xl lg:text-5xl font-bold text-[#080808]">
-                  Asmit Rajaramkar
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-5 h-px bg-[#315B55]" />
+                  <p className="text-[10px] font-body font-bold uppercase tracking-[0.25em] text-[#315B55]">Browse by Category</p>
+                </div>
+                <h2 className="font-heading text-[36px] sm:text-[44px] font-bold text-[#242824] leading-tight">
+                  Find Your Next Read
                 </h2>
               </div>
-              <p className="font-body text-[#777777] leading-relaxed text-lg">
-                {settings?.authorBio ??
-                  "I write books that help people think clearly, build skills, and explore new ideas. From business and finance to fiction and technology — every book is crafted with care and purpose."}
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link
-                  href="/about"
-                  className="inline-flex items-center gap-2 bg-[#080808] text-white font-body text-xs font-bold uppercase tracking-widest px-6 py-3 hover:bg-[#789185] transition-colors"
-                >
-                  Read My Story <ArrowRight size={12} />
-                </Link>
-                <Link
-                  href="/books"
-                  className="inline-flex items-center gap-2 border-2 border-[#080808] text-[#080808] font-body text-xs font-bold uppercase tracking-widest px-6 py-3 hover:bg-[#080808] hover:text-white transition-colors"
-                >
-                  My Books
-                </Link>
-              </div>
+              <Link
+                href="/books"
+                className="inline-flex items-center gap-1.5 text-[11px] font-body font-bold uppercase tracking-[0.12em] text-[#203A2B] border-b border-[#203A2B]/40 pb-0.5 hover:border-[#203A2B] transition-colors shrink-0 self-start sm:self-auto"
+              >
+                View All Categories <ArrowRight size={12} />
+              </Link>
+            </div>
+
+            {/* Category row — single scrollable row on mobile, fixed row on desktop */}
+            <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none sm:grid sm:grid-cols-3 lg:grid-cols-6 lg:overflow-visible">
+              {categories.slice(0, 6).map((cat) => {
+                const imgSrc   = CATEGORY_IMAGES[cat.slug] ?? FALLBACK_CAT;
+                const sublabel = CAT_SUBLABELS[cat.slug]   ?? "Explore";
+                return (
+                  <Link
+                    key={cat.id}
+                    href={`/categories/${cat.slug}`}
+                    className="group relative overflow-hidden rounded-sm shrink-0 w-[130px] sm:w-auto"
+                    style={{ aspectRatio: "2/3" }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imgSrc}
+                      alt={cat.name}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a2e20]/90 via-[#1a2e20]/30 to-transparent group-hover:from-[#1a2e20]/95 transition-opacity duration-300" />
+                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#C6A66B] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-end pb-4 px-2 text-center">
+                      <p className="font-heading text-[13px] font-bold text-[#FFFCF7] leading-tight mb-0.5">{cat.name}</p>
+                      <p className="font-body text-[9px] text-[#A8B5A0] tracking-wide">{sublabel}</p>
+                      <div className="mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <ArrowRight size={11} className="text-[#C6A66B]" />
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* ── Featured Books ───────────────────────────────────────────────── */}
-      <section className="bg-white py-16 lg:py-24">
+      {/* ════════════════════════════════════════════════════════════════
+          BESTSELLERS
+      ════════════════════════════════════════════════════════════════ */}
+      <section className="bg-[#F5EFE6] py-16 lg:py-20">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+
+          {/* Section header */}
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-10">
             <div>
-              <p className="text-xs font-body uppercase tracking-[0.2em] text-[#789185] mb-2">The Collection</p>
-              <h2 className="font-heading text-4xl lg:text-5xl font-bold text-[#080808]">
-                Books by Asmit Rajaramkar
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-5 h-px bg-[#315B55]" />
+                <p className="text-[10px] font-body font-bold uppercase tracking-[0.25em] text-[#315B55]">Bestsellers</p>
+              </div>
+              <h2 className="font-heading text-[36px] sm:text-[44px] font-bold text-[#242824] leading-tight">
+                Readers&apos; All-Time Favorites
               </h2>
             </div>
             <Link
               href="/books"
-              className="inline-flex items-center gap-2 text-xs font-body font-bold uppercase tracking-wider text-[#080808] border-b-2 border-[#FFC928] pb-1 hover:text-[#789185] transition-colors shrink-0"
+              className="inline-flex items-center gap-1.5 text-[11px] font-body font-bold uppercase tracking-[0.12em] text-[#203A2B] border-b border-[#203A2B]/40 pb-0.5 hover:border-[#203A2B] transition-colors shrink-0 self-start sm:self-auto"
             >
               View All Books <ArrowRight size={12} />
             </Link>
           </div>
 
           {featuredBooks.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6">
-              {featuredBooks.slice(0, 5).map((book) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 lg:gap-5">
+              {featuredBooks.slice(0, 6).map((book) => (
                 <BookCard key={book.id} book={book} />
               ))}
             </div>
           ) : (
-            <p className="text-[#777777] font-body text-sm py-12 text-center">
-              No featured books yet. Add books in the admin dashboard.
-            </p>
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <BookOpen size={40} className="text-[#A8B5A0]" strokeWidth={1} />
+              <p className="text-[#777970] font-body text-sm text-center">
+                No books yet. Add books in the admin dashboard.
+              </p>
+            </div>
           )}
         </div>
       </section>
 
-      {/* ── Why Read My Books ────────────────────────────────────────────── */}
-      <section className="bg-[#FAF9F6] py-16 lg:py-24">
+      {/* ════════════════════════════════════════════════════════════════
+          NEWSLETTER BANNER
+      ════════════════════════════════════════════════════════════════ */}
+      <section className="bg-[#FFFCF7] py-12 lg:py-16">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          {/* header */}
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-8 sm:mb-12">
-            <div>
-              <p className="text-xs font-body uppercase tracking-[0.2em] text-[#789185] mb-2">Why Choose</p>
-              <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-[#080808]">
-                Books Written with Purpose
-              </h2>
-            </div>
-            <p className="text-[11px] font-body text-[#777777] uppercase tracking-wider hidden sm:block">6 reasons</p>
-          </div>
+          <div className="relative overflow-hidden rounded-sm">
 
-          {/* mobile: horizontal scroll snap — tablet+: 2-col — desktop: 3-col */}
-          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 scrollbar-none">
+            {/* Background photo */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1600&q=90"
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover object-center"
+            />
+            {/* Layered overlay: strong on left, fades right */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#203A2B]/95 via-[#203A2B]/80 to-[#203A2B]/40" />
+            {/* Subtle texture grain */}
+            <div className="absolute inset-0 opacity-[0.03] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjY1IiBudW1PY3RhdmVzPSIzIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iMSIvPjwvc3ZnPg==')]" />
+
+            <div className="relative z-10 px-8 sm:px-12 lg:px-16 py-14 lg:py-16 grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-10 items-center">
+
+              {/* Left — copy */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-5 h-px bg-[#C6A66B]" />
+                  <p className="text-[10px] font-body font-bold uppercase tracking-[0.25em] text-[#A8B5A0]">
+                    Be Part of Our Reading Community
+                  </p>
+                </div>
+                <h2 className="font-heading text-[32px] sm:text-[40px] lg:text-[44px] font-bold text-[#FFFCF7] leading-[1.1] mb-4">
+                  Get Updates, Exclusive<br className="hidden sm:block" />
+                  Deals &amp; Book Picks
+                </h2>
+                <p className="font-body text-[13px] text-[#A8B5A0] leading-relaxed max-w-md">
+                  New releases, curated reading recommendations, and exclusive discounts — delivered straight to your inbox.
+                </p>
+                {/* Trust badges */}
+                <div className="flex flex-wrap gap-4 mt-6">
+                  {["No spam, ever", "Unsubscribe anytime", "Exclusive reader deals"].map((t) => (
+                    <div key={t} className="flex items-center gap-1.5">
+                      <CheckCircle size={12} className="text-[#C6A66B]" />
+                      <span className="text-[11px] font-body text-[#A8B5A0]">{t}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right — form: opaque card so inputs are always readable */}
+              <div className="bg-[#FFFCF7] rounded-sm p-6 shadow-xl">
+                <p className="font-heading text-[20px] font-bold text-[#203A2B] mb-1">Join the community</p>
+                <p className="font-body text-[11px] text-[#777970] mb-5">Get your first book recommendation today.</p>
+                <NewsletterForm source="homepage" variant="banner" />
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════════
+          TRUST STRIP
+      ════════════════════════════════════════════════════════════════ */}
+      <section className="bg-[#F5EFE6] border-t border-[#E6DFD5]">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4">
             {[
-              { n: "01", title: "Practical Knowledge", desc: "Every book is packed with actionable insights you can apply immediately — no fluff, no filler." },
-              { n: "02", title: "Direct from Author", desc: "No publishers, no middlemen. Buy directly and get the best price with instant delivery." },
-              { n: "03", title: "Instant Digital Access", desc: "Download your eBook the moment you pay. Read on any device, anywhere, anytime." },
-              { n: "04", title: "Diverse Subjects", desc: "From business and finance to personal growth and technology — there's something for everyone." },
-              { n: "05", title: "Carefully Crafted", desc: "Each book is thoroughly researched, edited, and designed to give you the best reading experience." },
-              { n: "06", title: "Secure Payments", desc: "Pay safely via UPI, cards, or net banking through Razorpay — India's most trusted payment gateway." },
-            ].map((f) => (
+              { Icon: BookOpen,     title: "Handpicked Books",        sub: "Curated with purpose",       color: "#203A2B" },
+              { Icon: Users,        title: "For Every Reader",         sub: "All genres & interests",     color: "#315B55" },
+              { Icon: ShieldCheck,  title: "Quality You Can Trust",    sub: "Thoroughly crafted",         color: "#203A2B" },
+              { Icon: Heart,        title: "Stories That Stay",        sub: "Words that move you",        color: "#315B55" },
+            ].map(({ Icon, title, sub, color }, i) => (
               <div
-                key={f.title}
-                className="group bg-white border border-[#E9E7E2] p-5 sm:p-6 hover:border-[#789185] hover:shadow-md transition-all duration-200 flex flex-col gap-3 snap-start shrink-0 w-[72vw] sm:w-auto"
+                key={title}
+                className={`flex items-center gap-4 px-6 py-6 ${i < 3 ? "border-r border-[#E6DFD5]" : ""} ${i >= 2 ? "border-t border-[#E6DFD5] lg:border-t-0" : ""}`}
               >
-                <span className="font-heading text-3xl sm:text-4xl font-bold text-[#E9E7E2] group-hover:text-[#FFC928]/60 transition-colors duration-200 leading-none">{f.n}</span>
-                <h3 className="font-heading text-lg sm:text-xl font-bold text-[#080808] group-hover:text-[#789185] transition-colors">{f.title}</h3>
-                <p className="font-body text-[#777777] text-sm leading-relaxed">{f.desc}</p>
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: `${color}15` }}
+                >
+                  <Icon size={18} strokeWidth={1.5} style={{ color }} />
+                </div>
+                <div>
+                  <p className="font-body text-[12px] font-bold text-[#242824] uppercase tracking-wide leading-tight">{title}</p>
+                  <p className="font-body text-[11px] text-[#777970] mt-0.5">{sub}</p>
+                </div>
               </div>
             ))}
-          </div>
-
-          {/* mobile scroll hint */}
-          <p className="text-center text-[11px] font-body text-[#777777] mt-4 sm:hidden">← swipe to see more →</p>
-        </div>
-      </section>
-
-      {/* ── Browse by Category ───────────────────────────────────────────── */}
-      {categories.length > 0 && (
-        <section className="bg-white py-14 lg:py-20">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-
-            {/* header row */}
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
-              <div>
-                <p className="text-xs font-body uppercase tracking-[0.2em] text-[#789185] mb-2">Browse</p>
-                <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-[#080808]">
-                  Explore by Subject
-                </h2>
-              </div>
-              <Link
-                href="/books"
-                className="inline-flex items-center gap-2 shrink-0 bg-[#080808] text-white font-body text-xs font-bold uppercase tracking-widest px-5 py-3 hover:bg-[#789185] transition-colors self-start sm:self-auto"
-              >
-                All Books <ArrowRight size={12} />
-              </Link>
-            </div>
-
-            {/* category pills — wrapping grid */}
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/categories/${cat.slug}`}
-                  className="group inline-flex items-center gap-1.5 border border-[#E9E7E2] bg-[#FAF9F6] px-4 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-body font-semibold text-[#080808] hover:bg-[#080808] hover:text-white hover:border-[#080808] transition-all duration-200"
-                >
-                  <span className="w-1 h-1 rounded-full bg-[#789185] group-hover:bg-[#FFC928] transition-colors shrink-0" />
-                  {cat.name}
-                </Link>
-              ))}
-            </div>
-
-          </div>
-        </section>
-      )}
-
-      {/* ── Testimonials ─────────────────────────────────────────────────── */}
-      <section className="relative bg-[#080808] py-20 lg:py-28 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,#789185_0%,transparent_50%)] opacity-20" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,#FFC928_0%,transparent_50%)] opacity-10" />
-
-        <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <p className="text-xs font-body uppercase tracking-[0.25em] text-[#789185] mb-3">Reader Reviews</p>
-            <h2 className="font-heading text-4xl lg:text-6xl font-bold text-white">What Readers Say</h2>
-            <div className="flex justify-center gap-1 mt-4">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={16} className="fill-[#FFC928] text-[#FFC928]" />
-              ))}
-            </div>
-          </div>
-          <TestimonialsCarousel />
-        </div>
-      </section>
-
-      {/* ── Promotional Banner ───────────────────────────────────────────── */}
-      <section className="bg-[#FFC928] py-16 lg:py-20">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-            <div>
-              <p className="text-xs font-body uppercase tracking-[0.2em] text-[#080808]/60 mb-3">Limited Time</p>
-              <h2 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-[#080808] leading-none mb-4">
-                YOUR NEXT GREAT READ STARTS HERE
-              </h2>
-              <p className="font-body text-[#080808]/70 text-lg mb-8 max-w-md">
-                Every book is written, edited, and published by me — direct to you, no middlemen.
-              </p>
-              <Link
-                href="/books"
-                className="inline-flex items-center gap-2 bg-[#080808] text-white font-body text-xs font-bold uppercase tracking-widest px-8 py-4 hover:bg-[#789185] transition-colors"
-              >
-                Browse All Books <ArrowRight size={14} />
-              </Link>
-            </div>
-            <div className="flex gap-4 sm:gap-6 justify-center lg:justify-end items-end">
-              {featuredBooks.slice(0, 3).map((book, i) => (
-                <div
-                  key={book.id}
-                  className="shrink-0 transition-transform hover:-translate-y-2 duration-200"
-                  style={{ transform: `rotate(${[-5, 0, 5][i] ?? 0}deg)` }}
-                >
-                  <BookCover src={book.coverImageUrl} title={book.title} size={i === 1 ? "lg" : "md"} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Newsletter CTA ───────────────────────────────────────────────── */}
-      <section className="bg-[#080808] py-16 lg:py-20">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mx-auto text-center flex flex-col gap-6">
-            <p className="text-xs font-body uppercase tracking-[0.2em] text-[#FFC928]">Stay Updated</p>
-            <h2 className="font-heading text-4xl lg:text-5xl font-bold text-white">
-              Never Miss a New Book
-            </h2>
-            <p className="font-body text-white/60 leading-relaxed">
-              Get notified when new books drop, receive exclusive discounts, and stay connected with the latest from Asmit Rajaramkar.
-            </p>
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center gap-2 bg-[#FFC928] text-[#080808] font-body text-xs font-bold uppercase tracking-widest px-10 py-4 hover:bg-[#F2B916] transition-colors mx-auto"
-            >
-              Create Free Account <ArrowRight size={14} />
-            </Link>
           </div>
         </div>
       </section>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, getIdToken } from "firebase/auth";
@@ -18,7 +19,7 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const inputCls = "w-full border border-[#E9E7E2] bg-[#FAF9F6] px-4 py-3 text-sm font-body focus:outline-none focus:border-[#789185] focus:ring-2 focus:ring-[#789185]/10 transition-colors";
+const inputCls = "w-full border border-[#E9E7E2] bg-[#FAF9F6] px-4 py-3 text-sm font-body focus:outline-none focus:border-[#789185] focus:ring-2 focus:ring-[#789185]/10 transition-colors rounded-sm";
 
 export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
@@ -32,8 +33,14 @@ export default function LoginPage() {
   };
 
   const redirectAfterLogin = async () => {
+    const params = new URLSearchParams(window.location.search);
+    const next = params.get("next");
     const me = await fetch("/api/auth/me").then(r => r.json());
-    window.location.href = me.role === "admin" ? "/admin/dashboard" : "/account/dashboard";
+    if (next && next.startsWith("/") && !next.startsWith("//")) {
+      window.location.href = next;
+    } else {
+      window.location.href = me.role === "admin" ? "/admin/dashboard" : "/account/dashboard";
+    }
   };
 
   const onSubmit = async (data: LoginInput) => {
@@ -57,67 +64,85 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-
-        {/* Brand */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <p className="font-heading text-3xl font-bold text-[#080808] tracking-widest">AR BOOKS</p>
+    <div className="min-h-screen flex">
+      {/* Left panel — brand */}
+      <div className="hidden lg:flex lg:w-5/12 xl:w-1/2 bg-[#080808] flex-col items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "radial-gradient(circle at 30% 70%, #789185 0%, transparent 60%), radial-gradient(circle at 80% 20%, #FFC928 0%, transparent 50%)" }} />
+        <div className="relative z-10 flex flex-col items-center gap-8 text-center">
+          <Link href="/">
+            <Image src="/Horizontal_Logo.png" alt="AR Books" width={220} height={60} className="brightness-0 invert" priority />
           </Link>
-          <p className="font-body text-[#777777] text-sm mt-1">Sign in to your account</p>
+          <div className="w-12 h-px bg-[#789185]" />
+          <p className="font-body text-[#aaa] text-sm leading-relaxed max-w-xs">
+            Discover stories that move you. Sign in to access your library and continue reading.
+          </p>
         </div>
+      </div>
 
-        {/* Card */}
-        <div className="bg-white border border-[#E9E7E2] p-7 sm:p-9">
-          <h1 className="font-heading text-2xl font-bold text-[#080808] mb-6">Welcome Back</h1>
+      {/* Right panel — form */}
+      <div className="flex-1 bg-[#FAF9F6] flex flex-col items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md">
 
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-            <div>
-              <label className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Email</label>
-              <input {...register("email")} type="email" autoComplete="email" placeholder="your@email.com" className={inputCls} />
-              {errors.email && <p className="text-xs text-[#F12F43] mt-1">{errors.email.message}</p>}
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-body uppercase tracking-wider text-[#777777]">Password</label>
-                <Link href="/forgot-password" className="text-xs font-body text-[#789185] hover:text-[#080808] transition-colors">
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="relative">
-                <input {...register("password")} type={showPw ? "text" : "password"} autoComplete="current-password" placeholder="••••••••" className={`${inputCls} pr-10`} />
-                <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aaa] hover:text-[#555] transition-colors" aria-label="Toggle password">
-                  {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
-              {errors.password && <p className="text-xs text-[#F12F43] mt-1">{errors.password.message}</p>}
-            </div>
-
-            {error && <div className="bg-[#FFF0F0] border border-[#F12F43]/30 text-[#F12F43] text-xs font-body p-3">{error}</div>}
-
-            <button type="submit" disabled={loading} className="w-full bg-[#080808] text-white font-body text-xs font-bold uppercase tracking-widest py-3.5 hover:bg-[#789185] transition-colors disabled:opacity-60 mt-1">
-              {loading ? "Signing in…" : "Sign In"}
-            </button>
-          </form>
-
-          <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px bg-[#E9E7E2]" />
-            <span className="text-xs text-[#aaa] font-body">or</span>
-            <div className="flex-1 h-px bg-[#E9E7E2]" />
+          {/* Mobile logo */}
+          <div className="flex flex-col items-center mb-8 lg:hidden">
+            <Link href="/">
+              <Image src="/Horizontal_Logo.png" alt="AR Books" width={180} height={48} priority />
+            </Link>
           </div>
 
-          <button onClick={handleGoogle} disabled={loading} className="w-full border border-[#E9E7E2] bg-white text-[#080808] font-body text-sm font-medium py-3 hover:bg-[#FAF9F6] transition-colors flex items-center justify-center gap-3 disabled:opacity-60">
-            <GoogleIcon /> Continue with Google
-          </button>
+          <div className="mb-7">
+            <h1 className="font-heading text-2xl font-bold text-[#080808]">Welcome back</h1>
+            <p className="font-body text-sm text-[#777777] mt-1">Sign in to your account to continue</p>
+          </div>
+
+          <div className="bg-white border border-[#E9E7E2] p-7 sm:p-8 rounded-sm shadow-sm">
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+              <div>
+                <label className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Email</label>
+                <input {...register("email")} type="email" autoComplete="email" placeholder="your@email.com" className={inputCls} />
+                {errors.email && <p className="text-xs text-[#F12F43] mt-1">{errors.email.message}</p>}
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-body uppercase tracking-wider text-[#777777]">Password</label>
+                  <Link href="/forgot-password" className="text-xs font-body text-[#789185] hover:text-[#080808] transition-colors">
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <input {...register("password")} type={showPw ? "text" : "password"} autoComplete="current-password" placeholder="••••••••" className={`${inputCls} pr-10`} />
+                  <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aaa] hover:text-[#555] transition-colors" aria-label="Toggle password">
+                    {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+                {errors.password && <p className="text-xs text-[#F12F43] mt-1">{errors.password.message}</p>}
+              </div>
+
+              {error && <div className="bg-[#FFF0F0] border border-[#F12F43]/30 text-[#F12F43] text-xs font-body p-3 rounded-sm">{error}</div>}
+
+              <button type="submit" disabled={loading} className="w-full bg-[#080808] text-white font-body text-xs font-bold uppercase tracking-widest py-3.5 hover:bg-[#789185] transition-colors disabled:opacity-60 mt-1 rounded-sm">
+                {loading ? "Signing in…" : "Sign In"}
+              </button>
+            </form>
+
+            <div className="flex items-center gap-3 my-5">
+              <div className="flex-1 h-px bg-[#E9E7E2]" />
+              <span className="text-xs text-[#aaa] font-body">or</span>
+              <div className="flex-1 h-px bg-[#E9E7E2]" />
+            </div>
+
+            <button onClick={handleGoogle} disabled={loading} className="w-full border border-[#E9E7E2] bg-white text-[#080808] font-body text-sm font-medium py-3 hover:bg-[#FAF9F6] transition-colors flex items-center justify-center gap-3 disabled:opacity-60 rounded-sm">
+              <GoogleIcon /> Continue with Google
+            </button>
+          </div>
+
+          <p className="text-center text-sm font-body text-[#777777] mt-5">
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="text-[#080808] font-semibold hover:text-[#789185] transition-colors">Create one</Link>
+          </p>
+
         </div>
-
-        <p className="text-center text-sm font-body text-[#777777] mt-5">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-[#080808] font-semibold hover:text-[#789185] transition-colors">Create one</Link>
-        </p>
-
       </div>
     </div>
   );

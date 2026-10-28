@@ -217,16 +217,40 @@ export async function getEntitlement(
 }
 
 // ─── Articles ────────────────────────────────────────────────────────────────
-const MOCK_ARTICLES: import("@/types").Article[] = [];
+type Article = import("@/types").Article;
+const MOCK_ARTICLES: Article[] = [];
 
-export async function getPublishedArticles(): Promise<import("@/types").Article[]> {
+export async function getPublishedArticles(): Promise<Article[]> {
   if (DEV_BYPASS) return MOCK_ARTICLES;
   const snap = await adminDb
     .collection("articles")
     .where("published", "==", true)
     .orderBy("publishedAt", "desc")
     .get();
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as import("@/types").Article));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Article));
+}
+
+export async function getArticleBySlug(slug: string): Promise<Article | null> {
+  if (DEV_BYPASS) return MOCK_ARTICLES.find((a) => a.slug === slug) ?? null;
+  const snap = await adminDb
+    .collection("articles")
+    .where("slug", "==", slug)
+    .where("published", "==", true)
+    .limit(1)
+    .get();
+  if (snap.empty) return null;
+  return { id: snap.docs[0].id, ...snap.docs[0].data() } as Article;
+}
+
+export async function getAdjacentArticles(
+  currentId: string
+): Promise<{ prev: Article | null; next: Article | null }> {
+  const all = await getPublishedArticles();
+  const idx = all.findIndex((a) => a.id === currentId);
+  return {
+    prev: idx < all.length - 1 ? all[idx + 1] : null,
+    next: idx > 0 ? all[idx - 1] : null,
+  };
 }
 
 // ─── Store Settings ──────────────────────────────────────────────────────────
