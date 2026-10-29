@@ -34,13 +34,21 @@ export default function RegisterPage() {
     await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken }) });
   };
 
+  /** Fire-and-forget welcome email — does not block the registration flow. */
+  const sendWelcome = (idToken: string) => {
+    fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken }) })
+      .catch(() => { /* non-fatal */ });
+  };
+
   const onSubmit = async (data: RegisterInput) => {
     setLoading(true); setError(null);
     try {
       const cred = await createUserWithEmailAndPassword(auth, data.email, data.password);
       await updateProfile(cred.user, { displayName: data.displayName });
       await sendEmailVerification(cred.user);
-      await createSession(await getIdToken(cred.user));
+      const idToken = await getIdToken(cred.user);
+      await createSession(idToken);
+      sendWelcome(idToken);
       router.push("/account/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error && err.message.includes("email-already-in-use")
@@ -53,7 +61,9 @@ export default function RegisterPage() {
     setLoading(true); setError(null);
     try {
       const cred = await signInWithPopup(auth, new GoogleAuthProvider());
-      await createSession(await getIdToken(cred.user));
+      const idToken = await getIdToken(cred.user);
+      await createSession(idToken);
+      sendWelcome(idToken);
       router.push("/account/dashboard");
     } catch { setError("Google sign-in failed. Please try again."); }
     finally { setLoading(false); }

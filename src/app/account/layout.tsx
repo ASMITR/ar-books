@@ -10,8 +10,11 @@ export default async function AccountLayout({ children }: { children: React.Reac
 
   return (
     <div className="bg-[#FAF9F6] min-h-screen">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex flex-col lg:flex-row gap-8">
+      {/* Thin forest-green top bar */}
+      <div className="h-1 bg-gradient-to-r from-[#203A2B] via-[#FFC928] to-[#203A2B]" />
+
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 items-start">
           <MemberSidebar />
           <div className="flex-1 min-w-0">{children}</div>
         </div>

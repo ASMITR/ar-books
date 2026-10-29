@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Admin setup page — delete after use, never commit
+/src/app/setup/
+/src/app/api/admin/setup/
