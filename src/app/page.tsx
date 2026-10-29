@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { getFeaturedBooks, getVisibleCategories, getStoreSettings } from "@/lib/firebase/firestore";
+import { getFeaturedBooks, getVisibleCategories, getStoreSettings, getActivePublicOffers } from "@/lib/firebase/firestore";
 import { BookCard } from "@/components/book/BookCard";
 import { BookCover } from "@/components/book/BookCover";
 import { NewsletterForm } from "@/components/home/NewsletterForm";
+import { OffersSection } from "@/components/home/OffersSection";
 import { formatINR } from "@/lib/currency";
 import {
   ArrowRight, BookOpen, Users, ShieldCheck, Heart,
@@ -40,10 +41,11 @@ const CAT_SUBLABELS: Record<string, string> = {
 };
 
 export default async function HomePage() {
-  const [featuredBooks, categories, settings] = await Promise.all([
+  const [featuredBooks, categories, settings, activeOffers] = await Promise.all([
     getFeaturedBooks(),
     getVisibleCategories(),
     getStoreSettings(),
+    getActivePublicOffers(),
   ]);
 
   const heroBook   = featuredBooks[0];
@@ -215,6 +217,11 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ════════════════════════════════════════════════════════════════
+          EXCLUSIVE OFFERS
+      ════════════════════════════════════════════════════════════════ */}
+      <OffersSection offers={activeOffers} />
 
       {/* ════════════════════════════════════════════════════════════════
           BROWSE BY CATEGORY

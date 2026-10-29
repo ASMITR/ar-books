@@ -78,6 +78,7 @@ export interface Order {
   customerId: string;
   customerEmail: string;
   customerName: string;
+  phone?: string | null;
   items: OrderItem[];
   subtotalPaise: number;
   discountPaise: number;
@@ -89,7 +90,10 @@ export interface Order {
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
   createdAt: string;
+  updatedAt?: string;
   paidAt?: string;
+  // Discount snapshot — immutable after order creation
+  appliedDiscount?: AppliedDiscount | null;
 }
 
 // ─── Download Entitlement ────────────────────────────────────────────────────
@@ -122,6 +126,92 @@ export interface Coupon {
   usageLimit?: number;
   usageCount: number;
   enabled: boolean;
+}
+
+// ─── Offer ───────────────────────────────────────────────────────────────────
+export type OfferType =
+  | "percent"
+  | "flat"
+  | "buy_x_get_y"
+  | "bundle"
+  | "first_order"
+  | "combo"
+  | "category"
+  | "product_specific";
+
+export type OfferStatus = "draft" | "scheduled" | "active" | "paused" | "expired";
+
+export type OfferEligibility = "all" | "new_customers" | "existing_customers";
+
+export interface Offer {
+  id: string;
+  // Basic details
+  internalName: string;
+  title: string;
+  description: string;
+  bannerImageUrl?: string;
+  offerType: OfferType;
+  couponCode?: string;
+  startAt: string;        // ISO datetime
+  endAt?: string;         // ISO datetime, null = no expiry
+  status: OfferStatus;
+  priority: number;       // higher = shown first
+
+  // Discount config
+  discountType: "percent" | "flat";
+  discountValue: number;  // percent: 0-100, flat: rupees
+  maxDiscountPaise?: number; // cap for percent discounts
+  buyX?: number;          // for buy_x_get_y / bundle
+  getY?: number;
+
+  // Eligibility
+  minCartValuePaise?: number;
+  minItemCount?: number;
+  applicableBookIds?: string[];   // empty = all books
+  applicableCategoryIds?: string[];
+  customerEligibility: OfferEligibility;
+  usageLimitTotal?: number;
+  usageLimitPerCustomer?: number;
+  usageCount: number;
+  stackable: boolean;     // can it combine with another offer?
+
+  // Display settings
+  showOnHomepage: boolean;
+  showOnProductPages: boolean;
+  showInCart: boolean;
+  showOnCheckout: boolean;
+  showInAnnouncementBar: boolean;
+  displayCouponPublicly: boolean;
+  ctaText?: string;
+  badgeLabel?: string;
+
+  // Audit
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+}
+
+// ─── Applied Offer / Discount Snapshot ───────────────────────────────────────
+export interface AppliedDiscount {
+  offerId?: string;
+  couponCode?: string;
+  discountType: "percent" | "flat";
+  discountValue: number;
+  discountPaise: number;
+  title: string;
+  offerType: OfferType | "coupon";
+}
+
+// ─── Offer Analytics ─────────────────────────────────────────────────────────
+export interface OfferRedemption {
+  id: string;
+  offerId: string;
+  couponCode?: string;
+  customerId: string;
+  customerEmail: string;
+  orderId: string;
+  discountPaise: number;
+  redeemedAt: string;
 }
 
 // ─── Article ─────────────────────────────────────────────────────────────────

@@ -10,6 +10,7 @@ import {
   Clock, RefreshCw, DollarSign, BookMarked,
   PlusCircle, Tag, FileText, Settings,
 } from "lucide-react";
+import { AdminButton } from "@/components/admin/AdminButton";
 
 export const metadata: Metadata = { title: "Admin Dashboard" };
 
@@ -64,12 +65,8 @@ export default async function AdminDashboardPage() {
       title="Dashboard"
       subtitle={`${greeting} 👋`}
       action={
-        <Link
-          href="/admin/books"
-          className="flex items-center gap-2 bg-[#FFC928] text-[#080808] text-[13px] font-body font-semibold px-5 py-2.5 rounded-lg hover:bg-[#F2B916] transition-colors shadow-sm"
-        >
-          <PlusCircle size={14} />
-          Add Book
+        <Link href="/admin/books">
+          <AdminButton icon={<PlusCircle />}>Add Book</AdminButton>
         </Link>
       }
     >

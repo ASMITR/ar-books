@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminButton } from "@/components/admin/AdminButton";
 import { User, Upload } from "lucide-react";
 import { AdminModal } from "@/components/admin/AdminModal";
 
@@ -63,13 +64,9 @@ export default function AdminProfilePage() {
       title="Author Profile"
       subtitle="Bio and photo shown on About page and homepage"
       action={
-        <button
-          onClick={openModal}
-          className="flex items-center gap-2 bg-[#0a0a0a] text-white text-xs font-body font-medium px-4 py-2.5 rounded-lg hover:bg-[#222] transition-colors"
-        >
-          <User size={13} />
+        <AdminButton onClick={openModal} icon={<User />}>
           Edit Profile
-        </button>
+        </AdminButton>
       }
     >
       <div className="bg-white border border-[#E9E7E2] rounded-xl overflow-hidden max-w-lg">
@@ -102,44 +99,49 @@ export default function AdminProfilePage() {
 
       <AdminModal open={open} onClose={() => setOpen(false)} title="Edit Author Profile">
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-              <div>
-                <label className="block text-xs font-body uppercase tracking-wider text-[#aaa] mb-1.5">Author Bio</label>
-                <textarea value={draft.authorBio ?? ""} onChange={(e) => setDraft((p) => ({ ...p, authorBio: e.target.value }))} rows={6} autoFocus placeholder="Write a short biography..." className={`${inputCls} resize-none`} />
-              </div>
-              <div>
-                <label className="block text-xs font-body uppercase tracking-wider text-[#aaa] mb-1.5">Author Photo</label>
-                <div className="flex items-center gap-3">
-                  {draft.authorPhotoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={draft.authorPhotoUrl} alt="Preview" className="w-14 h-14 rounded-full object-cover border border-[#E9E7E2] shrink-0" />
-                  ) : (
-                    <div className="w-14 h-14 rounded-full bg-[#F5F4F0] border border-[#E9E7E2] flex items-center justify-center shrink-0">
-                      <User size={20} className="text-[#ddd]" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-                    <button
-                      type="button"
-                      onClick={() => fileRef.current?.click()}
-                      disabled={uploading}
-                      className="flex items-center gap-2 border border-[#E9E7E2] text-[#555] font-body text-xs px-3 py-2 rounded-lg hover:bg-[#FAFAF9] transition-colors disabled:opacity-50"
-                    >
-                      <Upload size={12} />
-                      {uploading ? "Uploading…" : "Upload Photo"}
-                    </button>
-                    {draft.authorPhotoUrl && (
-                      <p className="text-[11px] text-[#bbb] mt-1 truncate">{draft.authorPhotoUrl}</p>
-                    )}
-                  </div>
+          <div>
+            <label className="block text-xs font-body uppercase tracking-wider text-[#aaa] mb-1.5">Author Bio</label>
+            <textarea value={draft.authorBio ?? ""} onChange={(e) => setDraft((p) => ({ ...p, authorBio: e.target.value }))} rows={6} autoFocus placeholder="Write a short biography..." className={`${inputCls} resize-none`} />
+          </div>
+          <div>
+            <label className="block text-xs font-body uppercase tracking-wider text-[#aaa] mb-1.5">Author Photo</label>
+            <div className="flex items-center gap-3">
+              {draft.authorPhotoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={draft.authorPhotoUrl} alt="Preview" className="w-14 h-14 rounded-full object-cover border border-[#E9E7E2] shrink-0" />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-[#F5F4F0] border border-[#E9E7E2] flex items-center justify-center shrink-0">
+                  <User size={20} className="text-[#ddd]" />
                 </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                <AdminButton
+                  type="button"
+                  variant="secondary"
+                  onClick={() => fileRef.current?.click()}
+                  loading={uploading}
+                  loadingText="Uploading…"
+                  icon={<Upload />}
+                >
+                  Upload Photo
+                </AdminButton>
+                {draft.authorPhotoUrl && (
+                  <p className="text-[11px] text-[#bbb] mt-1 truncate">{draft.authorPhotoUrl}</p>
+                )}
               </div>
-              {success && <p className="text-xs text-emerald-600 font-body">Profile saved.</p>}
-              {error && <p className="text-xs text-red-600 font-body">{error}</p>}
-              <div className="flex gap-3 pt-1">
-                <button type="button" onClick={() => setOpen(false)} className="flex-1 border border-[#E9E7E2] text-[#666] font-body text-sm px-4 py-2.5 rounded-lg hover:bg-[#FAFAF9] transition-colors">Cancel</button>
-                <button type="submit" disabled={loading} className="flex-1 bg-[#0a0a0a] text-white font-body text-sm px-4 py-2.5 rounded-lg hover:bg-[#222] transition-colors disabled:opacity-50">{loading ? "Saving…" : "Save Profile"}</button>
-              </div>
+            </div>
+          </div>
+          {success && <p className="text-xs text-emerald-600 font-body">Profile saved.</p>}
+          {error && <p className="text-xs text-red-600 font-body">{error}</p>}
+          <div className="flex gap-3 pt-1">
+            <AdminButton type="button" variant="secondary" className="flex-1" onClick={() => setOpen(false)}>
+              Cancel
+            </AdminButton>
+            <AdminButton type="submit" className="flex-1" loading={loading} loadingText="Saving…">
+              Save Profile
+            </AdminButton>
+          </div>
         </form>
       </AdminModal>
     </AdminShell>

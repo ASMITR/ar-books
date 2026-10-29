@@ -25,10 +25,6 @@ export const metadata: Metadata = {
   },
   description:
     "Explore and purchase original eBooks by Asmit Rajaramkar — business, personal development, fiction, and more.",
-  icons: {
-    icon: "/Favicon_and_App_Icon.png",
-    apple: "/Favicon_and_App_Icon.png",
-  },
   openGraph: {
     siteName: "AR Books",
     type: "website",

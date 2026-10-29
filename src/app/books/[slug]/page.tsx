@@ -164,6 +164,8 @@ export default async function BookPage({ params }: Props) {
               {book.previewPdfPath ? (
                 <a
                   href={`/api/downloads/preview?bookId=${book.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group w-full flex items-center gap-2.5 border-2 border-[#203A2B] bg-transparent text-[#203A2B] font-body text-[11px] font-bold uppercase tracking-[0.15em] px-5 py-3.5 rounded-sm hover:bg-[#203A2B] hover:text-[#FFFCF7] transition-all duration-200"
                 >
                   <Eye size={14} className="shrink-0" />
@@ -336,6 +338,8 @@ export default async function BookPage({ params }: Props) {
                     </div>
                     <a
                       href={`/api/downloads/preview?bookId=${book.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="shrink-0 inline-flex items-center gap-2 bg-[#C6A66B] text-[#242824] font-body text-[11px] font-bold uppercase tracking-[0.15em] px-6 py-3 rounded-sm hover:bg-[#d4b77e] transition-colors shadow-sm"
                     >
                       <Eye size={13} /> Read Sample

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminButton } from "@/components/admin/AdminButton";
 import { Settings, Info } from "lucide-react";
 import { AdminModal } from "@/components/admin/AdminModal";
 
@@ -44,13 +45,9 @@ export default function AdminHomepagePage() {
       title="Homepage Content"
       subtitle="Hero section and featured content"
       action={
-        <button
-          onClick={openModal}
-          className="flex items-center gap-2 bg-[#0a0a0a] text-white text-xs font-body font-medium px-4 py-2.5 rounded-lg hover:bg-[#222] transition-colors"
-        >
-          <Settings size={13} />
+        <AdminButton onClick={openModal} icon={<Settings />}>
           Edit Content
-        </button>
+        </AdminButton>
       }
     >
       <div className="space-y-4 max-w-lg">
@@ -85,21 +82,25 @@ export default function AdminHomepagePage() {
 
       <AdminModal open={open} onClose={() => setOpen(false)} title="Edit Homepage Content">
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-              <div>
-                <label className="block text-xs font-body uppercase tracking-wider text-[#aaa] mb-1.5">Hero Headline</label>
-                <input value={draft.heroHeadline ?? ""} onChange={(e) => setDraft((s) => ({ ...s, heroHeadline: e.target.value }))} placeholder="WHAT WILL YOU DISCOVER NEXT?" autoFocus className={inputCls} />
-                <p className="text-xs text-[#bbb] mt-1">Leave blank to use the default.</p>
-              </div>
-              <div>
-                <label className="block text-xs font-body uppercase tracking-wider text-[#aaa] mb-1.5">Hero Subtext</label>
-                <textarea value={draft.heroSubtext ?? ""} onChange={(e) => setDraft((s) => ({ ...s, heroSubtext: e.target.value }))} rows={3} placeholder="Explore new ideas, build useful skills..." className={`${inputCls} resize-none`} />
-              </div>
-              {success && <p className="text-xs text-emerald-600 font-body">Saved.</p>}
-              {error && <p className="text-xs text-red-600 font-body">{error}</p>}
-              <div className="flex gap-3 pt-1">
-                <button type="button" onClick={() => setOpen(false)} className="flex-1 border border-[#E9E7E2] text-[#666] font-body text-sm px-4 py-2.5 rounded-lg hover:bg-[#FAFAF9] transition-colors">Cancel</button>
-                <button type="submit" disabled={loading} className="flex-1 bg-[#0a0a0a] text-white font-body text-sm px-4 py-2.5 rounded-lg hover:bg-[#222] transition-colors disabled:opacity-50">{loading ? "Saving…" : "Save Changes"}</button>
-              </div>
+          <div>
+            <label className="block text-xs font-body uppercase tracking-wider text-[#aaa] mb-1.5">Hero Headline</label>
+            <input value={draft.heroHeadline ?? ""} onChange={(e) => setDraft((s) => ({ ...s, heroHeadline: e.target.value }))} placeholder="WHAT WILL YOU DISCOVER NEXT?" autoFocus className={inputCls} />
+            <p className="text-xs text-[#bbb] mt-1">Leave blank to use the default.</p>
+          </div>
+          <div>
+            <label className="block text-xs font-body uppercase tracking-wider text-[#aaa] mb-1.5">Hero Subtext</label>
+            <textarea value={draft.heroSubtext ?? ""} onChange={(e) => setDraft((s) => ({ ...s, heroSubtext: e.target.value }))} rows={3} placeholder="Explore new ideas, build useful skills..." className={`${inputCls} resize-none`} />
+          </div>
+          {success && <p className="text-xs text-emerald-600 font-body">Saved.</p>}
+          {error && <p className="text-xs text-red-600 font-body">{error}</p>}
+          <div className="flex gap-3 pt-1">
+            <AdminButton type="button" variant="secondary" className="flex-1" onClick={() => setOpen(false)}>
+              Cancel
+            </AdminButton>
+            <AdminButton type="submit" className="flex-1" loading={loading} loadingText="Saving…">
+              Save Changes
+            </AdminButton>
+          </div>
         </form>
       </AdminModal>
     </AdminShell>

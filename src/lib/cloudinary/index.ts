@@ -21,11 +21,3 @@ export async function uploadToCloudinary(
       .end(buffer);
   });
 }
-
-/** Signed URL for private PDFs (raw resource type), valid for 1 hour by default. */
-export function getSignedDownloadUrl(publicId: string, expiresInSeconds = 3600): string {
-  return cloudinary.utils.private_download_url(publicId, "pdf", {
-    expires_at: Math.floor(Date.now() / 1000) + expiresInSeconds,
-    attachment: false,
-  });
-}

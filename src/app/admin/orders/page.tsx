@@ -37,15 +37,16 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
       title="Orders"
       subtitle={`${orders.length} order${orders.length !== 1 ? "s" : ""}${status ? ` · ${status}` : ""}`}
     >
+      {/* Filter tabs */}
       <div className="flex gap-1.5 flex-wrap mb-5">
         {filters.map((f) => (
           <Link
             key={f.value}
             href={f.value ? `/admin/orders?status=${f.value}` : "/admin/orders"}
-            className={`text-[12px] font-body font-semibold px-3.5 py-2 rounded-lg border transition-all ${
+            className={`inline-flex items-center text-[12px] font-body font-semibold px-3.5 py-2 rounded-lg border transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#FFC928]/60 ${
               (status ?? "") === f.value
                 ? "bg-[#FFC928] text-[#080808] border-[#FFC928] shadow-sm"
-                : "border-[#E6E3DD] text-[#888] hover:border-[#FFC928] hover:text-[#080808] bg-white"
+                : "border-[#E6E3DD] text-[#888] hover:border-[#bbb] hover:text-[#444] bg-white"
             }`}
           >
             {f.label}
@@ -84,7 +85,12 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <Link href={`/admin/orders/${order.id}`} className="text-xs text-[#789185] hover:text-[#080808] hover:underline font-semibold transition-colors">View →</Link>
+                      <Link
+                        href={`/admin/orders/${order.id}`}
+                        className="inline-flex items-center gap-1 bg-[#F2F0EC] text-[#555] hover:bg-[#E8E5DF] hover:text-[#080808] transition-all rounded-md text-xs px-2.5 py-1.5 font-semibold font-body outline-none focus-visible:ring-2 focus-visible:ring-[#789185]/30"
+                      >
+                        View →
+                      </Link>
                     </td>
                   </tr>
                 ))}

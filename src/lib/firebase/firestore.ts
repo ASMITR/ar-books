@@ -1,5 +1,5 @@
 import { adminDb } from "./admin";
-import type { Book, Category, Order, DownloadEntitlement, StoreSettings } from "@/types";
+import type { Book, Category, Order, DownloadEntitlement, StoreSettings, Offer } from "@/types";
 
 const DEV_BYPASS = process.env.DEV_BYPASS === "true";
 
@@ -259,4 +259,77 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
   const doc = await adminDb.collection("settings").doc("store").get();
   if (!doc.exists) return null;
   return doc.data() as StoreSettings;
+}
+
+// ─── Offers ──────────────────────────────────────────────────────────────────
+const MOCK_OFFERS: Offer[] = [];
+
+export async function getActivePublicOffers(): Promise<Offer[]> {
+  if (DEV_BYPASS) return MOCK_OFFERS;
+  const now = new Date().toISOString();
+
+  // Single-field query — no composite index required.
+  // We filter the rest in memory to avoid needing Firestore index setup.
+  const snap = await adminDb
+    .collection("offers")
+    .where("status", "==", "active")
+    .get();
+
+  const offers = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Offer));
+
+  return offers.filter(
+    (o) =>
+      o.showOnHomepage === true &&
+      o.startAt <= now &&
+      (!o.endAt || o.endAt > now)
+  );
+}
+
+export async function getOfferById(id: string): Promise<Offer | null> {
+  if (DEV_BYPASS) return MOCK_OFFERS.find((o) => o.id === id) ?? null;
+  const doc = await adminDb.collection("offers").doc(id).get();
+  if (!doc.exists) return null;
+  return { id: doc.id, ...doc.data() } as Offer;
+}
+
+export async function getAllOffers(): Promise<Offer[]> {
+  if (DEV_BYPASS) return MOCK_OFFERS;
+  const snap = await adminDb
+    .collection("offers")
+    .orderBy("priority", "desc")
+    .get();
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Offer));
+}
+
+export async function getOfferByCouponCode(code: string): Promise<Offer | null> {
+  if (DEV_BYPASS) return null;
+  const now = new Date().toISOString();
+  const snap = await adminDb
+    .collection("offers")
+    .where("couponCode", "==", code.toUpperCase())
+    .get();
+  if (snap.empty) return null;
+  // Filter active + within date range in memory
+  const active = snap.docs
+    .map((d) => ({ id: d.id, ...d.data() } as Offer))
+    .find(
+      (o) =>
+        o.status === "active" &&
+        o.startAt <= now &&
+        (!o.endAt || o.endAt > now)
+    );
+  return active ?? null;
+}
+
+export async function getOfferRedemptionCountByCustomer(
+  offerId: string,
+  customerId: string
+): Promise<number> {
+  if (DEV_BYPASS) return 0;
+  const snap = await adminDb
+    .collection("offerRedemptions")
+    .where("offerId", "==", offerId)
+    .where("customerId", "==", customerId)
+    .get();
+  return snap.size;
 }

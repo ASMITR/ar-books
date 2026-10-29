@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
+import { FieldValue } from "firebase-admin/firestore";
 import { verifyPaymentSignature } from "@/lib/razorpay";
 import { sendOrderConfirmation } from "@/lib/email";
 import { z } from "zod";
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
 
     const { orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature } = parsed.data;
 
-    // Verify signature
+    // Verify HMAC signature
     const valid = verifyPaymentSignature({ razorpayOrderId, razorpayPaymentId, razorpaySignature });
     if (!valid) {
       return NextResponse.json({ success: false, error: "Invalid payment signature" }, { status: 400 });
@@ -36,17 +37,18 @@ export async function POST(req: NextRequest) {
 
     const orderRef = adminDb.collection("orders").doc(orderId);
 
-    // Use transaction for idempotency
     await adminDb.runTransaction(async (tx) => {
       const orderDoc = await tx.get(orderRef);
       if (!orderDoc.exists) throw new Error("Order not found");
 
-      const order = orderDoc.data() as Order;
+      const order = orderDoc.data() as Order & {
+        _pendingCouponId?: string | null;
+        _pendingOfferId?: string | null;
+      };
 
       // Idempotency — already processed
       if (order.paymentStatus === "paid") return;
 
-      // Verify the razorpayOrderId matches
       if (order.razorpayOrderId !== razorpayOrderId) throw new Error("Order ID mismatch");
 
       const now = new Date().toISOString();
@@ -57,9 +59,36 @@ export async function POST(req: NextRequest) {
         razorpayPaymentId,
         paidAt: now,
         updatedAt: now,
+        // Clear internal tracking fields
+        _pendingCouponId: null,
+        _pendingOfferId: null,
       });
 
-      // Create download entitlements for each book
+      // ── Atomically increment coupon usageCount ──────────────────────────────
+      if (order._pendingCouponId) {
+        const couponRef = adminDb.collection("coupons").doc(order._pendingCouponId);
+        tx.update(couponRef, { usageCount: FieldValue.increment(1) });
+      }
+
+      // ── Atomically increment offer usageCount + record redemption ───────────
+      if (order._pendingOfferId) {
+        const offerRef = adminDb.collection("offers").doc(order._pendingOfferId);
+        tx.update(offerRef, { usageCount: FieldValue.increment(1) });
+
+        // Record per-customer redemption
+        const redemptionRef = adminDb.collection("offerRedemptions").doc();
+        tx.set(redemptionRef, {
+          offerId: order._pendingOfferId,
+          couponCode: order.appliedDiscount?.couponCode ?? null,
+          customerId: order.customerId,
+          customerEmail: order.customerEmail,
+          orderId,
+          discountPaise: order.discountPaise,
+          redeemedAt: now,
+        });
+      }
+
+      // ── Create download entitlements ────────────────────────────────────────
       for (const item of order.items) {
         const entRef = adminDb.collection("downloadEntitlements").doc();
         tx.set(entRef, {
@@ -71,7 +100,7 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // Log payment event
+      // ── Log payment event ───────────────────────────────────────────────────
       const eventRef = adminDb.collection("paymentEvents").doc();
       tx.set(eventRef, {
         provider: "razorpay",
