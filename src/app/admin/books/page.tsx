@@ -4,9 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { BookCover } from "@/components/book/BookCover";
 import { BookFormModal } from "@/components/admin/BookFormModal";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminButton } from "@/components/admin/AdminButton";
+import { AdminModal } from "@/components/admin/AdminModal";
 import { formatINR } from "@/lib/currency";
 import Link from "next/link";
-import { PlusCircle, BookOpen } from "lucide-react";
+import { PlusCircle, BookOpen, Pencil, ExternalLink, Trash2 } from "lucide-react";
 import type { Book, Category } from "@/types";
 
 export default function AdminBooksPage() {
@@ -14,6 +16,9 @@ export default function AdminBooksPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editBook, setEditBook] = useState<Book | undefined>();
+  const [deleteTarget, setDeleteTarget] = useState<Book | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const fetchBooks = useCallback(async () => {
     const [bRes, cRes] = await Promise.all([
@@ -32,6 +37,25 @@ export default function AdminBooksPage() {
   const openEdit = (book: Book) => { setEditBook(book); setModalOpen(true); };
   const handleClose = () => { setModalOpen(false); fetchBooks(); };
 
+  const openDelete = (book: Book) => { setDeleteTarget(book); setDeleteError(null); };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/admin/books/${deleteTarget.id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error ?? "Failed to delete book");
+      setDeleteTarget(null);
+      fetchBooks();
+    } catch (err: unknown) {
+      setDeleteError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const published = books.filter((b) => b.published).length;
 
   return (
@@ -39,13 +63,9 @@ export default function AdminBooksPage() {
       title="Books"
       subtitle={`${books.length} total · ${published} published`}
       action={
-        <button
-          onClick={openAdd}
-          className="flex items-center gap-2 bg-[#FFC928] text-[#080808] text-[13px] font-body font-semibold px-5 py-2.5 rounded-lg hover:bg-[#F2B916] transition-colors shadow-sm"
-        >
-          <PlusCircle size={14} />
+        <AdminButton onClick={openAdd} icon={<PlusCircle />}>
           Add Book
-        </button>
+        </AdminButton>
       }
     >
       <div className="bg-white border border-[#E6E3DD] rounded-xl overflow-hidden shadow-sm">
@@ -54,10 +74,10 @@ export default function AdminBooksPage() {
             <div className="w-14 h-14 rounded-xl bg-[#F2F0EC] flex items-center justify-center mx-auto mb-4">
               <BookOpen size={24} className="text-[#ccc]" />
             </div>
-            <p className="text-[15px] font-body text-[#bbb] mb-2">No books yet.</p>
-            <button onClick={openAdd} className="text-[14px] text-[#789185] hover:underline font-semibold">
+            <p className="text-[15px] font-body text-[#bbb] mb-3">No books yet.</p>
+            <AdminButton variant="inline" onClick={openAdd}>
               Add your first book →
-            </button>
+            </AdminButton>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -102,16 +122,29 @@ export default function AdminBooksPage() {
                       )}
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex items-center gap-4">
-                        <button
+                      <div className="flex items-center gap-2">
+                        <AdminButton
+                          variant="inline"
                           onClick={() => openEdit(book)}
-                          className="text-[13px] text-[#789185] hover:text-[#080808] font-semibold hover:underline transition-colors"
+                          icon={<Pencil />}
                         >
                           Edit
-                        </button>
-                        <Link href={`/books/${book.slug}`} target="_blank" className="text-[13px] text-[#bbb] hover:text-[#888] hover:underline transition-colors">
-                          View ↗
+                        </AdminButton>
+                        <Link
+                          href={`/books/${book.slug}`}
+                          target="_blank"
+                          className="inline-flex items-center gap-1.5 bg-transparent text-[#888] hover:text-[#080808] transition-colors rounded-md text-xs px-2 py-1.5 font-semibold font-body"
+                        >
+                          <ExternalLink size={12} />
+                          View
                         </Link>
+                        <button
+                          onClick={() => openDelete(book)}
+                          title="Delete book"
+                          className="w-7 h-7 flex items-center justify-center rounded-md text-[#aaa] hover:text-red-600 hover:bg-red-50 transition-all"
+                        >
+                          <Trash2 size={13} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -123,6 +156,36 @@ export default function AdminBooksPage() {
       </div>
 
       <BookFormModal open={modalOpen} onClose={handleClose} book={editBook} categories={categories} />
+
+      {/* Delete confirmation modal */}
+      <AdminModal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delete Book">
+        <div className="p-6 flex flex-col gap-4">
+          <p className="text-sm font-body text-[#555]">
+            Are you sure you want to permanently delete{" "}
+            <span className="font-semibold text-[#080808]">{deleteTarget?.title}</span>?
+            This will also remove its cover image and PDF files from storage, and revoke all download entitlements. This action cannot be undone.
+          </p>
+          {deleteError && (
+            <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 font-body">
+              {deleteError}
+            </p>
+          )}
+          <div className="flex gap-3">
+            <AdminButton variant="secondary" className="flex-1" onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </AdminButton>
+            <AdminButton
+              variant="danger"
+              className="flex-1"
+              loading={deleting}
+              loadingText="Deleting…"
+              onClick={handleDelete}
+            >
+              Delete Book
+            </AdminButton>
+          </div>
+        </div>
+      </AdminModal>
     </AdminShell>
   );
 }

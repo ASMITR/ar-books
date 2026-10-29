@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
-import { PlusCircle } from "lucide-react";
+import { AdminButton } from "@/components/admin/AdminButton";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { AdminModal } from "@/components/admin/AdminModal";
 
 interface Coupon { id: string; code: string; discountType: "percent" | "flat"; discountValue: number; usageCount: number; usageLimit?: number; enabled: boolean; expiresAt?: string; }
@@ -20,6 +21,9 @@ export default function AdminCouponsPage() {
   const [expiresAt, setExpiresAt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Coupon | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const fetchCoupons = async () => {
     const res = await fetch("/api/admin/coupons");
@@ -52,21 +56,40 @@ export default function AdminCouponsPage() {
     fetchCoupons();
   };
 
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/admin/coupons/${deleteTarget.id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error ?? "Failed to delete coupon");
+      setDeleteTarget(null);
+      fetchCoupons();
+    } catch (err: unknown) {
+      setDeleteError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <AdminShell
       title="Coupons"
       subtitle={`${coupons.length} coupon${coupons.length !== 1 ? "s" : ""}`}
       action={
-        <button onClick={() => setOpen(true)} className="flex items-center gap-2 bg-[#FFC928] text-[#080808] text-[13px] font-body font-semibold px-4 py-2.5 rounded-lg hover:bg-[#F2B916] transition-colors shadow-sm">
-          <PlusCircle size={14} /> Create Coupon
-        </button>
+        <AdminButton onClick={() => setOpen(true)} icon={<PlusCircle />}>
+          Create Coupon
+        </AdminButton>
       }
     >
       <div className="bg-white border border-[#E6E3DD] rounded-xl overflow-hidden shadow-sm">
         {coupons.length === 0 ? (
           <div className="py-20 text-center">
-            <p className="text-sm font-body text-[#bbb]">No coupons yet.</p>
-            <button onClick={() => setOpen(true)} className="text-sm text-[#789185] hover:underline mt-2 inline-block font-semibold">Create your first coupon →</button>
+            <p className="text-sm font-body text-[#bbb] mb-3">No coupons yet.</p>
+            <AdminButton variant="inline" onClick={() => setOpen(true)}>
+              Create your first coupon →
+            </AdminButton>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -78,7 +101,7 @@ export default function AdminCouponsPage() {
                   <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Used</th>
                   <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Expires</th>
                   <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Status</th>
-                  <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold"></th>
+                  <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F2F0EC]">
@@ -94,7 +117,21 @@ export default function AdminCouponsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <button onClick={() => toggleEnabled(c.id, c.enabled)} className="text-xs text-[#789185] hover:text-[#080808] hover:underline font-semibold transition-colors">{c.enabled ? "Disable" : "Enable"}</button>
+                      <div className="flex items-center gap-2">
+                        <AdminButton
+                          variant={c.enabled ? "danger" : "inline"}
+                          onClick={() => toggleEnabled(c.id, c.enabled)}
+                        >
+                          {c.enabled ? "Disable" : "Enable"}
+                        </AdminButton>
+                        <button
+                          onClick={() => { setDeleteTarget(c); setDeleteError(null); }}
+                          title="Delete coupon"
+                          className="w-7 h-7 flex items-center justify-center rounded-md text-[#aaa] hover:text-red-600 hover:bg-red-50 transition-all"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -135,10 +172,44 @@ export default function AdminCouponsPage() {
           </div>
           {error && <p className="text-xs text-red-600 font-body">{error}</p>}
           <div className="flex gap-3 pt-1">
-            <button type="button" onClick={() => setOpen(false)} className="flex-1 border border-[#E6E3DD] text-[#666] font-body text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-[#F2F0EC] transition-all">Cancel</button>
-            <button type="submit" disabled={loading} className="flex-1 bg-[#FFC928] text-[#080808] font-body text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-[#F2B916] transition-colors disabled:opacity-50 shadow-sm">{loading ? "Creating…" : "Create Coupon"}</button>
+            <AdminButton type="button" variant="secondary" className="flex-1" onClick={() => setOpen(false)}>
+              Cancel
+            </AdminButton>
+            <AdminButton type="submit" className="flex-1" loading={loading} loadingText="Creating…">
+              Create Coupon
+            </AdminButton>
           </div>
         </form>
+      </AdminModal>
+
+      {/* Delete confirmation modal */}
+      <AdminModal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delete Coupon">
+        <div className="p-6 flex flex-col gap-4">
+          <p className="text-sm font-body text-[#555]">
+            Are you sure you want to permanently delete coupon{" "}
+            <span className="font-mono font-bold text-[#080808]">{deleteTarget?.code}</span>?
+            This cannot be undone.
+          </p>
+          {deleteError && (
+            <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 font-body">
+              {deleteError}
+            </p>
+          )}
+          <div className="flex gap-3">
+            <AdminButton variant="secondary" className="flex-1" onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </AdminButton>
+            <AdminButton
+              variant="danger"
+              className="flex-1"
+              loading={deleting}
+              loadingText="Deleting…"
+              onClick={handleDelete}
+            >
+              Delete Coupon
+            </AdminButton>
+          </div>
+        </div>
       </AdminModal>
     </AdminShell>
   );

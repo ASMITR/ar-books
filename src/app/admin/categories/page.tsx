@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { slugify } from "@/lib/utils";
 import { AdminShell } from "@/components/admin/AdminShell";
-import { PlusCircle, AlertCircle, Tag } from "lucide-react";
+import { AdminButton } from "@/components/admin/AdminButton";
+import { PlusCircle, AlertCircle, Tag, Trash2 } from "lucide-react";
 import { AdminModal } from "@/components/admin/AdminModal";
 
 interface Category { id: string; name: string; slug: string; description?: string; sortOrder: number; visible: boolean }
@@ -18,6 +19,9 @@ export default function AdminCategoriesPage() {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const fetchCategories = async () => {
     const res = await fetch("/api/admin/categories");
@@ -45,18 +49,31 @@ export default function AdminCategoriesPage() {
     } finally { setLoading(false); }
   };
 
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/admin/categories/${deleteTarget.id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error ?? "Failed to delete category");
+      setDeleteTarget(null);
+      fetchCategories();
+    } catch (err: unknown) {
+      setDeleteError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <AdminShell
       title="Categories"
       subtitle={`${categories.length} categor${categories.length !== 1 ? "ies" : "y"}`}
       action={
-        <button
-          onClick={() => setOpen(true)}
-          className="flex items-center gap-2 bg-[#FFC928] text-[#080808] text-[13px] font-body font-semibold px-4 py-2.5 rounded-lg hover:bg-[#F2B916] transition-colors shadow-sm"
-        >
-          <PlusCircle size={14} />
+        <AdminButton onClick={() => setOpen(true)} icon={<PlusCircle />}>
           Add Category
-        </button>
+        </AdminButton>
       }
     >
       <div className="bg-white border border-[#E6E3DD] rounded-xl overflow-hidden shadow-sm">
@@ -65,10 +82,10 @@ export default function AdminCategoriesPage() {
             <div className="w-12 h-12 rounded-xl bg-[#F2F0EC] flex items-center justify-center mx-auto mb-4">
               <Tag size={20} className="text-[#ccc]" />
             </div>
-            <p className="text-sm font-body text-[#bbb] mb-2">No categories yet.</p>
-            <button onClick={() => setOpen(true)} className="text-sm text-[#789185] hover:underline font-semibold">
+            <p className="text-sm font-body text-[#bbb] mb-3">No categories yet.</p>
+            <AdminButton variant="inline" onClick={() => setOpen(true)}>
               Add your first category →
-            </button>
+            </AdminButton>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -79,6 +96,7 @@ export default function AdminCategoriesPage() {
                   <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Slug</th>
                   <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Description</th>
                   <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Visibility</th>
+                  <th className="text-left px-4 py-3.5 text-[11px] uppercase tracking-[0.07em] text-[#b0aca6] font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F2F0EC]">
@@ -93,6 +111,15 @@ export default function AdminCategoriesPage() {
                       }`}>
                         {cat.visible ? "Visible" : "Hidden"}
                       </span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <button
+                        onClick={() => { setDeleteTarget(cat); setDeleteError(null); }}
+                        title="Delete category"
+                        className="w-7 h-7 flex items-center justify-center rounded-md text-[#aaa] hover:text-red-600 hover:bg-red-50 transition-all"
+                      >
+                        <Trash2 size={13} />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -123,14 +150,45 @@ export default function AdminCategoriesPage() {
             </div>
           )}
           <div className="flex gap-3 pt-1">
-            <button type="button" onClick={() => setOpen(false)} className="flex-1 border border-[#E6E3DD] text-[#666] font-body text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-[#F2F0EC] transition-all">
+            <AdminButton type="button" variant="secondary" className="flex-1" onClick={() => setOpen(false)}>
               Cancel
-            </button>
-            <button type="submit" disabled={loading} className="flex-1 bg-[#FFC928] text-[#080808] font-body text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-[#F2B916] transition-colors disabled:opacity-50 shadow-sm">
-              {loading ? <span className="flex items-center justify-center gap-2"><span className="w-3.5 h-3.5 border-2 border-[#080808]/20 border-t-[#080808] rounded-full animate-spin" />Adding…</span> : "Add Category"}
-            </button>
+            </AdminButton>
+            <AdminButton type="submit" className="flex-1" loading={loading} loadingText="Adding…">
+              Add Category
+            </AdminButton>
           </div>
         </form>
+      </AdminModal>
+
+      {/* Delete confirmation modal */}
+      <AdminModal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delete Category">
+        <div className="p-6 flex flex-col gap-4">
+          <p className="text-sm font-body text-[#555]">
+            Are you sure you want to delete the category{" "}
+            <span className="font-semibold text-[#080808]">{deleteTarget?.name}</span>?
+            If any books use this category, the delete will be blocked — remove it from all books first.
+          </p>
+          {deleteError && (
+            <div className="flex items-start gap-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 font-body">
+              <AlertCircle size={12} className="shrink-0 mt-0.5" />
+              {deleteError}
+            </div>
+          )}
+          <div className="flex gap-3">
+            <AdminButton variant="secondary" className="flex-1" onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </AdminButton>
+            <AdminButton
+              variant="danger"
+              className="flex-1"
+              loading={deleting}
+              loadingText="Deleting…"
+              onClick={handleDelete}
+            >
+              Delete Category
+            </AdminButton>
+          </div>
+        </div>
       </AdminModal>
     </AdminShell>
   );
