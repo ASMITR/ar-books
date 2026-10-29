@@ -22,6 +22,7 @@ const aboutLinks = [
   { label: "Articles",           href: "/articles" },
   { label: "Privacy Policy",     href: "/privacy" },
   { label: "Terms & Conditions", href: "/terms" },
+  { label: "Cookie Policy",      href: "/cookie-policy" },
 ];
 
 const socialLinks = [
@@ -261,15 +262,22 @@ export function SiteFooter() {
       {/* ── Bottom bar ────────────────────────────────────────────────── */}
       <div className="border-t border-[#FFFCF7]/8">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <p className="text-[11px] text-[#A8B5A0]">
-            © {new Date().getFullYear()} Asmit Rajaramkar. All rights reserved.
-          </p>
+          <div className="flex flex-col gap-1">
+            <p className="text-[11px] text-[#A8B5A0]">
+              © {new Date().getFullYear()} Asmit Rajaramkar. All rights reserved.
+            </p>
+            <p className="text-[10px] text-[#A8B5A0]/60">
+              Asmit Rajaramkar — Independent Publisher &amp; Author · support@arbooks.in
+            </p>
+          </div>
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-1">
-            <Link href="/privacy"       className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Privacy Policy</Link>
+            <Link href="/privacy"        className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Privacy Policy</Link>
             <span className="text-[#A8B5A0]/30 hidden sm:inline">·</span>
-            <Link href="/terms"         className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Terms &amp; Conditions</Link>
+            <Link href="/terms"          className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Terms &amp; Conditions</Link>
             <span className="text-[#A8B5A0]/30 hidden sm:inline">·</span>
-            <Link href="/refund-policy" className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Refund Policy</Link>
+            <Link href="/refund-policy"  className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Refund Policy</Link>
+            <span className="text-[#A8B5A0]/30 hidden sm:inline">·</span>
+            <Link href="/cookie-policy"  className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Cookie Policy</Link>
           </div>
         </div>
       </div>

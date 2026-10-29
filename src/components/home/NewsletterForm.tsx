@@ -87,8 +87,9 @@ export function NewsletterForm({
           {!submitting && <ArrowRight size={12} aria-hidden="true" />}
         </button>
       </div>
-      <label className={`mt-2.5 flex items-start gap-2 font-body text-[10px] leading-4 ${isBanner ? "text-[#777970]" : "text-[#FFFCF7]/75"}`}>
+      <label htmlFor={`newsletter-consent-${source}`} className={`mt-2.5 flex items-start gap-2 font-body text-[10px] leading-4 ${isBanner ? "text-[#777970]" : "text-[#FFFCF7]/75"}`}>
         <input
+          id={`newsletter-consent-${source}`}
           type="checkbox"
           checked={consent}
           onChange={(event) => setConsent(event.target.checked)}

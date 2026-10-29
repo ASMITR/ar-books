@@ -60,31 +60,32 @@ export default async function ContactPage() {
               <form action={`mailto:${supportEmail}`} method="GET" className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
+                    <label htmlFor="contact-name" className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
                       Your Name
                     </label>
-                    <input name="name" required placeholder="Full name" className={inputCls} />
+                    <input id="contact-name" name="name" required placeholder="Full name" className={inputCls} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
+                    <label htmlFor="contact-email" className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
                       Email Address
                     </label>
-                    <input name="email" type="email" required placeholder="your@email.com" className={inputCls} />
+                    <input id="contact-email" name="email" type="email" required placeholder="your@email.com" className={inputCls} />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
+                  <label htmlFor="contact-subject" className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
                     Subject
                   </label>
-                  <input name="subject" required placeholder="e.g. Download issue with order ARB-..." className={inputCls} />
+                  <input id="contact-subject" name="subject" required placeholder="e.g. Download issue with order ARB-..." className={inputCls} />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
+                  <label htmlFor="contact-body" className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
                     Message
                   </label>
                   <textarea
+                    id="contact-body"
                     name="body"
                     required
                     rows={5}

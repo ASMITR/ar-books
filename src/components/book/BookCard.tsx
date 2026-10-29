@@ -6,7 +6,7 @@ import { BookCover } from "./BookCover";
 import { useCart } from "@/hooks/useCart";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { formatINR } from "@/lib/currency";
-import { ShoppingCart, Zap, Star, Flame, Sparkles } from "lucide-react";
+import { ShoppingCart, Zap, Flame, Sparkles } from "lucide-react";
 import type { Book } from "@/types";
 
 interface BookCardProps {
@@ -100,14 +100,6 @@ export function BookCard({ book }: BookCardProps) {
 
       {/* ── Info section ── */}
       <div className="flex flex-col flex-1 px-3.5 pt-3 pb-3.5 gap-2">
-
-        {/* Stars */}
-        <div className="flex items-center gap-0.5">
-          {[...Array(5)].map((_, i) => (
-            <Star key={i} size={8} className="fill-[#C6A66B] text-[#C6A66B]" />
-          ))}
-          <span className="text-[9px] font-body text-[#A8B5A0] ml-1">5.0</span>
-        </div>
 
         {/* Title */}
         <Link href={`/books/${book.slug}`}>

@@ -11,7 +11,7 @@ export default function DownloadPolicyPage() {
     <PolicyLayout
       title="Digital Download Policy"
       subtitle="Everything you need to know about accessing, downloading, and using your purchased eBooks."
-      lastUpdated="January 2025"
+      lastUpdated="October 2026"
       effectiveDate="January 2025"
       relatedLinks={[
         { label: "Refund Policy", href: "/refund-policy" },

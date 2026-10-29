@@ -11,7 +11,7 @@ export default function RefundPolicyPage() {
     <PolicyLayout
       title="Refund & Cancellation Policy"
       subtitle="Please read this policy carefully before making a purchase. All sales of digital products are subject to the terms below."
-      lastUpdated="January 2025"
+      lastUpdated="October 2026"
       effectiveDate="January 2025"
       relatedLinks={[
         { label: "Terms & Conditions", href: "/terms" },

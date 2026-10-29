@@ -160,8 +160,9 @@ export default function CheckoutPage() {
               <h2 className="font-heading text-xl font-semibold text-[#080808] mb-5">Your Details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1">Full Name *</label>
+                  <label htmlFor="checkout-name" className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1">Full Name *</label>
                   <input
+                    id="checkout-name"
                     {...register("customerName")}
                     className="w-full border border-[#E9E7E2] px-4 py-3 text-sm font-body focus:outline-none focus:border-[#789185]"
                     placeholder="Your full name"
@@ -169,8 +170,9 @@ export default function CheckoutPage() {
                   {errors.customerName && <p className="text-xs text-[#F12F43] mt-1">{errors.customerName.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1">Email *</label>
+                  <label htmlFor="checkout-email" className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1">Email *</label>
                   <input
+                    id="checkout-email"
                     {...register("customerEmail")}
                     type="email"
                     className="w-full border border-[#E9E7E2] px-4 py-3 text-sm font-body focus:outline-none focus:border-[#789185]"
@@ -179,8 +181,9 @@ export default function CheckoutPage() {
                   {errors.customerEmail && <p className="text-xs text-[#F12F43] mt-1">{errors.customerEmail.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1">Phone (optional)</label>
+                  <label htmlFor="checkout-phone" className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1">Phone (optional)</label>
                   <input
+                    id="checkout-phone"
                     {...register("phone")}
                     type="tel"
                     className="w-full border border-[#E9E7E2] px-4 py-3 text-sm font-body focus:outline-none focus:border-[#789185]"

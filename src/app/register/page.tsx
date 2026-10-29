@@ -94,22 +94,22 @@ export default function RegisterPage() {
           <div className="bg-white border border-[#E9E7E2] p-7 sm:p-8 rounded-sm shadow-sm">
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
               <div>
-                <label className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Full Name</label>
-                <input {...register("displayName")} placeholder="Your full name" className={inputCls} />
+                <label htmlFor="register-name" className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Full Name</label>
+                <input id="register-name" {...register("displayName")} placeholder="Your full name" className={inputCls} />
                 {errors.displayName && <p className="text-xs text-[#F12F43] mt-1">{errors.displayName.message}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Email</label>
-                <input {...register("email")} type="email" autoComplete="email" placeholder="your@email.com" className={inputCls} />
+                <label htmlFor="register-email" className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Email</label>
+                <input id="register-email" {...register("email")} type="email" autoComplete="email" placeholder="your@email.com" className={inputCls} />
                 {errors.email && <p className="text-xs text-[#F12F43] mt-1">{errors.email.message}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Password</label>
+                <label htmlFor="register-password" className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Password</label>
                 <div className="relative">
-                  <input {...register("password")} type={showPw ? "text" : "password"} autoComplete="new-password" placeholder="Min. 8 characters" className={`${inputCls} pr-10`} />
-                  <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aaa] hover:text-[#555] transition-colors" aria-label="Toggle password">
+                  <input id="register-password" {...register("password")} type={showPw ? "text" : "password"} autoComplete="new-password" placeholder="Min. 8 characters" className={`${inputCls} pr-10`} />
+                  <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aaa] hover:text-[#555] transition-colors" aria-label={showPw ? "Hide password" : "Show password"}>
                     {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 </div>

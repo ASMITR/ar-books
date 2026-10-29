@@ -140,7 +140,7 @@ export default async function HomePage() {
                       <Star key={i} size={10} className="fill-[#C6A66B] text-[#C6A66B]" />
                     ))}
                   </div>
-                  <p className="text-[10px] font-body text-[#777970]">Loved by 500+ readers</p>
+                  <p className="text-[10px] font-body text-[#777970]">Growing reader community</p>
                 </div>
               </div>
             </div>
@@ -288,10 +288,10 @@ export default async function HomePage() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="w-5 h-px bg-[#315B55]" />
-                <p className="text-[10px] font-body font-bold uppercase tracking-[0.25em] text-[#315B55]">Bestsellers</p>
+                <p className="text-[10px] font-body font-bold uppercase tracking-[0.25em] text-[#315B55]">Featured</p>
               </div>
               <h2 className="font-heading text-[36px] sm:text-[44px] font-bold text-[#242824] leading-tight">
-                Readers&apos; All-Time Favorites
+                Featured Books
               </h2>
             </div>
             <Link

@@ -98,21 +98,21 @@ export default function LoginPage() {
           <div className="bg-white border border-[#E9E7E2] p-7 sm:p-8 rounded-sm shadow-sm">
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
               <div>
-                <label className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Email</label>
-                <input {...register("email")} type="email" autoComplete="email" placeholder="your@email.com" className={inputCls} />
+                <label htmlFor="login-email" className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Email</label>
+                <input id="login-email" {...register("email")} type="email" autoComplete="email" placeholder="your@email.com" className={inputCls} />
                 {errors.email && <p className="text-xs text-[#F12F43] mt-1">{errors.email.message}</p>}
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-body uppercase tracking-wider text-[#777777]">Password</label>
+                  <label htmlFor="login-password" className="text-xs font-body uppercase tracking-wider text-[#777777]">Password</label>
                   <Link href="/forgot-password" className="text-xs font-body text-[#789185] hover:text-[#080808] transition-colors">
                     Forgot password?
                   </Link>
                 </div>
                 <div className="relative">
-                  <input {...register("password")} type={showPw ? "text" : "password"} autoComplete="current-password" placeholder="••••••••" className={`${inputCls} pr-10`} />
-                  <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aaa] hover:text-[#555] transition-colors" aria-label="Toggle password">
+                  <input id="login-password" {...register("password")} type={showPw ? "text" : "password"} autoComplete="current-password" placeholder="••••••••" className={`${inputCls} pr-10`} />
+                  <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aaa] hover:text-[#555] transition-colors" aria-label={showPw ? "Hide password" : "Show password"}>
                     {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 </div>

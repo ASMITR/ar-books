@@ -11,10 +11,11 @@ export default function PrivacyPage() {
     <PolicyLayout
       title="Privacy Policy"
       subtitle="How we collect, use, store, and protect your personal information."
-      lastUpdated="January 2025"
+      lastUpdated="October 2026"
       effectiveDate="January 2025"
       relatedLinks={[
         { label: "Terms & Conditions", href: "/terms" },
+        { label: "Cookie Policy", href: "/cookie-policy" },
         { label: "Download Policy", href: "/download-policy" },
         { label: "Contact Us", href: "/contact" },
       ]}
@@ -156,6 +157,45 @@ export default function PrivacyPage() {
           title: "Changes to This Policy",
           content: (
             <p>We reserve the right to update this Privacy Policy at any time. Changes will be posted on this page with an updated "Last Updated" date. Your continued use of the website after any changes constitutes your acceptance of the revised policy. We encourage you to review this page periodically.</p>
+          ),
+        },
+        {
+          title: "India — Digital Personal Data Protection Act (DPDP) 2023",
+          content: (
+            <>
+              <p>
+                This website is operated by an individual based in India and primarily serves users in India.
+                We are committed to compliance with the <strong>Digital Personal Data Protection Act, 2023 (DPDP Act)</strong>.
+              </p>
+              <ul className="list-disc list-inside flex flex-col gap-1.5 mt-2">
+                <li>
+                  <strong>Lawful basis for processing:</strong> Your personal data is processed on the basis of
+                  your consent (given at account creation, checkout, and newsletter subscription) and for the
+                  performance of a contract (fulfilling your purchase).
+                </li>
+                <li>
+                  <strong>Purpose limitation:</strong> We collect only the personal data strictly necessary for
+                  the purposes described in this policy. We do not use your data for any other purpose.
+                </li>
+                <li>
+                  <strong>Data Principal rights:</strong> Under the DPDP Act, you (as a &quot;Data Principal&quot;) have
+                  the right to access, correct, and erase your personal data, and to withdraw consent. To
+                  exercise these rights, contact us via the{" "}
+                  <a href="/contact" className="text-[#203A2B] underline">Contact page</a>.
+                </li>
+                <li>
+                  <strong>Cross-border data transfers:</strong> Your data may be processed outside India by
+                  our infrastructure providers (Google Cloud / Firebase, Vercel, Resend). These transfers are
+                  necessary for the operation of the service.
+                </li>
+                <li>
+                  <strong>Grievance Officer:</strong> In accordance with applicable Indian law, you may raise
+                  a privacy grievance by contacting us via the{" "}
+                  <a href="/contact" className="text-[#203A2B] underline">Contact page</a>. We will
+                  acknowledge your grievance within 48 hours and resolve it within 30 days.
+                </li>
+              </ul>
+            </>
           ),
         },
         {

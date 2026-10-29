@@ -11,10 +11,11 @@ export default function TermsPage() {
     <PolicyLayout
       title="Terms & Conditions"
       subtitle="Please read these terms carefully before using this website or making a purchase."
-      lastUpdated="January 2025"
+      lastUpdated="October 2026"
       effectiveDate="January 2025"
       relatedLinks={[
         { label: "Privacy Policy", href: "/privacy" },
+        { label: "Cookie Policy", href: "/cookie-policy" },
         { label: "Refund Policy", href: "/refund-policy" },
         { label: "Download Policy", href: "/download-policy" },
         { label: "Contact Us", href: "/contact" },
@@ -137,6 +138,24 @@ export default function TermsPage() {
           title: "Termination",
           content: (
             <p>We reserve the right to suspend or terminate your account and access to all purchased content at our sole discretion, without notice, if we determine that you have violated these Terms, engaged in fraudulent activity, or acted in a manner harmful to other users or to us. Upon termination for cause, no refund will be issued. Provisions of these Terms that by their nature should survive termination shall survive, including intellectual property rights, disclaimers, and limitations of liability.</p>
+          ),
+        },
+        {
+          title: "Business Information",
+          content: (
+            <>
+              <p>This website is owned and operated by an individual publisher:</p>
+              <ul className="list-disc list-inside flex flex-col gap-1.5 mt-2">
+                <li><strong>Name:</strong> Asmit Rajaramkar</li>
+                <li><strong>Trading as:</strong> AR Books</li>
+                <li><strong>Country:</strong> India</li>
+                <li><strong>Contact:</strong> <a href="/contact" className="text-[#203A2B] underline">Contact page</a> or support@arbooks.in</li>
+              </ul>
+              <p className="mt-2">
+                For any legal notices or formal correspondence, please use the contact email above. We will
+                acknowledge formal correspondence within 5 business days.
+              </p>
+            </>
           ),
         },
         {
