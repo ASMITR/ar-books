@@ -1,7 +1,4 @@
-// Revalidate every 60 s so new books/offers appear quickly without a cold
-// Firestore hit on every single page load.
-export const revalidate = 60;
-
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getFeaturedBooks, getVisibleCategories, getStoreSettings, getActivePublicOffers } from "@/lib/firebase/firestore";
 import { BookCard } from "@/components/book/BookCard";
@@ -13,6 +10,14 @@ import {
   ArrowRight, BookOpen, Users, ShieldCheck, Heart,
   Sparkles, CheckCircle, Headphones, Star,
 } from "lucide-react";
+
+// Revalidate every 60 s so new books/offers appear quickly without a cold
+// Firestore hit on every single page load.
+export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Asmit Rajaramkar Books | Official eBook Store",
+};
 
 const CATEGORY_IMAGES: Record<string, string> = {
   "self-development": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&q=85",
