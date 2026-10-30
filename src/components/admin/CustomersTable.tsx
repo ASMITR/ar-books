@@ -31,7 +31,7 @@ function LockoutBadge({ lockout }: { lockout: CustomerWithLockout["lockout"] }) 
   if (lockout.attempts > 0) {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-orange-50 text-orange-600 ring-1 ring-orange-200">
-        {lockout.attempts} failed
+        <Lock size={10} /> {lockout.attempts} failed {lockout.attempts >= 2 ? "⚠" : ""}
       </span>
     );
   }
@@ -290,7 +290,7 @@ export function CustomersTable({ customers }: { customers: CustomerWithLockout[]
                   {/* Actions */}
                   <td className="px-4 py-3.5">
                     <div className="flex items-center justify-end gap-1.5">
-                      {/* Unlock — only if blocked */}
+                      {/* Unlock — only if hard-blocked (24h or permanent) */}
                       {customer.lockout.blocked && customer.email && (
                         <button
                           onClick={() => handleUnlock(customer.email!)}
@@ -300,6 +300,19 @@ export function CustomersTable({ customers }: { customers: CustomerWithLockout[]
                         >
                           <Unlock size={11} />
                           {unlocking === customer.email ? "…" : "Unlock"}
+                        </button>
+                      )}
+
+                      {/* Release — only if failed attempts > 0 but NOT yet hard-blocked */}
+                      {!customer.lockout.blocked && customer.lockout.attempts > 0 && customer.email && (
+                        <button
+                          onClick={() => handleUnlock(customer.email!)}
+                          disabled={unlocking === customer.email}
+                          title={`Clear ${customer.lockout.attempts} failed attempt${customer.lockout.attempts !== 1 ? "s" : ""}`}
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold border border-orange-300 text-orange-600 px-2.5 py-1.5 rounded hover:bg-orange-50 hover:border-orange-400 transition-colors disabled:opacity-50"
+                        >
+                          <Lock size={11} />
+                          {unlocking === customer.email ? "…" : `Release (${customer.lockout.attempts})`}
                         </button>
                       )}
 
@@ -342,6 +355,11 @@ export function CustomersTable({ customers }: { customers: CustomerWithLockout[]
             <p className="text-[11px] font-body text-emerald-600">
               {list.filter((c) => c.emailVerified).length} verified
             </p>
+            {list.filter((c) => !c.lockout.blocked && c.lockout.attempts > 0).length > 0 && (
+              <p className="text-[11px] font-body text-orange-500">
+                {list.filter((c) => !c.lockout.blocked && c.lockout.attempts > 0).length} at risk
+              </p>
+            )}
             {list.filter((c) => c.lockout.blocked).length > 0 && (
               <p className="text-[11px] font-body text-red-500">
                 {list.filter((c) => c.lockout.blocked).length} locked
