@@ -57,54 +57,58 @@ export default async function HomePage() {
   return (
     <>
       {/* ════════════════════════════════════════════════════════════════
-          HERO
+          HERO — redesigned for all screens
       ════════════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-[#F5EFE6] min-h-[520px] lg:min-h-[600px]">
+      <section className="relative overflow-hidden bg-[#0E1C13] min-h-[100svh] sm:min-h-[640px] lg:min-h-[700px] flex flex-col justify-center">
 
-        {/* ── Right-side hero lifestyle image — desktop only ── */}
-        <div className="hidden lg:block absolute inset-y-0 right-0 w-[58%] overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&q=90"
-            alt="Books on a wooden table with warm natural light"
-            className="w-full h-full object-cover object-center"
-          />
-          {/* Gradient fade into cream on the left edge */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#F5EFE6]/80 via-[#F5EFE6]/20 to-transparent" />
-          {/* Subtle bottom vignette */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#F5EFE6]/30 via-transparent to-transparent" />
-        </div>
+        {/* ── Background: full-bleed lifestyle photo ── */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1600&q=85"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center opacity-25 scale-105"
+        />
+
+        {/* Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0E1C13]/70 via-[#0E1C13]/50 to-[#0E1C13]/90" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0E1C13]/80 via-transparent to-[#0E1C13]/40" />
+
+        {/* Gold accent line at top */}
+        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#C6A66B] to-transparent" />
 
         {/* ── Content ── */}
-        <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-full">
-          <div className="grid grid-cols-1 lg:grid-cols-[48%_52%] min-h-[520px] lg:min-h-[600px]">
+        <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 lg:gap-16 items-center">
 
-            {/* Left — text column: solid cream bg on mobile so text is always readable */}
-            <div className="flex flex-col justify-center gap-6 py-16 lg:py-20 pr-0 lg:pr-12 bg-[#F5EFE6] lg:bg-transparent">
+            {/* ── LEFT: Text + CTAs ── */}
+            <div className="flex flex-col gap-6 max-w-2xl">
 
               {/* Eyebrow */}
-              <div className="inline-flex items-center gap-2 w-fit">
-                <span className="w-6 h-px bg-[#315B55]" />
-                <p className="text-[10px] font-body font-bold uppercase tracking-[0.25em] text-[#315B55]">
+              <div className="inline-flex items-center gap-2.5 w-fit">
+                <span className="w-8 h-px bg-[#C6A66B]" />
+                <p className="text-[10px] sm:text-[11px] font-body font-bold uppercase tracking-[0.3em] text-[#C6A66B]">
                   Discover · Read · Grow
                 </p>
               </div>
 
               {/* Headline */}
-              <h1 className="font-heading text-[44px] sm:text-[56px] lg:text-[64px] font-bold text-[#242824] leading-[1.0] tracking-tight">
+              <h1 className="font-heading font-bold text-[#FFFCF7] leading-[1.0] tracking-tight
+                text-[48px] sm:text-[64px] lg:text-[76px]">
                 {settings?.homepageSettings?.heroHeadline ? (
-                  settings.homepageSettings.heroHeadline
+                  <span>{settings.homepageSettings.heroHeadline}</span>
                 ) : (
                   <>
                     Books for<br />
-                    <span className="text-[#203A2B]">Every Mind</span><br />
-                    &amp; Moment.
+                    <span className="text-[#C6A66B]">Every Mind</span>
+                    <br />
+                    <span className="text-[#FFFCF7]/80">&amp; Moment.</span>
                   </>
                 )}
               </h1>
 
               {/* Sub-text */}
-              <p className="font-body text-[#777970] text-[15px] leading-[1.7] max-w-[380px]">
+              <p className="font-body text-[#A8B5A0] text-[15px] sm:text-[16px] leading-[1.75] max-w-[480px]">
                 {settings?.homepageSettings?.heroSubtext ??
                   "Your next favourite story is just a page away. Handpicked books for curious minds."}
               </p>
@@ -113,79 +117,108 @@ export default async function HomePage() {
               <div className="flex flex-wrap gap-3 pt-1">
                 <Link
                   href="/books"
-                  className="inline-flex items-center gap-2.5 bg-[#203A2B] text-[#FFFCF7] font-body text-[11px] font-bold uppercase tracking-[0.15em] px-7 py-3.5 hover:bg-[#315B55] transition-colors duration-200 shadow-sm"
+                  className="inline-flex items-center gap-2.5 bg-[#C6A66B] text-[#0E1C13] font-body text-[11px] font-bold uppercase tracking-[0.18em] px-8 py-4 hover:bg-[#d4b77e] transition-colors duration-200 shadow-lg"
                 >
                   Shop Now <ArrowRight size={13} />
                 </Link>
                 <Link
                   href="/books"
-                  className="inline-flex items-center gap-2.5 border border-[#242824]/50 text-[#242824] font-body text-[11px] font-bold uppercase tracking-[0.15em] px-7 py-3.5 hover:bg-[#242824] hover:text-[#FFFCF7] hover:border-[#242824] transition-colors duration-200"
+                  className="inline-flex items-center gap-2.5 border border-[#FFFCF7]/30 text-[#FFFCF7] font-body text-[11px] font-bold uppercase tracking-[0.18em] px-8 py-4 hover:bg-[#FFFCF7]/10 hover:border-[#FFFCF7]/60 transition-colors duration-200"
                 >
                   Explore Collection
                 </Link>
               </div>
 
-              {/* Social proof strip */}
+              {/* Social proof */}
               <div className="flex items-center gap-4 pt-2">
                 <div className="flex -space-x-2">
-                  {["#A8B5A0","#C6A66B","#315B55","#203A2B"].map((c, i) => (
+                  {["#A8B5A0", "#C6A66B", "#315B55", "#203A2B"].map((c, i) => (
                     <div
                       key={i}
-                      className="w-7 h-7 rounded-full border-2 border-[#F5EFE6] flex items-center justify-center text-[#FFFCF7] text-[9px] font-bold"
+                      className="w-8 h-8 rounded-full border-2 border-[#0E1C13] flex items-center justify-center text-[#FFFCF7] text-[9px] font-bold shadow-md"
                       style={{ backgroundColor: c }}
                     >
-                      {["A","R","B","S"][i]}
+                      {["A", "R", "B", "S"][i]}
                     </div>
                   ))}
                 </div>
                 <div>
                   <div className="flex items-center gap-0.5 mb-0.5">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={10} className="fill-[#C6A66B] text-[#C6A66B]" />
+                      <Star key={i} size={11} className="fill-[#C6A66B] text-[#C6A66B]" />
                     ))}
                   </div>
-                  <p className="text-[10px] font-body text-[#777970]">Growing reader community</p>
+                  <p className="text-[10px] font-body text-[#A8B5A0]">Growing reader community</p>
                 </div>
               </div>
             </div>
 
-            {/* Right — floating book cards (desktop only) */}
-            <div className="hidden lg:flex items-center justify-center relative">
-              {/* Floating book stack */}
-              <div className="relative flex items-end gap-5 pb-10">
+            {/* ── RIGHT: Book stack — visible on all screens, centered on mobile ── */}
+            <div className="flex items-center justify-center lg:justify-end">
+              <div className="relative flex items-end justify-center gap-4 sm:gap-6 pb-6">
+
+                {/* Side book left */}
                 {book3 && (
-                  <div className="opacity-50 rotate-[-7deg] translate-y-6 transition-transform hover:translate-y-4 duration-300">
-                    <BookCover src={book3.coverImageUrl} title={book3.title} size="md" />
+                  <div className="opacity-40 rotate-[-8deg] translate-y-8 shrink-0
+                    transition-transform duration-300 hover:translate-y-6 hover:opacity-60">
+                    <BookCover
+                      src={book3.coverImageUrl}
+                      title={book3.title}
+                      size="md"
+                      className="shadow-2xl"
+                    />
                   </div>
                 )}
-                {heroBook && (
-                  <div className="relative drop-shadow-2xl z-10 transition-transform hover:-translate-y-2 duration-300">
-                    <BookCover src={heroBook.coverImageUrl} title={heroBook.title} size="xl" perspective />
-                    {/* New Arrivals badge */}
-                    <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-[#203A2B] flex flex-col items-center justify-center shadow-xl border-2 border-[#FFFCF7]/20">
-                      <span className="text-[#FFFCF7] text-[8px] font-body font-bold uppercase leading-tight tracking-wide text-center">New<br />Arrivals</span>
+
+                {/* Hero book — center, prominent */}
+                {heroBook ? (
+                  <div className="relative shrink-0 z-10 transition-transform duration-300 hover:-translate-y-2 drop-shadow-2xl">
+                    <BookCover
+                      src={heroBook.coverImageUrl}
+                      title={heroBook.title}
+                      size="xl"
+                      perspective
+                    />
+                    {/* Badge */}
+                    <div className="absolute -top-5 -right-5 w-[60px] h-[60px] rounded-full bg-[#C6A66B] flex flex-col items-center justify-center shadow-xl border-2 border-[#0E1C13]">
+                      <span className="text-[#0E1C13] text-[7px] font-body font-black uppercase leading-tight tracking-wide text-center">New<br />Release</span>
                     </div>
                     {/* Price tag */}
-                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-[#C6A66B] text-[#242824] font-body text-[11px] font-bold px-4 py-1.5 shadow-lg whitespace-nowrap">
+                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-[#0E1C13] border border-[#C6A66B]/60 text-[#C6A66B] font-body text-[11px] font-bold px-5 py-1.5 shadow-lg whitespace-nowrap">
                       {formatINR(heroBook.pricePaise)}
                     </div>
                   </div>
-                )}
-                {book2 && (
-                  <div className="opacity-50 rotate-[6deg] translate-y-6 transition-transform hover:translate-y-4 duration-300">
-                    <BookCover src={book2.coverImageUrl} title={book2.title} size="md" />
+                ) : (
+                  <div className="w-[240px] h-[336px] border border-[#FFFCF7]/10 rounded-sm flex items-center justify-center">
+                    <p className="text-[#A8B5A0] font-body text-xs text-center px-6">
+                      Add books in admin dashboard
+                    </p>
                   </div>
                 )}
-                {!heroBook && (
-                  <p className="text-[#A8B5A0] font-heading text-base text-center px-8">
-                    Add books in the admin dashboard.
-                  </p>
+
+                {/* Side book right */}
+                {book2 && (
+                  <div className="opacity-40 rotate-[7deg] translate-y-8 shrink-0
+                    transition-transform duration-300 hover:translate-y-6 hover:opacity-60">
+                    <BookCover
+                      src={book2.coverImageUrl}
+                      title={book2.title}
+                      size="md"
+                      className="shadow-2xl"
+                    />
+                  </div>
                 )}
+
+                {/* Glow under stack */}
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-12 bg-[#C6A66B]/20 blur-2xl rounded-full" />
               </div>
             </div>
 
           </div>
         </div>
+
+        {/* Bottom fade into next section */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#FFFCF7] to-transparent" />
       </section>
 
       {/* ════════════════════════════════════════════════════════════════

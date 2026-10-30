@@ -6,6 +6,7 @@ import {
 import { BookCover } from "@/components/book/BookCover";
 import { BookCard } from "@/components/book/BookCard";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { RichText } from "@/components/shared/RichText";
 import { AddToCartButton } from "@/components/book/AddToCartButton";
 import { formatINR } from "@/lib/currency";
 import {
@@ -255,9 +256,7 @@ export default async function BookPage({ params }: Props) {
                   <h2 className="font-heading text-[20px] font-bold text-[#242824]">About this Book</h2>
                 </div>
                 <div className="px-6 py-5">
-                  <p className="font-body text-[13px] text-[#777970] leading-[1.9] whitespace-pre-line">
-                    {book.description}
-                  </p>
+                  <RichText content={book.description} />
                 </div>
               </div>
 
@@ -315,9 +314,7 @@ export default async function BookPage({ params }: Props) {
                     <h2 className="font-heading text-[20px] font-bold text-[#242824]">Who Is This Book For?</h2>
                   </div>
                   <div className="px-6 py-5">
-                    <p className="font-body text-[13px] text-[#777970] leading-[1.9]">
-                      {book.targetAudience}
-                    </p>
+                    <RichText content={book.targetAudience} />
                   </div>
                 </div>
               )}

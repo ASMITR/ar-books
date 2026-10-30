@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdmin } from "@/lib/firebase/auth-server";
 import cloudinary from "@/lib/cloudinary";
@@ -26,6 +27,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const { id } = await params;
     const body = await req.json();
     await adminDb.collection("books").doc(id).update({ ...body, updatedAt: new Date().toISOString() });
+    revalidateTag("books", { expire: 0 });
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {
@@ -81,7 +83,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     // Hard-delete the book document itself
     batch.delete(adminDb.collection("books").doc(id));
     await batch.commit();
-
+    revalidateTag("books", { expire: 0 });
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getArticleBySlug, getPublishedArticles, getStoreSettings } from "@/lib/firebase/firestore";
 import { formatDate } from "@/lib/utils";
 import { ReadingProgress } from "@/components/shared/ReadingProgress";
+import { ArticleContent } from "@/components/article/ArticleContent";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Clock, User } from "lucide-react";
@@ -118,28 +119,10 @@ export default async function ArticleDetailPage({ params }: Props) {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 lg:gap-16 items-start">
 
             {/* Content */}
-            <div className="bg-[#FFFCF7] border border-[#E6DFD5] rounded-sm px-6 sm:px-10 py-10">
-              <div
-                className="font-body text-[#3a3a3a] leading-[1.9] text-[15px] sm:text-[16px]
-                  prose prose-sm max-w-none
-                  prose-headings:font-heading prose-headings:text-[#242824] prose-headings:font-bold prose-headings:leading-snug
-                  prose-h2:text-[22px] prose-h2:mt-10 prose-h2:mb-4
-                  prose-h3:text-[18px] prose-h3:mt-8 prose-h3:mb-3
-                  prose-p:text-[#444] prose-p:leading-[1.9] prose-p:mb-5
-                  prose-a:text-[#203A2B] prose-a:underline prose-a:underline-offset-2 hover:prose-a:text-[#315B55]
-                  prose-strong:text-[#242824] prose-strong:font-semibold
-                  prose-blockquote:border-l-[3px] prose-blockquote:border-[#C6A66B] prose-blockquote:pl-5 prose-blockquote:text-[#666] prose-blockquote:not-italic prose-blockquote:my-8
-                  prose-ul:pl-5 prose-ol:pl-5
-                  prose-li:mb-1.5 prose-li:text-[#444]
-                  prose-hr:border-[#E6DFD5] prose-hr:my-10
-                  prose-img:rounded-sm prose-img:border prose-img:border-[#E6DFD5]"
-                style={{ whiteSpace: "pre-wrap" }}
-              >
-                {article.content}
-              </div>
+            <div className="bg-[#FFFCF7] border border-[#E6DFD5] rounded-sm px-6 sm:px-10 py-10 min-w-0">
+              <ArticleContent content={article.content} />
 
-              {/* Author card */}
-              <div className="mt-12 pt-8 border-t border-[#E6DFD5] flex items-center gap-4">
+              {/* Author card */}              <div className="mt-12 pt-8 border-t border-[#E6DFD5] flex items-center gap-4">
                 <div className="relative w-12 h-12 rounded-full overflow-hidden bg-[#F5EFE6] border border-[#E6DFD5] shrink-0">
                   {settings?.authorPhotoUrl ? (
                     <Image src={settings.authorPhotoUrl} alt="Asmit Rajaramkar" fill className="object-cover" />
