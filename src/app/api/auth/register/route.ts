@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminAuth } from "@/lib/firebase/admin";
+import { adminAuth, adminDb } from "@/lib/firebase/admin";
 import { sendWelcomeEmail } from "@/lib/email";
 
 /**
  * POST /api/auth/register
  *
  * Called immediately after a new Firebase account is created on the client.
- * Verifies the ID token, confirms the account is brand-new (creationTime ≈ lastSignInTime),
- * and sends a welcome email via Resend.
+ * - Verifies the ID token
+ * - Confirms the account is brand-new (< 2 min old)
+ * - Writes a user document to Firestore `users` collection
+ * - Sends a welcome email via Resend
  *
  * Body: { idToken: string }
  */
@@ -19,16 +21,12 @@ export async function POST(req: NextRequest) {
     }
 
     const decoded = await adminAuth.verifyIdToken(idToken);
-
-    // Fetch the full user record to check account age
     const userRecord = await adminAuth.getUser(decoded.uid);
-    const createdAt = new Date(userRecord.metadata.creationTime).getTime();
-    const now = Date.now();
-    const ageMs = now - createdAt;
 
-    // Only send welcome email for genuinely new accounts (created within the last 2 minutes)
-    // This prevents re-sending if the client somehow calls this endpoint again later.
+    const createdAt = new Date(userRecord.metadata.creationTime).getTime();
+    const ageMs = Date.now() - createdAt;
     const TWO_MINUTES = 2 * 60 * 1000;
+
     if (ageMs > TWO_MINUTES) {
       return NextResponse.json({ skipped: true });
     }
@@ -40,12 +38,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No email on account" }, { status: 422 });
     }
 
-    await sendWelcomeEmail(email, name);
+    // ── Write user document to Firestore so it appears in the admin dashboard ──
+    const now = new Date().toISOString();
+    await adminDb
+      .collection("users")
+      .doc(userRecord.uid)
+      .set(
+        {
+          displayName: userRecord.displayName ?? null,
+          email,
+          emailVerified: userRecord.emailVerified ?? false,
+          photoURL: userRecord.photoURL ?? null,
+          role: "member",
+          createdAt: now,
+          updatedAt: now,
+          provider: userRecord.providerData?.[0]?.providerId ?? "password",
+        },
+        { merge: true }
+      );
+
+    // Non-fatal — don't block the registration flow
+    sendWelcomeEmail(email, name).catch((e) =>
+      console.error("[auth/register] welcome email failed:", e)
+    );
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[auth/register] welcome email failed:", err);
-    // Non-fatal — don't block the registration flow
-    return NextResponse.json({ error: "Email send failed" }, { status: 500 });
+    console.error("[auth/register]", err);
+    return NextResponse.json({ error: "Registration post-processing failed" }, { status: 500 });
   }
 }

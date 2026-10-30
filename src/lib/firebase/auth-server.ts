@@ -2,21 +2,7 @@ import { cookies } from "next/headers";
 import { adminAuth } from "./admin";
 import type { AppUser, UserRole } from "@/types";
 
-const DEV_BYPASS = process.env.DEV_BYPASS === "true";
-
-const DEV_USER: AppUser = {
-  uid: "dev-bypass-uid",
-  displayName: "Dev User",
-  email: "dev@bypass.local",
-  emailVerified: true,
-  role: "admin",
-  photoURL: null,
-  createdAt: "",
-  updatedAt: "",
-};
-
 export async function getSessionUser(): Promise<AppUser | null> {
-  if (DEV_BYPASS) return DEV_USER;
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("session")?.value;

@@ -25,13 +25,6 @@ export async function POST(request: Request) {
     );
   }
 
-  if (process.env.DEV_BYPASS === "true") {
-    return NextResponse.json(
-      { error: "Newsletter signups are unavailable in development mode." },
-      { status: 503 },
-    );
-  }
-
   const email = parsed.data.email.toLowerCase();
   const subscriberId = createHash("sha256").update(email).digest("hex");
   const subscriberRef = adminDb.collection("newsletterSubscribers").doc(subscriberId);

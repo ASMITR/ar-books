@@ -1,184 +1,118 @@
+import { unstable_cache } from "next/cache";
 import { adminDb } from "./admin";
 import type { Book, Category, Order, DownloadEntitlement, StoreSettings, Offer } from "@/types";
 
-const DEV_BYPASS = process.env.DEV_BYPASS === "true";
-
-// ─── Mock Data ───────────────────────────────────────────────────────────────
-const MOCK_BOOKS: Book[] = [
-  {
-    id: "book-1",
-    title: "The Art of Thinking Clearly",
-    slug: "the-art-of-thinking-clearly",
-    subtitle: "A guide to better decisions",
-    author: "Asmit Rajaramkar",
-    description: "A comprehensive guide to recognizing and overcoming cognitive biases.",
-    pricePaise: 49900,
-    originalPricePaise: 79900,
-    currency: "INR",
-    categoryIds: ["cat-1"],
-    coverImageUrl: undefined,
-    pageCount: 280,
-    language: "English",
-    published: true,
-    featured: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "book-2",
-    title: "Build Wealth Early",
-    slug: "build-wealth-early",
-    subtitle: "Personal finance for your 20s",
-    author: "Asmit Rajaramkar",
-    description: "Practical personal finance strategies for young professionals.",
-    pricePaise: 39900,
-    currency: "INR",
-    categoryIds: ["cat-2"],
-    coverImageUrl: undefined,
-    pageCount: 210,
-    language: "English",
-    published: true,
-    featured: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
-const MOCK_CATEGORIES: Category[] = [
-  { id: "cat-1", name: "Self Development", slug: "self-development", sortOrder: 1, visible: true },
-  { id: "cat-2", name: "Finance", slug: "finance", sortOrder: 2, visible: true },
-  { id: "cat-3", name: "Technology", slug: "technology", sortOrder: 3, visible: true },
-];
-
-const MOCK_SETTINGS: StoreSettings = {
-  storeName: "AR Books",
-  supportEmail: "support@arbooks.dev",
-  currency: "INR",
-  taxPercent: 0,
-  authorBio: "I write books that help people think clearly, build skills, and explore new ideas.",
-  homepageSettings: {
-    heroHeadline: "WHAT WILL YOU DISCOVER NEXT?",
-    heroSubtext: "Explore new ideas, build useful skills, and discover fresh perspectives.",
-  },
-};
-
-const MOCK_ORDERS: Order[] = [
-  {
-    id: "order-1",
-    orderNumber: "ORD-0001",
-    customerId: "dev-bypass-uid",
-    customerEmail: "dev@bypass.local",
-    customerName: "Dev User",
-    items: [{ bookId: "book-1", title: "The Art of Thinking Clearly", pricePaise: 49900 }],
-    subtotalPaise: 49900,
-    discountPaise: 0,
-    taxPaise: 0,
-    totalPaise: 49900,
-    currency: "INR",
-    paymentStatus: "paid",
-    fulfillmentStatus: "fulfilled",
-    createdAt: new Date().toISOString(),
-    paidAt: new Date().toISOString(),
-  },
-];
-
-const MOCK_ENTITLEMENTS: DownloadEntitlement[] = [
-  {
-    id: "ent-1",
-    orderId: "order-1",
-    customerId: "dev-bypass-uid",
-    productId: "book-1",
-    status: "active",
-    createdAt: new Date().toISOString(),
-  },
-];
+// ─── Cache TTLs (seconds) ─────────────────────────────────────────────────────
+// Public catalogue data: revalidate every 60 s — fresh enough for a bookshop,
+// avoids a cold Firestore round-trip on every request.
+const CATALOGUE_TTL = 60;
+// Store settings change rarely; 5-minute cache is fine.
+const SETTINGS_TTL = 300;
 
 // ─── Books ───────────────────────────────────────────────────────────────────
-export async function getPublishedBooks(): Promise<Book[]> {
-  if (DEV_BYPASS) return MOCK_BOOKS;
-  const snap = await adminDb
-    .collection("books")
-    .where("published", "==", true)
-    .orderBy("createdAt", "desc")
-    .get();
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Book));
-}
+export const getPublishedBooks = unstable_cache(
+  async (): Promise<Book[]> => {
+    const snap = await adminDb
+      .collection("books")
+      .where("published", "==", true)
+      .orderBy("createdAt", "desc")
+      .get();
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Book));
+  },
+  ["published-books"],
+  { revalidate: CATALOGUE_TTL, tags: ["books"] }
+);
 
-export async function getFeaturedBooks(): Promise<Book[]> {
-  if (DEV_BYPASS) return MOCK_BOOKS.filter((b) => b.featured);
-  const snap = await adminDb
-    .collection("books")
-    .where("published", "==", true)
-    .where("featured", "==", true)
-    .get();
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Book));
-}
+export const getFeaturedBooks = unstable_cache(
+  async (): Promise<Book[]> => {
+    const snap = await adminDb
+      .collection("books")
+      .where("published", "==", true)
+      .where("featured", "==", true)
+      .get();
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Book));
+  },
+  ["featured-books"],
+  { revalidate: CATALOGUE_TTL, tags: ["books"] }
+);
 
-export async function getBookBySlug(slug: string): Promise<Book | null> {
-  if (DEV_BYPASS) return MOCK_BOOKS.find((b) => b.slug === slug) ?? null;
-  const snap = await adminDb
-    .collection("books")
-    .where("slug", "==", slug)
-    .where("published", "==", true)
-    .limit(1)
-    .get();
-  if (snap.empty) return null;
-  const doc = snap.docs[0];
-  return { id: doc.id, ...doc.data() } as Book;
-}
+export const getBookBySlug = unstable_cache(
+  async (slug: string): Promise<Book | null> => {
+    const snap = await adminDb
+      .collection("books")
+      .where("slug", "==", slug)
+      .where("published", "==", true)
+      .limit(1)
+      .get();
+    if (snap.empty) return null;
+    const doc = snap.docs[0];
+    return { id: doc.id, ...doc.data() } as Book;
+  },
+  ["book-by-slug"],
+  { revalidate: CATALOGUE_TTL, tags: ["books"] }
+);
 
 export async function getBookById(id: string): Promise<Book | null> {
-  if (DEV_BYPASS) return MOCK_BOOKS.find((b) => b.id === id) ?? null;
   const doc = await adminDb.collection("books").doc(id).get();
   if (!doc.exists) return null;
   return { id: doc.id, ...doc.data() } as Book;
 }
 
-export async function getAllBooks(): Promise<Book[]> {
-  if (DEV_BYPASS) return MOCK_BOOKS;
-  const snap = await adminDb.collection("books").orderBy("createdAt", "desc").get();
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Book));
-}
+export const getAllBooks = unstable_cache(
+  async (): Promise<Book[]> => {
+    const snap = await adminDb.collection("books").orderBy("createdAt", "desc").get();
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Book));
+  },
+  ["all-books"],
+  { revalidate: CATALOGUE_TTL, tags: ["books"] }
+);
 
 // ─── Categories ──────────────────────────────────────────────────────────────
-export async function getVisibleCategories(): Promise<Category[]> {
-  if (DEV_BYPASS) return MOCK_CATEGORIES.filter((c) => c.visible);
-  const snap = await adminDb
-    .collection("categories")
-    .where("visible", "==", true)
-    .orderBy("sortOrder", "asc")
-    .get();
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Category));
-}
+export const getVisibleCategories = unstable_cache(
+  async (): Promise<Category[]> => {
+    const snap = await adminDb
+      .collection("categories")
+      .where("visible", "==", true)
+      .orderBy("sortOrder", "asc")
+      .get();
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Category));
+  },
+  ["visible-categories"],
+  { revalidate: CATALOGUE_TTL, tags: ["categories"] }
+);
 
-export async function getAllCategories(): Promise<Category[]> {
-  if (DEV_BYPASS) return MOCK_CATEGORIES;
-  const snap = await adminDb.collection("categories").orderBy("sortOrder", "asc").get();
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Category));
-}
+export const getAllCategories = unstable_cache(
+  async (): Promise<Category[]> => {
+    const snap = await adminDb.collection("categories").orderBy("sortOrder", "asc").get();
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Category));
+  },
+  ["all-categories"],
+  { revalidate: CATALOGUE_TTL, tags: ["categories"] }
+);
 
-export async function getCategoryBySlug(slug: string): Promise<Category | null> {
-  if (DEV_BYPASS) return MOCK_CATEGORIES.find((c) => c.slug === slug) ?? null;
-  const snap = await adminDb
-    .collection("categories")
-    .where("slug", "==", slug)
-    .limit(1)
-    .get();
-  if (snap.empty) return null;
-  const doc = snap.docs[0];
-  return { id: doc.id, ...doc.data() } as Category;
-}
+export const getCategoryBySlug = unstable_cache(
+  async (slug: string): Promise<Category | null> => {
+    const snap = await adminDb
+      .collection("categories")
+      .where("slug", "==", slug)
+      .limit(1)
+      .get();
+    if (snap.empty) return null;
+    const doc = snap.docs[0];
+    return { id: doc.id, ...doc.data() } as Category;
+  },
+  ["category-by-slug"],
+  { revalidate: CATALOGUE_TTL, tags: ["categories"] }
+);
 
 // ─── Orders ──────────────────────────────────────────────────────────────────
 export async function getOrderById(id: string): Promise<Order | null> {
-  if (DEV_BYPASS) return MOCK_ORDERS.find((o) => o.id === id) ?? null;
   const doc = await adminDb.collection("orders").doc(id).get();
   if (!doc.exists) return null;
   return { id: doc.id, ...doc.data() } as Order;
 }
 
 export async function getOrdersByCustomer(customerId: string): Promise<Order[]> {
-  if (DEV_BYPASS) return MOCK_ORDERS.filter((o) => o.customerId === customerId);
   const snap = await adminDb
     .collection("orders")
     .where("customerId", "==", customerId)
@@ -189,7 +123,6 @@ export async function getOrdersByCustomer(customerId: string): Promise<Order[]> 
 
 // ─── Download Entitlements ───────────────────────────────────────────────────
 export async function getEntitlementsByCustomer(customerId: string): Promise<DownloadEntitlement[]> {
-  if (DEV_BYPASS) return MOCK_ENTITLEMENTS.filter((e) => e.customerId === customerId);
   const snap = await adminDb
     .collection("downloadEntitlements")
     .where("customerId", "==", customerId)
@@ -202,8 +135,6 @@ export async function getEntitlement(
   customerId: string,
   productId: string
 ): Promise<DownloadEntitlement | null> {
-  if (DEV_BYPASS)
-    return MOCK_ENTITLEMENTS.find((e) => e.customerId === customerId && e.productId === productId) ?? null;
   const snap = await adminDb
     .collection("downloadEntitlements")
     .where("customerId", "==", customerId)
@@ -218,33 +149,39 @@ export async function getEntitlement(
 
 // ─── Articles ────────────────────────────────────────────────────────────────
 type Article = import("@/types").Article;
-const MOCK_ARTICLES: Article[] = [];
 
-export async function getPublishedArticles(): Promise<Article[]> {
-  if (DEV_BYPASS) return MOCK_ARTICLES;
-  const snap = await adminDb
-    .collection("articles")
-    .where("published", "==", true)
-    .orderBy("publishedAt", "desc")
-    .get();
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Article));
-}
+export const getPublishedArticles = unstable_cache(
+  async (): Promise<Article[]> => {
+    const snap = await adminDb
+      .collection("articles")
+      .where("published", "==", true)
+      .orderBy("publishedAt", "desc")
+      .get();
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Article));
+  },
+  ["published-articles"],
+  { revalidate: CATALOGUE_TTL, tags: ["articles"] }
+);
 
-export async function getArticleBySlug(slug: string): Promise<Article | null> {
-  if (DEV_BYPASS) return MOCK_ARTICLES.find((a) => a.slug === slug) ?? null;
-  const snap = await adminDb
-    .collection("articles")
-    .where("slug", "==", slug)
-    .where("published", "==", true)
-    .limit(1)
-    .get();
-  if (snap.empty) return null;
-  return { id: snap.docs[0].id, ...snap.docs[0].data() } as Article;
-}
+export const getArticleBySlug = unstable_cache(
+  async (slug: string): Promise<Article | null> => {
+    const snap = await adminDb
+      .collection("articles")
+      .where("slug", "==", slug)
+      .where("published", "==", true)
+      .limit(1)
+      .get();
+    if (snap.empty) return null;
+    return { id: snap.docs[0].id, ...snap.docs[0].data() } as Article;
+  },
+  ["article-by-slug"],
+  { revalidate: CATALOGUE_TTL, tags: ["articles"] }
+);
 
 export async function getAdjacentArticles(
   currentId: string
 ): Promise<{ prev: Article | null; next: Article | null }> {
+  // Reuses the cached getPublishedArticles — no extra Firestore round-trip.
   const all = await getPublishedArticles();
   const idx = all.findIndex((a) => a.id === currentId);
   return {
@@ -254,62 +191,63 @@ export async function getAdjacentArticles(
 }
 
 // ─── Store Settings ──────────────────────────────────────────────────────────
-export async function getStoreSettings(): Promise<StoreSettings | null> {
-  if (DEV_BYPASS) return MOCK_SETTINGS;
-  const doc = await adminDb.collection("settings").doc("store").get();
-  if (!doc.exists) return null;
-  return doc.data() as StoreSettings;
-}
+export const getStoreSettings = unstable_cache(
+  async (): Promise<StoreSettings | null> => {
+    const doc = await adminDb.collection("settings").doc("store").get();
+    if (!doc.exists) return null;
+    return doc.data() as StoreSettings;
+  },
+  ["store-settings"],
+  { revalidate: SETTINGS_TTL, tags: ["settings"] }
+);
 
 // ─── Offers ──────────────────────────────────────────────────────────────────
-const MOCK_OFFERS: Offer[] = [];
+export const getActivePublicOffers = unstable_cache(
+  async (): Promise<Offer[]> => {
+    const now = new Date().toISOString();
+    // Single-field query — no composite index required.
+    // We filter showOnHomepage + date range in memory to avoid needing a Firestore index.
+    const snap = await adminDb
+      .collection("offers")
+      .where("status", "==", "active")
+      .get();
+    const offers = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Offer));
+    return offers.filter(
+      (o) =>
+        o.showOnHomepage === true &&
+        o.startAt <= now &&
+        (!o.endAt || o.endAt > now)
+    );
+  },
+  ["active-public-offers"],
+  { revalidate: CATALOGUE_TTL, tags: ["offers"] }
+);
 
-export async function getActivePublicOffers(): Promise<Offer[]> {
-  if (DEV_BYPASS) return MOCK_OFFERS;
-  const now = new Date().toISOString();
-
-  // Single-field query — no composite index required.
-  // We filter the rest in memory to avoid needing Firestore index setup.
-  const snap = await adminDb
-    .collection("offers")
-    .where("status", "==", "active")
-    .get();
-
-  const offers = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Offer));
-
-  return offers.filter(
-    (o) =>
-      o.showOnHomepage === true &&
-      o.startAt <= now &&
-      (!o.endAt || o.endAt > now)
-  );
-}
+export const getAllOffers = unstable_cache(
+  async (): Promise<Offer[]> => {
+    const snap = await adminDb
+      .collection("offers")
+      .orderBy("priority", "desc")
+      .get();
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Offer));
+  },
+  ["all-offers"],
+  { revalidate: CATALOGUE_TTL, tags: ["offers"] }
+);
 
 export async function getOfferById(id: string): Promise<Offer | null> {
-  if (DEV_BYPASS) return MOCK_OFFERS.find((o) => o.id === id) ?? null;
   const doc = await adminDb.collection("offers").doc(id).get();
   if (!doc.exists) return null;
   return { id: doc.id, ...doc.data() } as Offer;
 }
 
-export async function getAllOffers(): Promise<Offer[]> {
-  if (DEV_BYPASS) return MOCK_OFFERS;
-  const snap = await adminDb
-    .collection("offers")
-    .orderBy("priority", "desc")
-    .get();
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Offer));
-}
-
 export async function getOfferByCouponCode(code: string): Promise<Offer | null> {
-  if (DEV_BYPASS) return null;
   const now = new Date().toISOString();
   const snap = await adminDb
     .collection("offers")
     .where("couponCode", "==", code.toUpperCase())
     .get();
   if (snap.empty) return null;
-  // Filter active + within date range in memory
   const active = snap.docs
     .map((d) => ({ id: d.id, ...d.data() } as Offer))
     .find(
@@ -325,7 +263,6 @@ export async function getOfferRedemptionCountByCustomer(
   offerId: string,
   customerId: string
 ): Promise<number> {
-  if (DEV_BYPASS) return 0;
   const snap = await adminDb
     .collection("offerRedemptions")
     .where("offerId", "==", offerId)
