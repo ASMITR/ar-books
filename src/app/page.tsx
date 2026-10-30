@@ -20,31 +20,36 @@ export const metadata: Metadata = {
 };
 
 const CATEGORY_IMAGES: Record<string, string> = {
-  "self-development": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&q=85",
-  "finance":          "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=85",
-  "technology":       "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=85",
-  "fiction":          "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&q=85",
-  "non-fiction":      "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=600&q=85",
-  "self-help":        "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&q=85",
-  "romance":          "https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=600&q=85",
-  "classics":         "https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=600&q=85",
-  "business":         "https://images.unsplash.com/photo-1664575602554-2087b04935a5?w=600&q=85",
-  "history":          "https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=600&q=85",
+  // Business — boardroom / city skyline
+  "business":            "https://images.unsplash.com/photo-1664575602554-2087b04935a5?w=600&q=85",
+  // Personal Development — person meditating / journaling
+  "personal-development":"https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&q=85",
+  // Finance — coins / stock chart
+  "finance":             "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=85",
+  // Technology — circuit board / keyboard glow
+  "technology":          "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=85",
+  // Productivity — clean desk / planner
+  "productivity":        "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600&q=85",
+  // Fiction — open book / library shelves
+  "fiction":             "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&q=85",
+  // Horror — dark foggy forest
+  "horror":              "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=600&q=85",
+  // Science Fiction — galaxy / space nebula
+  "science-fiction":     "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=600&q=85",
 };
-const FALLBACK_CAT = "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&q=85";
+// Fallback: open book on a wooden desk
+const FALLBACK_CAT = "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=600&q=85";
 
 // Subtle category sub-labels
 const CAT_SUBLABELS: Record<string, string> = {
-  "self-development": "Grow Every Day",
-  "finance":          "Build Wealth",
-  "technology":       "Think Digital",
-  "fiction":          "Explore Stories",
-  "non-fiction":      "Expand Knowledge",
-  "self-help":        "Better Yourself",
-  "romance":          "Feel the Love",
-  "classics":         "Timeless Reads",
-  "business":         "Lead & Succeed",
-  "history":          "Learn the Past",
+  "business":             "Lead & Succeed",
+  "personal-development": "Grow Every Day",
+  "finance":              "Build Wealth",
+  "technology":           "Think Digital",
+  "productivity":         "Get More Done",
+  "fiction":              "Explore Stories",
+  "horror":               "Dare to Read",
+  "science-fiction":      "Beyond Tomorrow",
 };
 
 export default async function HomePage() {
