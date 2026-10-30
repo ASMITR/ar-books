@@ -6,7 +6,7 @@ import { PublicShell } from "@/components/layout/PublicShell";
 import { CartProvider } from "@/hooks/useCart";
 import { AuthProvider } from "@/hooks/useAuth";
 
-const GA_ID = "G-LE301MBR5V";
+const GA_ID = process.env.NEXT_PUBLIC_FB_MEASUREMENT_ID ?? "G-1GQS036EF5";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
