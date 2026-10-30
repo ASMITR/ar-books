@@ -45,9 +45,10 @@ export default async function DownloadsPage() {
     );
   }
 
-  /* ── Fetch book metadata ──────────────────────────────────────────────────── */
+  /* ── Fetch book metadata (batched) ───────────────────────────────────────── */
   const bookIds  = [...new Set(logs.map((l) => l.productId))];
-  const bookDocs = await Promise.all(bookIds.map((id) => adminDb.collection("books").doc(id).get()));
+  const docRefs  = bookIds.map((id) => adminDb.collection("books").doc(id));
+  const bookDocs = await adminDb.getAll(...docRefs);
   const bookMap  = Object.fromEntries(
     bookDocs.map((d) => [d.id, d.exists ? (d.data() as Book) : null])
   );

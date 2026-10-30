@@ -40,12 +40,13 @@ export default async function LibraryPage() {
     );
   }
 
-  /* ── Fetch book details ───────────────────────────────────────────────────── */
-  const books = await Promise.all(
-    entitlements.map(async (ent) => {
-      const doc = await adminDb.collection("books").doc(ent.productId).get();
-      return doc.exists ? ({ id: doc.id, ...doc.data() } as Book) : null;
-    })
+  /* ── Fetch book details (batched) ────────────────────────────────────────── */
+  const docRefs = entitlements.map((ent) =>
+    adminDb.collection("books").doc(ent.productId)
+  );
+  const bookDocs = await adminDb.getAll(...docRefs);
+  const books = bookDocs.map((d) =>
+    d.exists ? ({ id: d.id, ...d.data() } as Book) : null
   );
 
   return (

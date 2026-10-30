@@ -1,7 +1,5 @@
-import { Suspense } from "react";
 import { getPublishedBooks, getVisibleCategories } from "@/lib/firebase/firestore";
 import { BookCard } from "@/components/book/BookCard";
-import { BookCardSkeleton } from "@/components/shared/LoadingSkeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ArrowRight, Search, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
@@ -15,9 +13,13 @@ export const metadata: Metadata = {
 interface FilterParams { category?: string; q?: string; sort?: string; }
 
 // ── Filter sidebar / bar ─────────────────────────────────────────────────────
-async function FilterBar({ searchParams }: { searchParams: Promise<FilterParams> }) {
-  const params = await searchParams;
-  const categories = await getVisibleCategories();
+function FilterBar({
+  params,
+  categories,
+}: {
+  params: FilterParams;
+  categories: import("@/types").Category[];
+}) {
   const hasFilters = !!(params.q || params.category || params.sort);
 
   const inputCls = "w-full border border-[#E6DFD5] bg-[#FFFCF7] px-3.5 py-2.5 text-[12px] font-body text-[#242824] placeholder:text-[#A8B5A0] focus:outline-none focus:border-[#203A2B] focus:ring-2 focus:ring-[#203A2B]/10 transition-colors rounded-sm";
@@ -95,10 +97,15 @@ async function FilterBar({ searchParams }: { searchParams: Promise<FilterParams>
 }
 
 // ── Book results grid ────────────────────────────────────────────────────────
-async function BookResults({ searchParams }: { searchParams: Promise<FilterParams> }) {
-  const params = await searchParams;
-  const [allBooks, categories] = await Promise.all([getPublishedBooks(), getVisibleCategories()]);
-
+function BookResults({
+  params,
+  allBooks,
+  categories,
+}: {
+  params: FilterParams;
+  allBooks: import("@/types").Book[];
+  categories: import("@/types").Category[];
+}) {
   let books = allBooks;
   if (params.category) {
     const cat = categories.find((c) => c.slug === params.category);
@@ -136,7 +143,13 @@ async function BookResults({ searchParams }: { searchParams: Promise<FilterParam
 interface Props { searchParams: Promise<FilterParams>; }
 
 export default async function BooksPage({ searchParams }: Props) {
-  const [allBooks, categories] = await Promise.all([getPublishedBooks(), getVisibleCategories()]);
+  // Single fetch — data is passed down to both FilterBar and BookResults
+  // so neither sub-component needs to hit Firestore again.
+  const [allBooks, categories, params] = await Promise.all([
+    getPublishedBooks(),
+    getVisibleCategories(),
+    searchParams,
+  ]);
 
   return (
     <div className="bg-[#F5EFE6] min-h-screen">
@@ -177,21 +190,11 @@ export default async function BooksPage({ searchParams }: Props) {
 
           {/* Filter bar */}
           <div className="bg-[#FFFCF7] border border-[#E6DFD5] rounded-sm px-5 py-4 mb-8 shadow-sm">
-            <Suspense fallback={<div className="h-10 w-full bg-[#E6DFD5] animate-pulse rounded-sm" />}>
-              <FilterBar searchParams={searchParams} />
-            </Suspense>
+            <FilterBar params={params} categories={categories} />
           </div>
 
           {/* Results */}
-          <Suspense
-            fallback={
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-5">
-                {Array.from({ length: 10 }).map((_, i) => <BookCardSkeleton key={i} />)}
-              </div>
-            }
-          >
-            <BookResults searchParams={searchParams} />
-          </Suspense>
+          <BookResults params={params} allBooks={allBooks} categories={categories} />
         </div>
       </section>
 

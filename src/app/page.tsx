@@ -1,4 +1,6 @@
-export const dynamic = "force-dynamic";
+// Revalidate every 60 s so new books/offers appear quickly without a cold
+// Firestore hit on every single page load.
+export const revalidate = 60;
 
 import Link from "next/link";
 import { getFeaturedBooks, getVisibleCategories, getStoreSettings, getActivePublicOffers } from "@/lib/firebase/firestore";

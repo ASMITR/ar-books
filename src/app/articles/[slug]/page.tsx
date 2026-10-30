@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getArticleBySlug, getPublishedArticles, getAdjacentArticles, getStoreSettings } from "@/lib/firebase/firestore";
+import { getArticleBySlug, getPublishedArticles, getStoreSettings } from "@/lib/firebase/firestore";
 import { formatDate } from "@/lib/utils";
 import { ReadingProgress } from "@/components/shared/ReadingProgress";
 import Image from "next/image";
@@ -34,10 +34,15 @@ export default async function ArticleDetailPage({ params }: Props) {
   ]);
   if (!article) notFound();
 
-  const [allArticles, adjacent] = await Promise.all([
-    getPublishedArticles(),
-    getAdjacentArticles(article.id),
-  ]);
+  // getAdjacentArticles internally calls getPublishedArticles, which is now
+  // cached — but we also need allArticles for related articles, so we fetch
+  // it once here and pass the adjacent data alongside.
+  const allArticles = await getPublishedArticles();
+  const idx = allArticles.findIndex((a) => a.id === article.id);
+  const adjacent = {
+    prev: idx < allArticles.length - 1 ? allArticles[idx + 1] : null,
+    next: idx > 0 ? allArticles[idx - 1] : null,
+  };
 
   const related = allArticles.filter((a) => a.id !== article.id).slice(0, 3);
   const mins = readingTime(article.content);
