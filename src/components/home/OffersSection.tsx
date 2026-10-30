@@ -2,33 +2,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Copy, Check, Clock, ArrowRight, ShoppingCart, BookOpen, Layers } from "lucide-react";
+import {
+  Copy, Check, Clock, ArrowRight, ShoppingCart,
+  BookOpen, Layers, Tag, Zap, Gift, PackageOpen,
+} from "lucide-react";
 import type { Offer } from "@/types";
 import { formatINR } from "@/lib/currency";
 
-// ─── Decorative SVG book stack (inline — no external dependency) ──────────────
-function BookStackSvg({ dark = false }: { dark?: boolean }) {
-  const c = dark ? "#A8B5A0" : "#203A2B";
-  const c2 = dark ? "#C6A66B" : "#315B55";
-  return (
-    <svg viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-      {/* Book 3 (back) */}
-      <rect x="30" y="52" width="66" height="11" rx="2" fill={c} opacity="0.18" />
-      <rect x="30" y="52" width="7" height="11" rx="1" fill={c} opacity="0.32" />
-      {/* Book 2 (mid) */}
-      <rect x="22" y="38" width="70" height="13" rx="2" fill={c2} opacity="0.22" />
-      <rect x="22" y="38" width="8" height="13" rx="1" fill={c2} opacity="0.38" />
-      {/* Book 1 (front) */}
-      <rect x="16" y="22" width="74" height="15" rx="2" fill={c} opacity="0.28" />
-      <rect x="16" y="22" width="9" height="15" rx="1" fill={c} opacity="0.5" />
-      {/* Leaf accent */}
-      <path d="M88 18 Q98 10 102 24 Q96 28 88 18Z" fill={c2} opacity="0.25" />
-      <path d="M90 19 Q102 17 100 24" stroke={c2} strokeWidth="0.8" opacity="0.3" fill="none" />
-    </svg>
-  );
-}
-
-// ─── Countdown – live ticking ─────────────────────────────────────────────────
+// ─── Countdown hook ───────────────────────────────────────────────────────────
 function useCountdown(endAt: string) {
   const calc = () => {
     const diff = new Date(endAt).getTime() - Date.now();
@@ -49,43 +30,36 @@ function useCountdown(endAt: string) {
   return tick;
 }
 
-function CountdownTile({ value, label }: { value: number; label: string }) {
-  return (
-    <div className="flex flex-col items-center">
-      <span className="text-[18px] font-heading font-bold text-[#FFFCF7] leading-none w-8 text-center">
-        {String(value).padStart(2, "0")}
-      </span>
-      <span className="text-[8px] font-body uppercase tracking-[0.12em] text-[#A8B5A0] mt-0.5">{label}</span>
-    </div>
-  );
-}
-
-function CountdownRow({ endAt }: { endAt: string }) {
+// ─── Countdown strip ──────────────────────────────────────────────────────────
+function CountdownStrip({ endAt, dark }: { endAt: string; dark: boolean }) {
   const { days, hours, mins, expired } = useCountdown(endAt);
   if (expired) return null;
+
+  const bg   = dark ? "bg-white/[0.07]" : "bg-[#203A2B]/[0.06]";
+  const text = dark ? "text-[#A8B5A0]"  : "text-[#5A7060]";
+  const num  = dark ? "text-[#FFFCF7]"  : "text-[#203A2B]";
+
   return (
-    <div className="flex items-center gap-1.5">
-      <Clock size={11} className="text-[#A8B5A0] shrink-0" />
-      <span className="text-[11px] font-body text-[#A8B5A0]">Offer ends in</span>
-      <div className="flex items-center gap-2 ml-1">
-        <CountdownTile value={days}  label="Days"  />
-        <span className="text-[#C6A66B] text-[14px] font-bold leading-none -mt-1">·</span>
-        <CountdownTile value={hours} label="Hours" />
-        <span className="text-[#C6A66B] text-[14px] font-bold leading-none -mt-1">·</span>
-        <CountdownTile value={mins}  label="Mins"  />
-      </div>
+    <div className={`flex items-center gap-3 px-3.5 py-2.5 ${bg} border-t ${dark ? "border-white/[0.08]" : "border-[#203A2B]/[0.08]"}`}>
+      <Clock size={11} className={text} strokeWidth={1.8} />
+      <span className={`font-body text-[10px] font-semibold uppercase tracking-[0.1em] ${text}`}>
+        Ends in
+      </span>
+      {[{ v: days, l: "d" }, { v: hours, l: "h" }, { v: mins, l: "m" }].map(({ v, l }, i) => (
+        <span key={l} className="flex items-baseline gap-0.5">
+          {i > 0 && <span className={`${text} text-[11px] mr-1`}>:</span>}
+          <span className={`font-heading text-[16px] font-bold ${num} leading-none`}>
+            {String(v).padStart(2, "0")}
+          </span>
+          <span className={`font-body text-[9px] ${text}`}>{l}</span>
+        </span>
+      ))}
     </div>
   );
 }
 
 // ─── Copy code pill ───────────────────────────────────────────────────────────
-function CopyPill({
-  code,
-  dark = false,
-}: {
-  code: string;
-  dark?: boolean;
-}) {
+function CopyPill({ code, dark }: { code: string; dark: boolean }) {
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -93,10 +67,8 @@ function CopyPill({
     try { await navigator.clipboard.writeText(code); }
     catch {
       const el = document.createElement("textarea");
-      el.value = code;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand("copy");
+      el.value = code; document.body.appendChild(el);
+      el.select(); document.execCommand("copy");
       document.body.removeChild(el);
     }
     setCopied(true);
@@ -104,365 +76,483 @@ function CopyPill({
     timerRef.current = setTimeout(() => setCopied(false), 2000);
   };
 
-  const border = dark ? "border-white/25" : "border-[#203A2B]/30";
-  const bg     = dark ? "bg-white/[0.06] hover:bg-white/[0.10]" : "bg-transparent hover:bg-[#203A2B]/[0.04]";
-  const text   = dark ? "text-[#FFFCF7]" : "text-[#203A2B]";
-  const subtext = dark ? "text-[#A8B5A0]" : "text-[#9e9a94]";
-
   return (
     <button
       onClick={handleCopy}
       aria-label={`Copy code ${code}`}
-      className={`flex items-center justify-between gap-3 w-full border-2 border-dashed ${border} ${bg} rounded-lg px-3.5 py-2.5 transition-all duration-150 group`}
+      className={`w-full flex items-center justify-between gap-3 border-2 border-dashed rounded-sm
+        px-4 py-3 transition-all duration-150 group
+        ${dark
+          ? "border-white/20 hover:border-[#C6A66B]/60 bg-white/[0.04] hover:bg-white/[0.08]"
+          : "border-[#203A2B]/20 hover:border-[#203A2B]/50 bg-[#203A2B]/[0.03] hover:bg-[#203A2B]/[0.06]"
+        }`}
     >
-      <span className={`font-mono text-[14px] font-bold tracking-[0.15em] ${text}`}>
-        {code}
-      </span>
-      <span className={`flex items-center gap-1 text-[10px] font-body uppercase tracking-[0.1em] ${subtext} group-hover:${dark ? "text-white/70" : "text-[#315B55]"} transition-colors shrink-0`}>
-        {copied ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
-        {copied ? "Copied!" : "Copy Code"}
+      <div className="flex items-center gap-2 min-w-0">
+        <Tag size={12} className={dark ? "text-[#C6A66B] shrink-0" : "text-[#315B55] shrink-0"} />
+        <span className={`font-mono text-[13px] font-bold tracking-[0.2em] truncate ${dark ? "text-[#FFFCF7]" : "text-[#203A2B]"}`}>
+          {code}
+        </span>
+      </div>
+      <span className={`flex items-center gap-1.5 shrink-0 font-body text-[10px] font-bold uppercase tracking-[0.1em] transition-colors
+        ${copied
+          ? "text-emerald-500"
+          : dark ? "text-[#A8B5A0] group-hover:text-[#FFFCF7]" : "text-[#9e9a94] group-hover:text-[#203A2B]"
+        }`}>
+        {copied ? <Check size={10} /> : <Copy size={10} />}
+        {copied ? "Copied!" : "Copy"}
       </span>
     </button>
   );
 }
 
-// ─── Badge chip ───────────────────────────────────────────────────────────────
-function BadgeChip({ label, dark = false }: { label: string; dark?: boolean }) {
-  return (
-    <span
-      className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-body font-bold uppercase tracking-[0.14em]
-        ${dark
-          ? "bg-[#C6A66B] text-[#242824]"
-          : "bg-[#203A2B] text-[#FFFCF7]"
-        }`}
-    >
-      {label}
-    </span>
-  );
+// ─── Offer type icon ──────────────────────────────────────────────────────────
+function OfferIcon({ type, dark }: { type: string; dark: boolean }) {
+  const cls = `shrink-0 ${dark ? "text-[#C6A66B]" : "text-[#203A2B]"}`;
+  if (type === "bundle" || type === "buy_x_get_y") return <PackageOpen size={16} strokeWidth={1.7} className={cls} />;
+  if (type === "first_order") return <Gift size={16} strokeWidth={1.7} className={cls} />;
+  return <Zap size={16} strokeWidth={1.7} className={cls} />;
 }
 
-// ─── Discount headline ─────────────────────────────────────────────────────────
-function DiscountHeadline({
-  offer,
-  dark = false,
-}: {
-  offer: Offer;
-  dark?: boolean;
-}) {
-  const color = dark ? "text-[#C6A66B]" : "text-[#203A2B]";
-  const sub   = dark ? "text-[#FFFCF7]" : "text-[#242824]";
+// ─── Discount headline ────────────────────────────────────────────────────────
+function DiscountNumber({ offer, dark }: { offer: Offer; dark: boolean }) {
+  const mainCls = `font-heading font-bold leading-none tracking-tight ${dark ? "text-[#C6A66B]" : "text-[#203A2B]"}`;
+  const subCls  = `font-body font-bold uppercase tracking-[0.1em] ${dark ? "text-[#A8B5A0]" : "text-[#789185]"}`;
 
   if (offer.offerType === "bundle" || offer.offerType === "buy_x_get_y") {
-    const x = offer.buyX ?? 3;
     return (
-      <div>
-        <p className={`font-heading text-[38px] sm:text-[42px] font-bold ${color} leading-[0.9] tracking-tight`}>
-          BUY {x} &amp;
-        </p>
-        <p className={`font-heading text-[38px] sm:text-[42px] font-bold ${color} leading-[0.9] tracking-tight`}>
-          SAVE {offer.discountValue}%
-        </p>
+      <div className="flex items-end gap-2">
+        <span className={`${mainCls} text-[48px] sm:text-[56px]`}>
+          {offer.discountValue}
+          <span className={`${mainCls} text-[28px] ml-0.5`}>%</span>
+        </span>
+        <span className={`${subCls} text-[11px] mb-2`}>
+          when you buy {offer.buyX ?? 3}+
+        </span>
       </div>
     );
   }
-
   if (offer.discountType === "flat") {
     return (
-      <p className={`font-heading text-[44px] sm:text-[52px] font-bold ${color} leading-[0.85] tracking-tight`}>
-        SAVE {formatINR(offer.discountValue * 100)}
-      </p>
+      <div className="flex items-start gap-1">
+        <span className={`${mainCls} text-[26px] mt-2`}>₹</span>
+        <span className={`${mainCls} text-[52px] sm:text-[60px]`}>
+          {(offer.discountValue).toLocaleString("en-IN")}
+        </span>
+        <span className={`${subCls} text-[11px] mb-2 self-end`}>off</span>
+      </div>
     );
   }
-
   // percent
   return (
-    <div className="flex items-start gap-0">
-      <p className={`font-heading text-[52px] sm:text-[60px] font-bold ${color} leading-[0.85] tracking-tight`}>
-        {offer.discountValue}%
-      </p>
-      <p className={`font-heading text-[22px] font-bold ${color} leading-none mt-1.5 ml-1`}>OFF</p>
+    <div className="flex items-end gap-1.5">
+      <span className={`${mainCls} text-[56px] sm:text-[64px]`}>{offer.discountValue}</span>
+      <span className={`${mainCls} text-[28px] mb-1`}>%</span>
+      <span className={`${subCls} text-[11px] mb-2`}>off</span>
     </div>
   );
 }
 
-// ─── Card type A — standard portrait card (light) ─────────────────────────────
-function CardLight({ offer }: { offer: Offer }) {
-  const badge = offer.badgeLabel || defaultBadge(offer);
-  const ctaHref = "/books";
-
-  return (
-    <article className="group relative bg-[#F5EFE6] rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col min-h-[360px]">
-      {/* Decorative illustration top-right */}
-      <div className="absolute top-0 right-0 w-32 h-32 opacity-30 pointer-events-none select-none">
-        <BookStackSvg dark={false} />
-      </div>
-
-      <div className="relative z-10 p-6 flex flex-col flex-1 gap-4">
-        {/* Badge */}
-        <div><BadgeChip label={badge} /></div>
-
-        {/* Discount headline */}
-        <DiscountHeadline offer={offer} dark={false} />
-
-        {/* Title + description */}
-        <div>
-          <h3 className="font-heading text-[19px] font-bold text-[#242824] leading-snug">
-            {offer.title}
-          </h3>
-          <p className="font-body text-[13px] text-[#777970] mt-1.5 leading-relaxed line-clamp-2">
-            {offer.description}
-          </p>
-        </div>
-
-        {/* Coupon pill */}
-        {offer.couponCode && offer.displayCouponPublicly && (
-          <CopyPill code={offer.couponCode} dark={false} />
-        )}
-
-        {/* CTA */}
-        <div className="mt-auto flex flex-col gap-2">
-          <Link
-            href={ctaHref}
-            className="flex items-center justify-center gap-2 bg-[#203A2B] text-[#FFFCF7] font-body text-[11px] font-bold uppercase tracking-[0.14em] px-5 py-3 rounded-xl hover:bg-[#315B55] transition-colors duration-200"
-            aria-label={`${offer.ctaText ?? "Explore Books"} — ${offer.title}`}
-          >
-            {offer.ctaText ?? "Explore Books"}
-            <ArrowRight size={12} />
-          </Link>
-
-          {/* Footer meta */}
-          <div className="flex items-center justify-between mt-1">
-            <span className="text-[10px] font-body text-[#A8B5A0] flex items-center gap-1">
-              {offer.customerEligibility === "new_customers"
-                ? <><BookOpen size={9} /> First-time customers only</>
-                : offer.minCartValuePaise
-                  ? <><ShoppingCart size={9} /> Min. {formatINR(offer.minCartValuePaise)}</>
-                  : <><Layers size={9} /> Selected books</>
-              }
-            </span>
-            <span className="text-[10px] font-body text-[#A8B5A0]">Terms apply</span>
-          </div>
-        </div>
-      </div>
-    </article>
-  );
+// ─── Eligibility note ─────────────────────────────────────────────────────────
+function EligibilityNote({ offer, dark }: { offer: Offer; dark: boolean }) {
+  const cls = `font-body text-[10px] flex items-center gap-1.5 ${dark ? "text-[#A8B5A0]/70" : "text-[#A8B5A0]"}`;
+  if (offer.customerEligibility === "new_customers")
+    return <span className={cls}><BookOpen size={9} strokeWidth={1.8} /> First-time customers only</span>;
+  if (offer.minCartValuePaise)
+    return <span className={cls}><ShoppingCart size={9} strokeWidth={1.8} /> Min. order {formatINR(offer.minCartValuePaise)}</span>;
+  if (offer.applicableBookIds?.length)
+    return <span className={cls}><Layers size={9} strokeWidth={1.8} /> On selected eBooks</span>;
+  return <span className={cls}><Layers size={9} strokeWidth={1.8} /> All eligible books</span>;
 }
 
-// ─── Card type B — portrait card dark (forest green) ──────────────────────────
-function CardDark({ offer }: { offer: Offer }) {
-  const badge = offer.badgeLabel || defaultBadge(offer);
-  const ctaHref = "/books";
-
-  return (
-    <article className="group relative bg-[#203A2B] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col min-h-[360px]">
-      {/* Decorative illustration */}
-      <div className="absolute top-0 right-0 w-36 h-36 opacity-20 pointer-events-none select-none">
-        <BookStackSvg dark={true} />
-      </div>
-      {/* Subtle grain texture overlay */}
-      <div className="absolute inset-0 opacity-[0.025] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJhIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBudW1PY3RhdmVzPSI0Ii8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iMSIvPjwvc3ZnPg==')]" />
-
-      <div className="relative z-10 p-6 flex flex-col flex-1 gap-4">
-        {/* Badge */}
-        <div><BadgeChip label={badge} dark={true} /></div>
-
-        {/* Discount headline */}
-        <DiscountHeadline offer={offer} dark={true} />
-
-        {/* Title + description */}
-        <div>
-          <h3 className="font-heading text-[19px] font-bold text-[#FFFCF7] leading-snug">
-            {offer.title}
-          </h3>
-          <p className="font-body text-[13px] text-[#A8B5A0] mt-1.5 leading-relaxed line-clamp-2">
-            {offer.description}
-          </p>
-        </div>
-
-        {/* Coupon pill */}
-        {offer.couponCode && offer.displayCouponPublicly && (
-          <CopyPill code={offer.couponCode} dark={true} />
-        )}
-
-        {/* Countdown */}
-        {offer.endAt && (
-          <CountdownRow endAt={offer.endAt} />
-        )}
-
-        {/* CTA */}
-        <div className="mt-auto flex flex-col gap-2">
-          <Link
-            href={ctaHref}
-            className="flex items-center justify-center gap-2 bg-[#C6A66B] text-[#242824] font-body text-[11px] font-bold uppercase tracking-[0.14em] px-5 py-3 rounded-xl hover:bg-[#D4B47A] transition-colors duration-200"
-            aria-label={`${offer.ctaText ?? "Shop the Offer"} — ${offer.title}`}
-          >
-            {offer.ctaText ?? "Shop the Offer"}
-            <ArrowRight size={12} />
-          </Link>
-
-          {/* Footer meta */}
-          <div className="flex items-center justify-between mt-1">
-            <span className="text-[10px] font-body text-[#A8B5A0]/70 flex items-center gap-1">
-              {offer.applicableBookIds?.length
-                ? <><BookOpen size={9} /> On selected eBooks only</>
-                : <><Layers size={9} /> All eligible books</>
-              }
-            </span>
-            <span className="text-[10px] font-body text-[#A8B5A0]/70">Terms apply</span>
-          </div>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-// ─── Card type C — wide banner (full-width, last card) ────────────────────────
-function CardBanner({ offer }: { offer: Offer }) {
-  const badge = offer.badgeLabel || defaultBadge(offer);
-  const ctaHref = "/books";
-
-  return (
-    <article className="group relative bg-[#F5EFE6] rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-0 min-h-[200px]">
-
-        {/* Left — discount + cta */}
-        <div className="p-6 sm:p-8 flex flex-col justify-center gap-4">
-          <div><BadgeChip label={badge} /></div>
-          <DiscountHeadline offer={offer} dark={false} />
-          <div>
-            <h3 className="font-heading text-[20px] font-bold text-[#242824] leading-snug">
-              {offer.title}
-            </h3>
-            <p className="font-body text-[13px] text-[#777970] mt-1 leading-relaxed">
-              {offer.description}
-            </p>
-          </div>
-          <Link
-            href={ctaHref}
-            className="flex items-center gap-2 bg-[#203A2B] text-[#FFFCF7] font-body text-[11px] font-bold uppercase tracking-[0.14em] px-5 py-3 rounded-xl hover:bg-[#315B55] transition-colors duration-200 w-fit"
-            aria-label={`${offer.ctaText ?? "Shop Now"} — ${offer.title}`}
-          >
-            {offer.ctaText ?? "Shop Now"}
-            <ArrowRight size={12} />
-          </Link>
-        </div>
-
-        {/* Centre — coupon + meta (only on md+) */}
-        <div className="hidden md:flex flex-col items-center justify-center px-8 gap-3 border-x border-[#E6DFD5]">
-          {offer.couponCode && offer.displayCouponPublicly && (
-            <div className="w-52">
-              <CopyPill code={offer.couponCode} dark={false} />
-            </div>
-          )}
-          {offer.minCartValuePaise && (
-            <p className="text-[11px] font-body text-[#A8B5A0] flex items-center gap-1.5 mt-1">
-              <ShoppingCart size={10} />
-              Minimum order value: {formatINR(offer.minCartValuePaise)}
-            </p>
-          )}
-          {offer.endAt && (
-            <div className="flex items-center gap-1.5 mt-1">
-              <Clock size={10} className="text-[#A8B5A0]" />
-              <span className="text-[11px] font-body text-[#A8B5A0]">
-                Valid till {new Date(offer.endAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-              </span>
-              <span className="text-[#A8B5A0] mx-1">|</span>
-              <span className="text-[11px] font-body text-[#A8B5A0]">Terms apply</span>
-            </div>
-          )}
-        </div>
-
-        {/* Right — decorative / illustration */}
-        <div className="relative hidden md:flex items-center justify-center overflow-hidden bg-[#EDE6D8] rounded-r-2xl min-h-[200px]">
-          {/* Big decorative text */}
-          <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none">
-            <p className="font-heading text-[52px] font-bold text-[#203A2B]/10 leading-tight text-center px-4">
-              Great<br />Stories<br />Greater<br />Savings
-            </p>
-          </div>
-          {/* Book stack illustration */}
-          <div className="relative z-10 w-32 h-32 opacity-40">
-            <BookStackSvg dark={false} />
-          </div>
-        </div>
-
-        {/* Mobile-only: coupon below the fold */}
-        <div className="md:hidden px-6 pb-6 flex flex-col gap-2">
-          {offer.couponCode && offer.displayCouponPublicly && (
-            <CopyPill code={offer.couponCode} dark={false} />
-          )}
-          <div className="flex items-center justify-between mt-1">
-            {offer.minCartValuePaise && (
-              <p className="text-[10px] font-body text-[#A8B5A0] flex items-center gap-1">
-                <ShoppingCart size={9} />
-                Min. {formatINR(offer.minCartValuePaise)}
-              </p>
-            )}
-            <span className="text-[10px] font-body text-[#A8B5A0] ml-auto">Terms apply</span>
-          </div>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Default badge label ──────────────────────────────────────────────────────
 function defaultBadge(offer: Offer): string {
   const map: Record<string, string> = {
     first_order:      "Welcome Offer",
     bundle:           "Book Bundle",
-    buy_x_get_y:      "Book Bundle",
+    buy_x_get_y:      "Bundle Deal",
     combo:            "Combo Deal",
     category:         "Category Deal",
     product_specific: "Limited Offer",
-    percent:          "Limited-Time Deal",
+    percent:          "Limited-Time",
     flat:             "Extra Savings",
   };
   return map[offer.offerType] ?? "Special Offer";
 }
 
-// Assign card variant by position + offer type for visual variety
-function cardVariant(offer: Offer, index: number, total: number): "light" | "dark" | "banner" {
-  // Last card as banner only when it's the 4th+ and not already in the first 3
-  if (total >= 4 && index === total - 1 && index >= 3) return "banner";
-  // Alternate light/dark: 0=light, 1=light, 2=dark, 3=light…
-  // Make the dark card the one with a countdown (most urgent = dark = prominent)
-  if (offer.endAt && index < 3) return "dark";
-  return "light";
+// ─────────────────────────────────────────────────────────────────────────────
+// CARD LIGHT  (cream/ivory, forest accent)
+// ─────────────────────────────────────────────────────────────────────────────
+function CardLight({ offer }: { offer: Offer }) {
+  const badge = offer.badgeLabel || defaultBadge(offer);
+  return (
+    <article className="group relative flex flex-col bg-[#FFFCF7] border border-[#E6DFD5]
+      hover:border-[#C6A66B]/70 hover:shadow-[0_6px_32px_rgba(32,58,43,0.10)]
+      transition-all duration-300 overflow-hidden">
+
+      {/* Gold top bar */}
+      <div className="h-[3px] bg-gradient-to-r from-[#C6A66B] via-[#e0c080] to-[#C6A66B]
+        scale-x-0 group-hover:scale-x-100 transition-transform duration-400 origin-left" />
+
+      {/* Header strip */}
+      <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-0">
+        <div className="flex items-center gap-2">
+          <OfferIcon type={offer.offerType} dark={false} />
+          <span className="font-body text-[10px] font-bold uppercase tracking-[0.18em] text-[#315B55]">
+            {badge}
+          </span>
+        </div>
+        {offer.endAt && (
+          <span className="font-body text-[10px] text-[#A8B5A0] flex items-center gap-1">
+            <Clock size={9} strokeWidth={1.8} />
+            {new Date(offer.endAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+          </span>
+        )}
+      </div>
+
+      {/* Discount number */}
+      <div className="px-5 pt-3 pb-1">
+        <DiscountNumber offer={offer} dark={false} />
+      </div>
+
+      {/* Divider */}
+      <div className="mx-5 h-px bg-[#EDE8E1]" />
+
+      {/* Title + desc */}
+      <div className="px-5 pt-4 pb-0 flex flex-col gap-1.5 flex-1">
+        <h3 className="font-heading text-[17px] font-bold text-[#1a1a1a] leading-snug">
+          {offer.title}
+        </h3>
+        {offer.description && (
+          <p className="font-body text-[12px] text-[#777970] leading-relaxed line-clamp-2">
+            {offer.description}
+          </p>
+        )}
+      </div>
+
+      {/* Coupon */}
+      {offer.couponCode && offer.displayCouponPublicly && (
+        <div className="px-5 pt-4">
+          <CopyPill code={offer.couponCode} dark={false} />
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="px-5 pt-4 pb-5 flex items-center justify-between gap-3 mt-auto">
+        <EligibilityNote offer={offer} dark={false} />
+        <Link
+          href="/books"
+          aria-label={`${offer.ctaText ?? "Shop Now"} — ${offer.title}`}
+          className="inline-flex items-center gap-1.5 shrink-0
+            font-body text-[11px] font-bold uppercase tracking-[0.14em]
+            bg-[#203A2B] text-[#FFFCF7] px-4 py-2.5
+            hover:bg-[#315B55] active:scale-[0.98]
+            transition-all duration-200"
+        >
+          {offer.ctaText ?? "Shop Now"}
+          <ArrowRight size={11} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+        </Link>
+      </div>
+
+      {/* Countdown */}
+      {offer.endAt && <CountdownStrip endAt={offer.endAt} dark={false} />}
+    </article>
+  );
 }
 
-// ─── Section header ───────────────────────────────────────────────────────────
-function SectionHeader() {
+// ─────────────────────────────────────────────────────────────────────────────
+// CARD DARK  (forest green, gold accent)
+// ─────────────────────────────────────────────────────────────────────────────
+function CardDark({ offer }: { offer: Offer }) {
+  const badge = offer.badgeLabel || defaultBadge(offer);
   return (
-    <div className="text-center mb-12">
-      {/* Eyebrow */}
-      <div className="flex items-center justify-center gap-3 mb-4">
-        <span className="w-10 h-px bg-[#C6A66B]" />
-        <p className="text-[10px] font-body font-bold uppercase tracking-[0.3em] text-[#C6A66B]">
-          Exclusive Reader Deals
-        </p>
-        <span className="w-10 h-px bg-[#C6A66B]" />
+    <article className="group relative flex flex-col bg-[#1C3325]
+      border border-[#2E5040]
+      hover:border-[#C6A66B]/60 hover:shadow-[0_6px_32px_rgba(198,166,107,0.15)]
+      transition-all duration-300 overflow-hidden">
+
+      {/* Gold top bar */}
+      <div className="h-[3px] bg-gradient-to-r from-[#C6A66B] via-[#e0c080] to-[#C6A66B]
+        scale-x-0 group-hover:scale-x-100 transition-transform duration-400 origin-left" />
+
+      {/* Subtle noise/texture overlay */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none
+        bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJhIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBudW1PY3RhdmVzPSI0Ii8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iMSIvPjwvc3ZnPg==')]" />
+
+      {/* Header strip */}
+      <div className="relative flex items-center justify-between gap-3 px-5 pt-5 pb-0">
+        <div className="flex items-center gap-2">
+          <OfferIcon type={offer.offerType} dark={true} />
+          <span className="font-body text-[10px] font-bold uppercase tracking-[0.18em] text-[#C6A66B]">
+            {badge}
+          </span>
+        </div>
+        {offer.endAt && (
+          <span className="font-body text-[10px] text-[#A8B5A0]/70 flex items-center gap-1">
+            <Clock size={9} strokeWidth={1.8} />
+            {new Date(offer.endAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+          </span>
+        )}
       </div>
-      {/* Heading */}
-      <h2 className="font-heading text-[40px] sm:text-[52px] font-bold text-[#242824] leading-tight mb-3">
-        A Little More to Love
-      </h2>
-      <p className="font-body text-[15px] text-[#777970] max-w-md mx-auto leading-relaxed">
-        Discover special offers and find your next favourite read for less.
-      </p>
-      {/* View all link */}
-      <Link
-        href="/books"
-        className="inline-flex items-center gap-1.5 mt-5 text-[11px] font-body font-bold uppercase tracking-[0.15em] text-[#242824] border-b border-[#242824]/40 pb-0.5 hover:border-[#242824] transition-colors"
+
+      {/* Discount number */}
+      <div className="relative px-5 pt-3 pb-1">
+        <DiscountNumber offer={offer} dark={true} />
+      </div>
+
+      {/* Divider */}
+      <div className="mx-5 h-px bg-white/[0.07]" />
+
+      {/* Title + desc */}
+      <div className="relative px-5 pt-4 pb-0 flex flex-col gap-1.5 flex-1">
+        <h3 className="font-heading text-[17px] font-bold text-[#FFFCF7] leading-snug">
+          {offer.title}
+        </h3>
+        {offer.description && (
+          <p className="font-body text-[12px] text-[#A8B5A0] leading-relaxed line-clamp-2">
+            {offer.description}
+          </p>
+        )}
+      </div>
+
+      {/* Coupon */}
+      {offer.couponCode && offer.displayCouponPublicly && (
+        <div className="relative px-5 pt-4">
+          <CopyPill code={offer.couponCode} dark={true} />
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="relative px-5 pt-4 pb-5 flex items-center justify-between gap-3 mt-auto">
+        <EligibilityNote offer={offer} dark={true} />
+        <Link
+          href="/books"
+          aria-label={`${offer.ctaText ?? "Shop Now"} — ${offer.title}`}
+          className="inline-flex items-center gap-1.5 shrink-0
+            font-body text-[11px] font-bold uppercase tracking-[0.14em]
+            bg-[#C6A66B] text-[#1C3325] px-4 py-2.5
+            hover:bg-[#D4B47A] active:scale-[0.98]
+            transition-all duration-200"
+        >
+          {offer.ctaText ?? "Shop Now"}
+          <ArrowRight size={11} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+        </Link>
+      </div>
+
+      {/* Countdown */}
+      {offer.endAt && <CountdownStrip endAt={offer.endAt} dark={true} />}
+    </article>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CARD BANNER  (full-width, 3-column layout on md+)
+// ─────────────────────────────────────────────────────────────────────────────
+function CardBanner({ offer }: { offer: Offer }) {
+  const badge = offer.badgeLabel || defaultBadge(offer);
+  return (
+    <article className="group relative bg-[#1C3325] border border-[#2E5040]
+      hover:border-[#C6A66B]/60 hover:shadow-[0_6px_32px_rgba(198,166,107,0.15)]
+      transition-all duration-300 overflow-hidden">
+
+      {/* Gold top bar */}
+      <div className="h-[3px] bg-gradient-to-r from-[#C6A66B] via-[#e0c080] to-[#C6A66B]
+        scale-x-0 group-hover:scale-x-100 transition-transform duration-400 origin-left" />
+
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_1px_320px]">
+
+        {/* ── LEFT: main content ──────────────────────────────────────── */}
+        <div className="px-6 sm:px-8 py-8 flex flex-col gap-4">
+          {/* Badge + date */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <OfferIcon type={offer.offerType} dark={true} />
+              <span className="font-body text-[10px] font-bold uppercase tracking-[0.18em] text-[#C6A66B]">
+                {badge}
+              </span>
+            </div>
+            {offer.endAt && (
+              <span className="font-body text-[10px] text-[#A8B5A0]/70 flex items-center gap-1 ml-auto">
+                <Clock size={9} strokeWidth={1.8} />
+                Ends {new Date(offer.endAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+              </span>
+            )}
+          </div>
+
+          {/* Discount + title inline */}
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-6">
+            <DiscountNumber offer={offer} dark={true} />
+            <div className="flex flex-col gap-1 pb-1">
+              <h3 className="font-heading text-[20px] font-bold text-[#FFFCF7] leading-snug">
+                {offer.title}
+              </h3>
+              {offer.description && (
+                <p className="font-body text-[12px] text-[#A8B5A0] leading-relaxed max-w-sm">
+                  {offer.description}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* CTA + eligibility */}
+          <div className="flex items-center gap-4 flex-wrap">
+            <Link
+              href="/books"
+              aria-label={`${offer.ctaText ?? "Shop Now"} — ${offer.title}`}
+              className="inline-flex items-center gap-1.5
+                font-body text-[11px] font-bold uppercase tracking-[0.14em]
+                bg-[#C6A66B] text-[#1C3325] px-5 py-3
+                hover:bg-[#D4B47A] active:scale-[0.98]
+                transition-all duration-200"
+            >
+              {offer.ctaText ?? "Shop Now"}
+              <ArrowRight size={11} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+            </Link>
+            <EligibilityNote offer={offer} dark={true} />
+          </div>
+        </div>
+
+        {/* ── DIVIDER ─────────────────────────────────────────────────── */}
+        <div className="hidden md:block bg-white/[0.07]" />
+
+        {/* ── RIGHT: coupon + countdown ────────────────────────────────── */}
+        <div className="flex flex-col justify-center gap-4 px-6 sm:px-8 py-8
+          border-t border-white/[0.07] md:border-t-0">
+
+          {offer.couponCode && offer.displayCouponPublicly ? (
+            <>
+              <div>
+                <p className="font-body text-[10px] font-semibold uppercase tracking-[0.14em] text-[#A8B5A0] mb-2.5">
+                  Your discount code
+                </p>
+                <CopyPill code={offer.couponCode} dark={true} />
+              </div>
+              <p className="font-body text-[11px] text-[#A8B5A0]/70 leading-relaxed">
+                Apply this code at checkout to unlock your discount. Terms and conditions apply.
+              </p>
+            </>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <p className="font-body text-[13px] font-semibold text-[#FFFCF7]">
+                No code needed
+              </p>
+              <p className="font-body text-[12px] text-[#A8B5A0] leading-relaxed">
+                Discount is applied automatically. Add eligible books to your cart and save instantly.
+              </p>
+            </div>
+          )}
+
+          {offer.minCartValuePaise && (
+            <div className="flex items-center gap-2 border-t border-white/[0.07] pt-3">
+              <ShoppingCart size={11} className="text-[#A8B5A0] shrink-0" strokeWidth={1.8} />
+              <span className="font-body text-[11px] text-[#A8B5A0]">
+                Minimum cart value: <strong className="text-[#FFFCF7]">{formatINR(offer.minCartValuePaise)}</strong>
+              </span>
+            </div>
+          )}
+
+          {offer.endAt && <CountdownStrip endAt={offer.endAt} dark={true} />}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+// ─── Mobile card carousel (snap-scroll, playing-card stack effect) ────────────
+function MobileCarousel({ offers }: { offers: Offer[] }) {
+  const [active, setActive] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  // Sync dot indicator with native scroll position
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const cardWidth = el.scrollWidth / offers.length;
+      const idx = Math.round(el.scrollLeft / cardWidth);
+      setActive(Math.min(Math.max(idx, 0), offers.length - 1));
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [offers.length]);
+
+  // Tap a dot → scroll to that card
+  const goTo = (i: number) => {
+    const el = trackRef.current;
+    if (!el) return;
+    const cardWidth = el.scrollWidth / offers.length;
+    el.scrollTo({ left: cardWidth * i, behavior: "smooth" });
+  };
+
+  return (
+    <div className="relative">
+      {/* Stack shadow cards peeking behind the active card */}
+      <div className="relative h-[26px] mx-4">
+        <div className="absolute inset-x-6 top-2 h-full bg-[#1C3325]/30 rounded-sm" />
+        <div className="absolute inset-x-3 top-1 h-full bg-[#1C3325]/15 rounded-sm" />
+      </div>
+
+      {/* Scroll track — negative margin pulls it edge-to-edge past the section padding */}
+      <div
+        ref={trackRef}
+        className="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory
+          scrollbar-none pb-2 -mx-4 px-4"
+        style={{ WebkitOverflowScrolling: "touch" }}
       >
-        View All Offers <ArrowRight size={11} />
-      </Link>
+        {offers.map((offer, i) => {
+          const isDark = offer.endAt || i % 2 === 1;
+          return (
+            <div
+              key={offer.id}
+              className="snap-center shrink-0 w-[calc(100vw-2.5rem)] max-w-sm
+                transition-all duration-300"
+              style={{
+                // Playing-card tilt: alternate ±1.5 deg, active = 0
+                transform: active === i
+                  ? "rotate(0deg) scale(1)"
+                  : `rotate(${i % 2 === 0 ? "1.2deg" : "-1.2deg"}) scale(0.97)`,
+                opacity: active === i ? 1 : 0.72,
+              }}
+            >
+              {isDark
+                ? <CardDark  offer={offer} />
+                : <CardLight offer={offer} />}
+            </div>
+          );
+        })}
+        {/* Right spacer so last card centres properly */}
+        <div className="shrink-0 w-4" aria-hidden />
+      </div>
+
+      {/* Dot indicators */}
+      {offers.length > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-4">
+          {offers.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              aria-label={`Go to offer ${i + 1}`}
+              className={`rounded-full transition-all duration-300 ${
+                active === i
+                  ? "w-5 h-2 bg-[#203A2B]"
+                  : "w-2 h-2 bg-[#C6A66B]/40 hover:bg-[#C6A66B]/70"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Counter label */}
+      {offers.length > 1 && (
+        <p className="text-center font-body text-[10px] text-[#A8B5A0] mt-2 uppercase tracking-[0.15em]">
+          {active + 1} / {offers.length}
+        </p>
+      )}
     </div>
   );
 }
 
-// ─── Offer grid layout ─────────────────────────────────────────────────────────
-function OfferGrid({ offers }: { offers: Offer[] }) {
+// ─── Desktop grid layout ──────────────────────────────────────────────────────
+function DesktopGrid({ offers }: { offers: Offer[] }) {
   const total = offers.length;
 
   if (total === 1) {
@@ -475,60 +565,101 @@ function OfferGrid({ offers }: { offers: Offer[] }) {
 
   if (total === 2) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
+      <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
         <CardLight offer={offers[0]} />
         <CardDark  offer={offers[1]} />
       </div>
     );
   }
 
-  // 3 cards — top row of 3
   if (total === 3) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <CardLight offer={offers[0]} />
-        <CardLight offer={offers[1]} />
-        <CardDark  offer={offers[2]} />
+        <CardDark  offer={offers[1]} />
+        <CardLight offer={offers[2]} />
       </div>
     );
   }
 
-  // 4+ cards — 3-column grid top row, banner last if 4th
+  // 4+ cards — 3-col top, banner last
   const topRow   = offers.slice(0, 3);
   const rest     = offers.slice(3);
-  const lastCard = rest[rest.length - 1];
-  const middleCards = rest.slice(0, rest.length - 1);
+  const banner   = rest[rest.length - 1];
+  const midCards = rest.slice(0, rest.length - 1);
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* First row: 3-up */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {topRow.map((offer, i) => {
-          const v = cardVariant(offer, i, total);
-          return v === "dark"
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        {topRow.map((offer, i) =>
+          offer.endAt || i === 1
             ? <CardDark  key={offer.id} offer={offer} />
-            : <CardLight key={offer.id} offer={offer} />;
-        })}
+            : <CardLight key={offer.id} offer={offer} />
+        )}
       </div>
-
-      {/* Any middle cards */}
-      {middleCards.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {middleCards.map((offer, i) => (
+      {midCards.length > 0 && (
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          {midCards.map((offer, i) =>
             i % 2 === 0
               ? <CardDark  key={offer.id} offer={offer} />
               : <CardLight key={offer.id} offer={offer} />
-          ))}
+          )}
         </div>
       )}
-
-      {/* Full-width banner (last card) */}
-      {lastCard && <CardBanner offer={lastCard} />}
+      {banner && <CardBanner offer={banner} />}
     </div>
   );
 }
 
-// ─── Main export ───────────────────────────────────────────────────────────────
+// ─── Unified offer grid — carousel on mobile, grid on sm+ ────────────────────
+function OfferGrid({ offers }: { offers: Offer[] }) {
+  return (
+    <>
+      {/* Mobile: playing-card carousel */}
+      <div className="sm:hidden">
+        <MobileCarousel offers={offers} />
+      </div>
+
+      {/* sm+: normal grid */}
+      <div className="hidden sm:block">
+        <DesktopGrid offers={offers} />
+      </div>
+    </>
+  );
+}
+
+// ─── Section header ───────────────────────────────────────────────────────────
+function SectionHeader() {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
+      <div>
+        <div className="flex items-center gap-2.5 mb-3">
+          <span className="w-6 h-px bg-[#C6A66B]" />
+          <p className="text-[10px] font-body font-bold uppercase tracking-[0.3em] text-[#C6A66B]">
+            Exclusive Deals
+          </p>
+        </div>
+        <h2 className="font-heading text-[38px] sm:text-[48px] font-bold text-[#242824] leading-[1.05]">
+          Reader Offers
+        </h2>
+        <p className="font-body text-[13px] text-[#777970] mt-2 max-w-xs leading-relaxed">
+          Curated discounts for every kind of reader.
+        </p>
+      </div>
+      <Link
+        href="/books"
+        className="group inline-flex items-center gap-2 text-[11px] font-body font-bold uppercase tracking-[0.15em]
+          text-[#FFFCF7] bg-[#203A2B] px-5 py-3
+          hover:bg-[#315B55] transition-colors shrink-0 self-start sm:self-auto"
+      >
+        Browse All Books
+        <ArrowRight size={11} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+      </Link>
+    </div>
+  );
+}
+
+// ─── Main export ──────────────────────────────────────────────────────────────
 interface OffersSectionProps {
   offers: Offer[];
 }
@@ -536,35 +667,17 @@ interface OffersSectionProps {
 export function OffersSection({ offers }: OffersSectionProps) {
   if (offers.length === 0) return null;
 
-  // Sort: priority desc → startAt desc, deduplicate
   const sorted = [...offers]
     .sort((a, b) => b.priority - a.priority || b.startAt.localeCompare(a.startAt))
     .filter((o, i, arr) => arr.findIndex((x) => x.id === o.id) === i);
 
   return (
-    <section className="bg-[#FFFCF7] py-14 lg:py-20 border-t border-[#E6DFD5]" aria-label="Exclusive reader deals">
+    <section className="bg-[#F5EFE6] py-14 lg:py-20" aria-label="Exclusive reader deals">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader />
-        <OfferGrid offers={sorted} />
-
-        {/* Trust strip */}
-        <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-4 border-t border-[#E6DFD5] pt-10">
-          {[
-            { icon: "🔒", title: "Secure Payments",    sub: "100% safe & encrypted"     },
-            { icon: "⚡", title: "Instant Download",   sub: "Read anytime, anywhere"    },
-            { icon: "🎁", title: "Exclusive Offers",   sub: "For our valued readers"    },
-            { icon: "⭐", title: "Trusted by Readers", sub: "Join our growing community" },
-          ].map(({ icon, title, sub }) => (
-            <div key={title} className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-full border border-[#E6DFD5] flex items-center justify-center text-[15px] shrink-0">
-                {icon}
-              </div>
-              <div>
-                <p className="font-body text-[12px] font-bold text-[#242824] leading-tight">{title}</p>
-                <p className="font-body text-[11px] text-[#A8B5A0] mt-0.5">{sub}</p>
-              </div>
-            </div>
-          ))}
+        {/* On mobile the carousel handles its own edge-to-edge overflow */}
+        <div className="overflow-hidden sm:overflow-visible">
+          <OfferGrid offers={sorted} />
         </div>
       </div>
     </section>

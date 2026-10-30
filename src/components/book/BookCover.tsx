@@ -7,6 +7,7 @@ interface BookCoverProps {
   size?: "sm" | "md" | "lg" | "xl";
   perspective?: boolean;
   className?: string;
+  priority?: boolean;
 }
 
 const sizes = {
@@ -16,7 +17,7 @@ const sizes = {
   xl: { w: 240, h: 336 },
 };
 
-export function BookCover({ src, title, size = "md", perspective = false, className }: BookCoverProps) {
+export function BookCover({ src, title, size = "md", perspective = false, className, priority = false }: BookCoverProps) {
   const { w, h } = sizes[size];
 
   return (
@@ -38,6 +39,8 @@ export function BookCover({ src, title, size = "md", perspective = false, classN
           fill
           className="object-cover"
           sizes={`${w}px`}
+          loading={priority ? "eager" : "lazy"}
+          priority={priority}
         />
       ) : (
         <div
