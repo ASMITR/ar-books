@@ -206,8 +206,6 @@ export const getStoreSettings = unstable_cache(
 export const getActivePublicOffers = unstable_cache(
   async (): Promise<Offer[]> => {
     const now = new Date().toISOString();
-    // Single-field query — no composite index required.
-    // We filter showOnHomepage + date range in memory to avoid needing a Firestore index.
     const snap = await adminDb
       .collection("offers")
       .where("status", "==", "active")
@@ -215,7 +213,8 @@ export const getActivePublicOffers = unstable_cache(
     const offers = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Offer));
     return offers.filter(
       (o) =>
-        o.showOnHomepage === true &&
+        // showOnHomepage missing/undefined is treated as true for backwards compat
+        o.showOnHomepage !== false &&
         o.startAt <= now &&
         (!o.endAt || o.endAt > now)
     );
