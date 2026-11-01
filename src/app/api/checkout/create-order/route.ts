@@ -9,7 +9,7 @@ import {
   buildCouponSnapshot,
   buildOfferSnapshot,
 } from "@/lib/discount";
-import { getOrdersByCustomer } from "@/lib/firebase/firestore";
+import { getOrdersByCustomer, getStoreSettings } from "@/lib/firebase/firestore";
 import { z } from "zod";
 import type { OrderItem, Coupon, Offer, AppliedDiscount } from "@/types";
 
@@ -174,8 +174,17 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── 3. Calculate final total ───────────────────────────────────────────────
-    const totalPaise = Math.max(subtotalPaise - discountPaise, 100); // Razorpay min 100 paise
+    // ── 3. Fetch tax rate from store settings ─────────────────────────────────
+    const settings   = await getStoreSettings();
+    const taxPercent = typeof settings?.taxPercent === "number" && settings.taxPercent > 0
+      ? settings.taxPercent
+      : 0;
+
+    // ── 4. Calculate final total ───────────────────────────────────────────────
+    // Tax is applied on the post-discount amount (common GST practice).
+    const postDiscountPaise = Math.max(subtotalPaise - discountPaise, 0);
+    const taxPaise          = Math.round(postDiscountPaise * taxPercent / 100);
+    const totalPaise        = Math.max(postDiscountPaise + taxPaise, 100); // Razorpay min ₹1
     if (!Number.isSafeInteger(totalPaise)) {
       return NextResponse.json(
         { success: false, error: "Order total calculation error" },
@@ -185,14 +194,14 @@ export async function POST(req: NextRequest) {
 
     const orderNumber = generateOrderNumber();
 
-    // ── 4. Create Razorpay order (server-side, authoritative amount) ──────────
+    // ── 5. Create Razorpay order (server-side, authoritative amount) ──────────
     const rzpOrder = await razorpay.orders.create({
       amount: totalPaise,
       currency: "INR",
       receipt: orderNumber,
     });
 
-    // ── 5. Persist pending internal order ─────────────────────────────────────
+    // ── 6. Persist pending internal order ─────────────────────────────────────
     const now = new Date().toISOString();
     const orderRef = adminDb.collection("orders").doc();
     await orderRef.set({
@@ -204,7 +213,7 @@ export async function POST(req: NextRequest) {
       items: orderItems,
       subtotalPaise,
       discountPaise,
-      taxPaise: 0,
+      taxPaise,
       totalPaise,
       currency: "INR",
       paymentStatus: "pending",
@@ -229,6 +238,8 @@ export async function POST(req: NextRequest) {
         currency: "INR",
         keyId,
         discountPaise,
+        taxPaise,
+        taxPercent,
         appliedDiscount,
       },
     });

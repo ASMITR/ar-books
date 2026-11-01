@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdmin } from "@/lib/firebase/auth-server";
 import { categorySchema } from "@/lib/validations";
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
     }
     const ref = adminDb.collection("categories").doc();
     await ref.set({ ...parsed.data, createdAt: new Date().toISOString() });
+    revalidateTag("categories", { expire: 0 });
     return NextResponse.json({ success: true, data: { id: ref.id } }, { status: 201 });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {

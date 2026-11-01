@@ -4,17 +4,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { ShoppingCart, Search, Menu, X, User, ChevronDown, Truck, Star, Headphones } from "lucide-react";
+import { ShoppingCart, Search, Menu, X, User, ChevronDown, Truck, Star, Heart } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { SearchModal } from "@/components/shared/SearchModal";
 
 const navLinks = [
-  { label: "Home",     href: "/" },
-  { label: "Books",    href: "/books" },
-  { label: "Articles", href: "/articles" },
-  { label: "About Us", href: "/about" },
-  { label: "Contact",  href: "/contact" },
+  { label: "Home",        href: "/"          },
+  { label: "All eBooks",  href: "/books"     },
+  { label: "Categories",  href: "/categories"},
+  { label: "Bestsellers", href: "/books?filter=bestsellers" },
+  { label: "New Releases",href: "/books?filter=new" },
+  { label: "Offers",      href: "/#offers" },
+  { label: "Blog",        href: "/articles"  },
 ];
 
 export function SiteHeader() {
@@ -61,22 +63,34 @@ export function SiteHeader() {
 
       {/* ── Announcement Bar ──────────────────────────────────────────── */}
       <div className="bg-[#203A2B] text-[#FFFCF7]">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-[30px] flex items-center justify-between">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-[32px] flex items-center justify-between gap-4">
 
-          <div className="flex items-center gap-2 text-[10px] tracking-wide">
-            <Truck size={11} className="shrink-0 opacity-75" />
-            <span className="hidden sm:inline opacity-90">Discover Books That Inspire</span>
-            <span className="sm:hidden opacity-90">Books That Inspire</span>
-          </div>
-
-          <div className="flex items-center gap-1.5 text-[10px] tracking-wide">
+          {/* Left: promo message */}
+          <div className="flex items-center gap-2 text-[10px] tracking-wide shrink-0">
             <Star size={10} className="shrink-0 fill-[#C6A66B] text-[#C6A66B]" />
-            <span className="opacity-90">Stories That Stay With You</span>
+            <span className="hidden sm:inline opacity-90">Instant digital downloads · No shipping, ever</span>
+            <span className="sm:hidden opacity-90">Instant Downloads</span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-[10px] tracking-wide">
-            <Headphones size={11} className="shrink-0 opacity-75" />
-            <span className="opacity-90">Reader Support</span>
+          {/* Center: marquee on mobile, static on desktop */}
+          <p className="hidden md:block text-[10px] tracking-wide opacity-80 text-center">
+            ✦ &nbsp; New eBook releases every month &nbsp; ✦ &nbsp; Secure checkout with Razorpay &nbsp; ✦
+          </p>
+
+          {/* Right: utility links */}
+          <div className="flex items-center gap-3 text-[10px] tracking-wide shrink-0">
+            <Link href="/contact" className="hidden sm:inline opacity-75 hover:opacity-100 transition-opacity">
+              Help
+            </Link>
+            <span className="hidden sm:inline opacity-30">|</span>
+            <Link href="/contact" className="hidden sm:inline opacity-75 hover:opacity-100 transition-opacity">
+              Contact
+            </Link>
+            <span className="hidden sm:inline opacity-30">|</span>
+            <Link href="/account/orders" className="flex items-center gap-1 opacity-75 hover:opacity-100 transition-opacity">
+              <Truck size={10} className="shrink-0" />
+              <span className="hidden sm:inline">Track Order</span>
+            </Link>
           </div>
 
         </div>
@@ -87,16 +101,19 @@ export function SiteHeader() {
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-[64px]">
 
-            {/* Logo */}
-            <Link href="/" className="shrink-0">
+            {/* Logo + tagline */}
+            <Link href="/" className="shrink-0 flex flex-col gap-0.5">
               <Image
                 src="/Horizontal_Logo.png"
                 alt="Asmit Rajaramkar Books"
                 width={180}
                 height={44}
-                className="h-10 w-auto"
+                className="h-9 w-auto"
                 priority
               />
+              <p className="hidden sm:block font-body text-[8px] uppercase tracking-[0.28em] text-[#A8B5A0] ml-0.5">
+                Read. Learn. Imagine.
+              </p>
             </Link>
 
             {/* Desktop Nav */}
@@ -194,7 +211,15 @@ export function SiteHeader() {
                 )}
               </Link>
 
-              {/* Mobile hamburger */}
+              {/* Wishlist — visible on md+ */}
+              <Link
+                href="/account/library"
+                aria-label="Wishlist / Library"
+                className="hidden md:flex p-2.5 text-[#242824] hover:text-[#203A2B] hover:bg-[#F5EFE6] rounded-sm transition-colors"
+              >
+                <Heart size={18} />
+              </Link>
+
               <button
                 className="lg:hidden p-2.5 text-[#242824] hover:bg-[#F5EFE6] rounded-sm transition-colors ml-0.5"
                 onClick={() => setMobileOpen((v) => !v)}

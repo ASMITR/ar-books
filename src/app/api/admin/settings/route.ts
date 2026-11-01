@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdmin } from "@/lib/firebase/auth-server";
 
@@ -23,6 +24,7 @@ export async function PATCH(req: NextRequest) {
       .collection("settings")
       .doc("store")
       .set({ ...body, updatedAt: new Date().toISOString() }, { merge: true });
+    revalidateTag("settings", { expire: 0 });
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {

@@ -3,11 +3,12 @@ import { adminDb } from "./admin";
 import type { Book, Category, Order, DownloadEntitlement, StoreSettings, Offer } from "@/types";
 
 // ─── Cache TTLs (seconds) ─────────────────────────────────────────────────────
-// Public catalogue data: revalidate every 60 s — fresh enough for a bookshop,
-// avoids a cold Firestore round-trip on every request.
-const CATALOGUE_TTL = 60;
-// Store settings change rarely; 5-minute cache is fine.
-const SETTINGS_TTL = 300;
+// Public catalogue data: serve from cache for up to 5 minutes, then background
+// revalidate. Combined with revalidateTag() on mutations this gives instant
+// freshness after admin changes with no cold-path latency.
+const CATALOGUE_TTL = 300;
+// Store settings change rarely; 10-minute cache is fine.
+const SETTINGS_TTL = 600;
 
 // ─── Books ───────────────────────────────────────────────────────────────────
 export const getPublishedBooks = unstable_cache(

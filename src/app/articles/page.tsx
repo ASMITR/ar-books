@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   description: "Writing notes, book insights, and ideas from Asmit Rajaramkar.",
 };
 
+// ISR — background revalidate every 5 min; mutations bust it instantly via revalidateTag
+export const revalidate = 300;
+
 export default async function ArticlesPage() {
   const articles = await getPublishedArticles();
   const [featured, ...rest] = articles;

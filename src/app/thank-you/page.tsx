@@ -177,11 +177,19 @@ export default async function ThankYouPage({ searchParams }: Props) {
 
           {/* Discount row — only if a coupon was applied */}
           {order.discountPaise > 0 && (
-            <div className="px-5 pb-4 flex items-center gap-2 text-[11px] font-body text-emerald-700">
+            <div className="px-5 pb-3 flex items-center gap-2 text-[11px] font-body text-emerald-700">
               <span className="font-mono text-xs font-bold bg-emerald-50 border border-emerald-200 px-2 py-0.5">
                 {order.appliedDiscount?.couponCode ?? "DISCOUNT"}
               </span>
               <span>applied — you saved {formatINR(order.discountPaise)}</span>
+            </div>
+          )}
+
+          {/* Tax row — only if tax was charged */}
+          {order.taxPaise > 0 && (
+            <div className="px-5 pb-4 border-t border-[#E6DFD5] pt-3 flex items-center justify-between text-[12px] font-body text-[#777970]">
+              <span>Tax</span>
+              <span className="tabular-nums">{formatINR(order.taxPaise)}</span>
             </div>
           )}
         </div>

@@ -6,7 +6,7 @@ import { BookCover } from "./BookCover";
 import { useCart } from "@/hooks/useCart";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { formatINR } from "@/lib/currency";
-import { ShoppingCart, Zap, Flame, Sparkles } from "lucide-react";
+import { ShoppingCart, Zap, Flame, Sparkles, Minus, Plus, Trash2 } from "lucide-react";
 import type { Book } from "@/types";
 
 interface BookCardProps {
@@ -14,12 +14,15 @@ interface BookCardProps {
 }
 
 export function BookCard({ book }: BookCardProps) {
-  const { addItem, items } = useCart();
+  const { addItem, removeItem, updateQuantity, items } = useCart();
   const requireAuth = useRequireAuth();
   const router = useRouter();
-  const inCart = items.some((i) => i.bookId === book.id);
 
-  const cartItem = {
+  const cartItem = items.find((i) => i.bookId === book.id);
+  const inCart = !!cartItem;
+  const quantity = cartItem?.quantity ?? 0;
+
+  const cartItemPayload = {
     bookId: book.id,
     title: book.title,
     author: book.author,
@@ -31,14 +34,28 @@ export function BookCard({ book }: BookCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!requireAuth()) return;
-    addItem(cartItem);
+    addItem(cartItemPayload);
   };
 
   const handleBuyNow = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!requireAuth()) return;
-    if (!inCart) addItem(cartItem);
+    if (!inCart) addItem(cartItemPayload);
     router.push("/checkout");
+  };
+
+  const handleDecrease = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (quantity <= 1) {
+      removeItem(book.id);
+    } else {
+      updateQuantity(book.id, quantity - 1);
+    }
+  };
+
+  const handleIncrease = (e: React.MouseEvent) => {
+    e.preventDefault();
+    updateQuantity(book.id, quantity + 1);
   };
 
   const discount = book.originalPricePaise
@@ -144,21 +161,54 @@ export function BookCard({ book }: BookCardProps) {
             Buy Now
           </button>
 
-          {/* Add to cart */}
-          <button
-            onClick={handleAddToCart}
-            disabled={inCart}
-            aria-label={inCart ? "Added to cart" : "Add to cart"}
-            className={`w-9 flex items-center justify-center rounded-sm border transition-all duration-200
-              ${inCart
-                ? "border-[#203A2B] bg-[#203A2B]/10 text-[#203A2B] cursor-default"
-                : "border-[#E6DFD5] text-[#777970] hover:border-[#203A2B] hover:bg-[#203A2B] hover:text-[#FFFCF7] active:scale-[0.95]"
-              }`}
-          >
-            <ShoppingCart size={12} strokeWidth={inCart ? 2.5 : 1.8} />
-          </button>
+          {/* Cart control — stepper when in cart, icon button when not */}
+          {inCart ? (
+            <div className="flex items-center border border-[#203A2B]/30 rounded-sm overflow-hidden">
+              <button
+                onClick={handleDecrease}
+                aria-label={quantity === 1 ? "Remove from cart" : "Decrease quantity"}
+                className={`w-7 h-full flex items-center justify-center transition-colors
+                  ${quantity === 1
+                    ? "text-[#bbb] hover:text-[#F12F43] hover:bg-red-50"
+                    : "text-[#555] hover:text-[#203A2B] hover:bg-[#F5EFE6]"
+                  }`}
+              >
+                {quantity === 1 ? <Trash2 size={10} /> : <Minus size={10} />}
+              </button>
+
+              <span className="w-6 text-center font-body text-[12px] font-bold text-[#203A2B] tabular-nums select-none leading-none py-2.5">
+                {quantity}
+              </span>
+
+              <button
+                onClick={handleIncrease}
+                aria-label="Increase quantity"
+                className="w-7 h-full flex items-center justify-center text-[#555] hover:text-[#203A2B] hover:bg-[#F5EFE6] transition-colors"
+              >
+                <Plus size={10} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleAddToCart}
+              aria-label="Add to cart"
+              className="w-9 flex items-center justify-center rounded-sm border border-[#E6DFD5] text-[#777970] hover:border-[#203A2B] hover:bg-[#203A2B] hover:text-[#FFFCF7] active:scale-[0.95] transition-all duration-200"
+            >
+              <ShoppingCart size={12} strokeWidth={1.8} />
+            </button>
+          )}
         </div>
 
+        {/* View cart link when in cart */}
+        {inCart && (
+          <Link
+            href="/cart"
+            className="text-center text-[10px] font-body text-[#315B55] underline underline-offset-2 hover:text-[#203A2B] transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            View Cart →
+          </Link>
+        )}
       </div>
     </div>
   );

@@ -7,22 +7,29 @@ import { ChevronDown, Mail } from "lucide-react";
 import { NewsletterForm } from "@/components/home/NewsletterForm";
 
 const shopLinks = [
-  { label: "All Books", href: "/books" },
+  { label: "Home",         href: "/"           },
+  { label: "All eBooks",   href: "/books"      },
+  { label: "Categories",   href: "/categories" },
+  { label: "Bestsellers",  href: "/books?filter=bestsellers" },
+  { label: "New Releases", href: "/books?filter=new" },
+  { label: "Offers & Deals", href: "/#offers"   },
 ];
 
 const helpLinks = [
-  { label: "FAQs",              href: "/faqs" },
-  { label: "Returns & Refunds", href: "/refund-policy" },
-  { label: "Download Policy",   href: "/download-policy" },
-  { label: "Contact Us",        href: "/contact" },
+  { label: "Help Center",               href: "/faqs"            },
+  { label: "Contact Us",                href: "/contact"         },
+  { label: "FAQs",                      href: "/faqs"            },
+  { label: "Digital Delivery Info",     href: "/download-policy" },
+  { label: "Refund Policy",             href: "/refund-policy"   },
 ];
 
 const aboutLinks = [
-  { label: "Our Story",          href: "/about" },
-  { label: "Articles",           href: "/articles" },
-  { label: "Privacy Policy",     href: "/privacy" },
-  { label: "Terms & Conditions", href: "/terms" },
-  { label: "Cookie Policy",      href: "/cookie-policy" },
+  { label: "About Us",          href: "/about"   },
+  { label: "About the Author",  href: "/about"   },
+  { label: "Our Story",         href: "/about"   },
+  { label: "Blog",              href: "/articles"},
+  { label: "Privacy Policy",    href: "/privacy" },
+  { label: "Terms & Conditions",href: "/terms"   },
 ];
 
 const socialLinks = [
@@ -147,9 +154,9 @@ export function SiteFooter() {
 
         {/* ── Accordion link groups (mobile/tablet) ────────────────── */}
         <div className="lg:hidden">
-          <FooterAccordion title="Shop"  links={shopLinks} />
-          <FooterAccordion title="Help"  links={helpLinks} />
-          <FooterAccordion title="About" links={aboutLinks} />
+          <FooterAccordion title="Explore"            links={shopLinks} />
+          <FooterAccordion title="Customer Support"   links={helpLinks} />
+          <FooterAccordion title="About"              links={aboutLinks} />
 
           {/* Newsletter — always expanded on mobile */}
           <div className="pt-6 pb-2">
@@ -177,13 +184,22 @@ export function SiteFooter() {
                 className="h-9 w-auto brightness-0 invert opacity-90"
               />
             </Link>
+            <p className="text-[11px] font-body font-bold uppercase tracking-[0.22em] text-[#C6A66B] mb-3">
+              Read. Learn. Imagine.
+            </p>
             <p className="text-[12px] text-[#A8B5A0] leading-[1.8] mb-6 max-w-[220px]">
-              Discover stories, explore ideas, and find inspiration on every page.
+              An independent digital publishing imprint for modern readers — stories and ideas that stay with you.
             </p>
             <div className="flex flex-col gap-2.5 mb-6">
               <div className="flex items-center gap-2.5 text-[11px] text-[#A8B5A0]">
                 <Mail size={12} className="shrink-0 text-[#C6A66B]" />
                 <span>support@arbooks.in</span>
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-[#A8B5A0]">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 shrink-0 text-[#C6A66B]">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                </svg>
+                <span>@asmitrajaramkarbooks</span>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
@@ -202,9 +218,9 @@ export function SiteFooter() {
             </div>
           </div>
 
-          {/* Col 2: Shop */}
+          {/* Col 2: Explore */}
           <div>
-            <p className="text-[11px] font-body font-bold uppercase tracking-[0.18em] text-[#FFFCF7] mb-5 pb-3 border-b border-[#FFFCF7]/10">Shop</p>
+            <p className="text-[11px] font-body font-bold uppercase tracking-[0.18em] text-[#FFFCF7] mb-5 pb-3 border-b border-[#FFFCF7]/10">Explore</p>
             <ul className="flex flex-col gap-3">
               {shopLinks.map((l) => (
                 <li key={l.label}>
@@ -217,9 +233,9 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          {/* Col 3: Help */}
+          {/* Col 3: Customer Support */}
           <div>
-            <p className="text-[11px] font-body font-bold uppercase tracking-[0.18em] text-[#FFFCF7] mb-5 pb-3 border-b border-[#FFFCF7]/10">Help</p>
+            <p className="text-[11px] font-body font-bold uppercase tracking-[0.18em] text-[#FFFCF7] mb-5 pb-3 border-b border-[#FFFCF7]/10">Customer Support</p>
             <ul className="flex flex-col gap-3">
               {helpLinks.map((l) => (
                 <li key={l.label}>
@@ -270,14 +286,29 @@ export function SiteFooter() {
               Asmit Rajaramkar — Independent Publisher &amp; Author · support@arbooks.in
             </p>
           </div>
-          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-1">
-            <Link href="/privacy"        className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Privacy Policy</Link>
-            <span className="text-[#A8B5A0]/30 hidden sm:inline">·</span>
-            <Link href="/terms"          className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Terms &amp; Conditions</Link>
-            <span className="text-[#A8B5A0]/30 hidden sm:inline">·</span>
-            <Link href="/refund-policy"  className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Refund Policy</Link>
-            <span className="text-[#A8B5A0]/30 hidden sm:inline">·</span>
-            <Link href="/cookie-policy"  className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Cookie Policy</Link>
+
+          {/* Payment icons + legal links */}
+          <div className="flex flex-col items-center sm:items-end gap-3">
+            {/* Payment method pills */}
+            <div className="flex items-center gap-2">
+              {["UPI", "Visa", "Mastercard", "Razorpay"].map((m) => (
+                <span
+                  key={m}
+                  className="px-2.5 py-1 border border-[#FFFCF7]/10 text-[9px] font-body font-bold uppercase tracking-[0.1em] text-[#A8B5A0]/60"
+                >
+                  {m}
+                </span>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-1">
+              <Link href="/privacy"        className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Privacy Policy</Link>
+              <span className="text-[#A8B5A0]/30 hidden sm:inline">·</span>
+              <Link href="/terms"          className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Terms &amp; Conditions</Link>
+              <span className="text-[#A8B5A0]/30 hidden sm:inline">·</span>
+              <Link href="/refund-policy"  className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Refund Policy</Link>
+              <span className="text-[#A8B5A0]/30 hidden sm:inline">·</span>
+              <Link href="/cookie-policy"  className="text-[11px] text-[#A8B5A0] hover:text-[#FFFCF7] transition-colors">Cookie Policy</Link>
+            </div>
           </div>
         </div>
       </div>

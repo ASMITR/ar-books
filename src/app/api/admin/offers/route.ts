@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdmin } from "@/lib/firebase/auth-server";
 import { z } from "zod";
@@ -85,6 +86,7 @@ export async function POST(req: NextRequest) {
       createdBy: user.uid,
     });
 
+    revalidateTag("offers", { expire: 0 });
     return NextResponse.json({ success: true, data: { id: ref.id } }, { status: 201 });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {

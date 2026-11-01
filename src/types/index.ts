@@ -59,6 +59,7 @@ export interface CartItem {
   coverImageUrl?: string;
   pricePaise: number;
   slug: string;
+  quantity: number;
 }
 
 // ─── Order ───────────────────────────────────────────────────────────────────

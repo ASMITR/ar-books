@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description: "Browse all eBooks by Asmit Rajaramkar.",
 };
 
+// ISR — background revalidate every 5 min; mutations bust it instantly via revalidateTag
+export const revalidate = 300;
+
 interface FilterParams { category?: string; q?: string; sort?: string; }
 
 // ── Filter sidebar / bar ─────────────────────────────────────────────────────

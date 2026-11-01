@@ -10,6 +10,9 @@ import type { Metadata } from "next";
 
 interface Props { params: Promise<{ slug: string }>; }
 
+// ISR — background revalidate every 5 min; mutations bust it instantly via revalidateTag
+export const revalidate = 300;
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);

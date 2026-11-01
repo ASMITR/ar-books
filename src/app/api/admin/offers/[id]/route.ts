@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdmin } from "@/lib/firebase/auth-server";
 
@@ -38,6 +39,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ...update,
       updatedAt: new Date().toISOString(),
     });
+    revalidateTag("offers", { expire: 0 });
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {
@@ -66,6 +68,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
         archivedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
+      revalidateTag("offers", { expire: 0 });
       return NextResponse.json({
         success: true,
         message: "Offer archived (has redemption history).",
@@ -73,6 +76,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     }
 
     await adminDb.collection("offers").doc(id).delete();
+    revalidateTag("offers", { expire: 0 });
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {

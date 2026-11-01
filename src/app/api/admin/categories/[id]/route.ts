@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdmin } from "@/lib/firebase/auth-server";
 import { FieldValue } from "firebase-admin/firestore";
@@ -11,6 +12,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const { id } = await params;
     const body = await req.json();
     await adminDb.collection("categories").doc(id).update({ ...body, updatedAt: new Date().toISOString() });
+    revalidateTag("categories", { expire: 0 });
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {
@@ -41,6 +43,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
     // Hard-delete the category document
     await adminDb.collection("categories").doc(id).delete();
+    revalidateTag("categories", { expire: 0 });
 
     // Also clean up any stale categoryId references across all books
     // (belt-and-suspenders: handles books that may not be caught by the query above)

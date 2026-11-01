@@ -48,7 +48,7 @@ function CountdownStrip({ endAt, dark }: { endAt: string; dark: boolean }) {
       {[{ v: days, l: "d" }, { v: hours, l: "h" }, { v: mins, l: "m" }].map(({ v, l }, i) => (
         <span key={l} className="flex items-baseline gap-0.5">
           {i > 0 && <span className={`${text} text-[11px] mr-1`}>:</span>}
-          <span className={`font-heading text-[16px] font-bold ${num} leading-none`}>
+          <span className={`font-heading text-[15px] font-bold ${num} leading-none`}>
             {String(v).padStart(2, "0")}
           </span>
           <span className={`font-body text-[9px] ${text}`}>{l}</span>
@@ -81,7 +81,7 @@ function CopyPill({ code, dark }: { code: string; dark: boolean }) {
       onClick={handleCopy}
       aria-label={`Copy code ${code}`}
       className={`w-full flex items-center justify-between gap-3 border-2 border-dashed rounded-sm
-        px-4 py-3 transition-all duration-150 group
+        px-4 py-2.5 transition-all duration-150 group
         ${dark
           ? "border-white/20 hover:border-[#C6A66B]/60 bg-white/[0.04] hover:bg-white/[0.08]"
           : "border-[#203A2B]/20 hover:border-[#203A2B]/50 bg-[#203A2B]/[0.03] hover:bg-[#203A2B]/[0.06]"
@@ -89,7 +89,7 @@ function CopyPill({ code, dark }: { code: string; dark: boolean }) {
     >
       <div className="flex items-center gap-2 min-w-0">
         <Tag size={12} className={dark ? "text-[#C6A66B] shrink-0" : "text-[#315B55] shrink-0"} />
-        <span className={`font-mono text-[13px] font-bold tracking-[0.2em] truncate ${dark ? "text-[#FFFCF7]" : "text-[#203A2B]"}`}>
+        <span className={`font-mono text-[12px] font-bold tracking-[0.18em] truncate ${dark ? "text-[#FFFCF7]" : "text-[#203A2B]"}`}>
           {code}
         </span>
       </div>
@@ -108,46 +108,47 @@ function CopyPill({ code, dark }: { code: string; dark: boolean }) {
 // ─── Offer type icon ──────────────────────────────────────────────────────────
 function OfferIcon({ type, dark }: { type: string; dark: boolean }) {
   const cls = `shrink-0 ${dark ? "text-[#C6A66B]" : "text-[#203A2B]"}`;
-  if (type === "bundle" || type === "buy_x_get_y") return <PackageOpen size={16} strokeWidth={1.7} className={cls} />;
-  if (type === "first_order") return <Gift size={16} strokeWidth={1.7} className={cls} />;
-  return <Zap size={16} strokeWidth={1.7} className={cls} />;
+  if (type === "bundle" || type === "buy_x_get_y") return <PackageOpen size={15} strokeWidth={1.7} className={cls} />;
+  if (type === "first_order") return <Gift size={15} strokeWidth={1.7} className={cls} />;
+  return <Zap size={15} strokeWidth={1.7} className={cls} />;
 }
 
 // ─── Discount headline ────────────────────────────────────────────────────────
+// Fixed height container so all cards have the same discount block height
 function DiscountNumber({ offer, dark }: { offer: Offer; dark: boolean }) {
   const mainCls = `font-heading font-bold leading-none tracking-tight ${dark ? "text-[#C6A66B]" : "text-[#203A2B]"}`;
-  const subCls  = `font-body font-bold uppercase tracking-[0.1em] ${dark ? "text-[#A8B5A0]" : "text-[#789185]"}`;
+  const subCls  = `font-body font-semibold uppercase tracking-[0.1em] ${dark ? "text-[#A8B5A0]" : "text-[#789185]"}`;
 
   if (offer.offerType === "bundle" || offer.offerType === "buy_x_get_y") {
     return (
-      <div className="flex items-end gap-2">
-        <span className={`${mainCls} text-[48px] sm:text-[56px]`}>
+      <div className="flex items-end gap-2 h-12">
+        <span className={`${mainCls} text-[36px]`}>
           {offer.discountValue}
-          <span className={`${mainCls} text-[28px] ml-0.5`}>%</span>
+          <span className={`${mainCls} text-[20px] ml-0.5`}>%</span>
         </span>
-        <span className={`${subCls} text-[11px] mb-2`}>
-          when you buy {offer.buyX ?? 3}+
+        <span className={`${subCls} text-[10px] mb-1 truncate`}>
+          buy {offer.buyX ?? 3}+
         </span>
       </div>
     );
   }
   if (offer.discountType === "flat") {
     return (
-      <div className="flex items-start gap-1">
-        <span className={`${mainCls} text-[26px] mt-2`}>₹</span>
-        <span className={`${mainCls} text-[52px] sm:text-[60px]`}>
+      <div className="flex items-start gap-0.5 h-12">
+        <span className={`${mainCls} text-[18px] mt-1`}>₹</span>
+        <span className={`${mainCls} text-[36px]`}>
           {(offer.discountValue).toLocaleString("en-IN")}
         </span>
-        <span className={`${subCls} text-[11px] mb-2 self-end`}>off</span>
+        <span className={`${subCls} text-[10px] mb-1 self-end`}>off</span>
       </div>
     );
   }
   // percent
   return (
-    <div className="flex items-end gap-1.5">
-      <span className={`${mainCls} text-[56px] sm:text-[64px]`}>{offer.discountValue}</span>
-      <span className={`${mainCls} text-[28px] mb-1`}>%</span>
-      <span className={`${subCls} text-[11px] mb-2`}>off</span>
+    <div className="flex items-end gap-1 h-12">
+      <span className={`${mainCls} text-[40px]`}>{offer.discountValue}</span>
+      <span className={`${mainCls} text-[20px] mb-0.5`}>%</span>
+      <span className={`${subCls} text-[10px] mb-1`}>off</span>
     </div>
   );
 }
@@ -180,166 +181,180 @@ function defaultBadge(offer: Offer): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CARD LIGHT  (cream/ivory, forest accent)
+// SHARED CARD SHELL — enforces identical dimensions for every card
+// h-full ensures all cards in the same row stretch to the tallest card's height
 // ─────────────────────────────────────────────────────────────────────────────
+
+// ─── CARD LIGHT  (cream/ivory, forest accent) ─────────────────────────────────
 function CardLight({ offer }: { offer: Offer }) {
   const badge = offer.badgeLabel || defaultBadge(offer);
   return (
-    <article className="group relative flex flex-col bg-[#FFFCF7] border border-[#E6DFD5]
-      hover:border-[#C6A66B]/70 hover:shadow-[0_6px_32px_rgba(32,58,43,0.10)]
+    <article className="group relative flex flex-col h-full bg-[#FFFCF7] border border-[#E6DFD5]
+      hover:border-[#C6A66B]/70 hover:shadow-[0_6px_28px_rgba(32,58,43,0.10)]
       transition-all duration-300 overflow-hidden">
 
       {/* Gold top bar */}
-      <div className="h-[3px] bg-gradient-to-r from-[#C6A66B] via-[#e0c080] to-[#C6A66B]
-        scale-x-0 group-hover:scale-x-100 transition-transform duration-400 origin-left" />
+      <div className="h-[3px] w-full bg-gradient-to-r from-[#C6A66B] via-[#e0c080] to-[#C6A66B]
+        scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
 
-      {/* Header strip */}
-      <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-0">
-        <div className="flex items-center gap-2">
+      {/* ── Header: badge + date ── fixed height */}
+      <div className="flex items-center justify-between gap-2 px-5 pt-4 pb-0 h-9 shrink-0">
+        <div className="flex items-center gap-1.5 min-w-0">
           <OfferIcon type={offer.offerType} dark={false} />
-          <span className="font-body text-[10px] font-bold uppercase tracking-[0.18em] text-[#315B55]">
+          <span className="font-body text-[10px] font-bold uppercase tracking-[0.16em] text-[#315B55] truncate">
             {badge}
           </span>
         </div>
         {offer.endAt && (
-          <span className="font-body text-[10px] text-[#A8B5A0] flex items-center gap-1">
+          <span className="font-body text-[10px] text-[#A8B5A0] flex items-center gap-1 shrink-0">
             <Clock size={9} strokeWidth={1.8} />
             {new Date(offer.endAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
           </span>
         )}
       </div>
 
-      {/* Discount number */}
-      <div className="px-5 pt-3 pb-1">
+      {/* ── Discount number ── fixed height via h-12 in DiscountNumber */}
+      <div className="px-5 pt-3 pb-0 shrink-0">
         <DiscountNumber offer={offer} dark={false} />
       </div>
 
       {/* Divider */}
-      <div className="mx-5 h-px bg-[#EDE8E1]" />
+      <div className="mx-5 mt-3 h-px bg-[#EDE8E1] shrink-0" />
 
-      {/* Title + desc */}
-      <div className="px-5 pt-4 pb-0 flex flex-col gap-1.5 flex-1">
-        <h3 className="font-heading text-[17px] font-bold text-[#1a1a1a] leading-snug">
+      {/* ── Title + description ── flex-1 so all cards share remaining space */}
+      <div className="px-5 pt-3 pb-0 flex flex-col gap-1 flex-1 min-h-0">
+        <h3 className="font-heading text-[15px] font-bold text-[#1a1a1a] leading-snug line-clamp-2">
           {offer.title}
         </h3>
         {offer.description && (
-          <p className="font-body text-[12px] text-[#777970] leading-relaxed line-clamp-2">
+          <p className="font-body text-[11px] text-[#777970] leading-relaxed line-clamp-2">
             {offer.description}
           </p>
         )}
       </div>
 
-      {/* Coupon */}
-      {offer.couponCode && offer.displayCouponPublicly && (
-        <div className="px-5 pt-4">
+      {/* ── Coupon ── fixed height slot (visible or invisible placeholder) */}
+      <div className="px-5 pt-3 shrink-0">
+        {offer.couponCode && offer.displayCouponPublicly ? (
           <CopyPill code={offer.couponCode} dark={false} />
-        </div>
-      )}
+        ) : (
+          /* invisible spacer keeps height consistent when no coupon */
+          <div className="h-[38px]" aria-hidden />
+        )}
+      </div>
 
-      {/* Footer */}
-      <div className="px-5 pt-4 pb-5 flex items-center justify-between gap-3 mt-auto">
+      {/* ── Footer ── fixed to bottom, consistent height */}
+      <div className="px-5 pt-3 pb-4 flex items-center justify-between gap-2 shrink-0">
         <EligibilityNote offer={offer} dark={false} />
         <Link
           href="/books"
           aria-label={`${offer.ctaText ?? "Shop Now"} — ${offer.title}`}
           className="inline-flex items-center gap-1.5 shrink-0
-            font-body text-[11px] font-bold uppercase tracking-[0.14em]
-            bg-[#203A2B] text-[#FFFCF7] px-4 py-2.5
+            font-body text-[10px] font-bold uppercase tracking-[0.12em]
+            bg-[#203A2B] text-[#FFFCF7] px-3.5 py-2
             hover:bg-[#315B55] active:scale-[0.98]
             transition-all duration-200"
         >
           {offer.ctaText ?? "Shop Now"}
-          <ArrowRight size={11} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+          <ArrowRight size={10} className="transition-transform duration-200 group-hover:translate-x-0.5" />
         </Link>
       </div>
 
-      {/* Countdown */}
-      {offer.endAt && <CountdownStrip endAt={offer.endAt} dark={false} />}
+      {/* ── Countdown ── always rendered at bottom; CountdownStrip returns null when expired/absent */}
+      <div className="shrink-0">
+        {offer.endAt
+          ? <CountdownStrip endAt={offer.endAt} dark={false} />
+          : <div className="h-[38px]" aria-hidden />}
+      </div>
     </article>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CARD DARK  (forest green, gold accent)
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── CARD DARK  (forest green, gold accent) ───────────────────────────────────
 function CardDark({ offer }: { offer: Offer }) {
   const badge = offer.badgeLabel || defaultBadge(offer);
   return (
-    <article className="group relative flex flex-col bg-[#1C3325]
+    <article className="group relative flex flex-col h-full bg-[#1C3325]
       border border-[#2E5040]
-      hover:border-[#C6A66B]/60 hover:shadow-[0_6px_32px_rgba(198,166,107,0.15)]
+      hover:border-[#C6A66B]/60 hover:shadow-[0_6px_28px_rgba(198,166,107,0.15)]
       transition-all duration-300 overflow-hidden">
 
       {/* Gold top bar */}
-      <div className="h-[3px] bg-gradient-to-r from-[#C6A66B] via-[#e0c080] to-[#C6A66B]
-        scale-x-0 group-hover:scale-x-100 transition-transform duration-400 origin-left" />
+      <div className="h-[3px] w-full bg-gradient-to-r from-[#C6A66B] via-[#e0c080] to-[#C6A66B]
+        scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
 
       {/* Subtle noise/texture overlay */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none
         bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJhIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBudW1PY3RhdmVzPSI0Ii8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iMSIvPjwvc3ZnPg==')]" />
 
-      {/* Header strip */}
-      <div className="relative flex items-center justify-between gap-3 px-5 pt-5 pb-0">
-        <div className="flex items-center gap-2">
+      {/* ── Header: badge + date ── fixed height */}
+      <div className="relative flex items-center justify-between gap-2 px-5 pt-4 pb-0 h-9 shrink-0">
+        <div className="flex items-center gap-1.5 min-w-0">
           <OfferIcon type={offer.offerType} dark={true} />
-          <span className="font-body text-[10px] font-bold uppercase tracking-[0.18em] text-[#C6A66B]">
+          <span className="font-body text-[10px] font-bold uppercase tracking-[0.16em] text-[#C6A66B] truncate">
             {badge}
           </span>
         </div>
         {offer.endAt && (
-          <span className="font-body text-[10px] text-[#A8B5A0]/70 flex items-center gap-1">
+          <span className="font-body text-[10px] text-[#A8B5A0]/70 flex items-center gap-1 shrink-0">
             <Clock size={9} strokeWidth={1.8} />
             {new Date(offer.endAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
           </span>
         )}
       </div>
 
-      {/* Discount number */}
-      <div className="relative px-5 pt-3 pb-1">
+      {/* ── Discount number ── */}
+      <div className="relative px-5 pt-3 pb-0 shrink-0">
         <DiscountNumber offer={offer} dark={true} />
       </div>
 
       {/* Divider */}
-      <div className="mx-5 h-px bg-white/[0.07]" />
+      <div className="mx-5 mt-3 h-px bg-white/[0.07] shrink-0" />
 
-      {/* Title + desc */}
-      <div className="relative px-5 pt-4 pb-0 flex flex-col gap-1.5 flex-1">
-        <h3 className="font-heading text-[17px] font-bold text-[#FFFCF7] leading-snug">
+      {/* ── Title + description ── flex-1 */}
+      <div className="relative px-5 pt-3 pb-0 flex flex-col gap-1 flex-1 min-h-0">
+        <h3 className="font-heading text-[15px] font-bold text-[#FFFCF7] leading-snug line-clamp-2">
           {offer.title}
         </h3>
         {offer.description && (
-          <p className="font-body text-[12px] text-[#A8B5A0] leading-relaxed line-clamp-2">
+          <p className="font-body text-[11px] text-[#A8B5A0] leading-relaxed line-clamp-2">
             {offer.description}
           </p>
         )}
       </div>
 
-      {/* Coupon */}
-      {offer.couponCode && offer.displayCouponPublicly && (
-        <div className="relative px-5 pt-4">
+      {/* ── Coupon ── fixed height slot */}
+      <div className="relative px-5 pt-3 shrink-0">
+        {offer.couponCode && offer.displayCouponPublicly ? (
           <CopyPill code={offer.couponCode} dark={true} />
-        </div>
-      )}
+        ) : (
+          <div className="h-[38px]" aria-hidden />
+        )}
+      </div>
 
-      {/* Footer */}
-      <div className="relative px-5 pt-4 pb-5 flex items-center justify-between gap-3 mt-auto">
+      {/* ── Footer ── */}
+      <div className="relative px-5 pt-3 pb-4 flex items-center justify-between gap-2 shrink-0">
         <EligibilityNote offer={offer} dark={true} />
         <Link
           href="/books"
           aria-label={`${offer.ctaText ?? "Shop Now"} — ${offer.title}`}
           className="inline-flex items-center gap-1.5 shrink-0
-            font-body text-[11px] font-bold uppercase tracking-[0.14em]
-            bg-[#C6A66B] text-[#1C3325] px-4 py-2.5
+            font-body text-[10px] font-bold uppercase tracking-[0.12em]
+            bg-[#C6A66B] text-[#1C3325] px-3.5 py-2
             hover:bg-[#D4B47A] active:scale-[0.98]
             transition-all duration-200"
         >
           {offer.ctaText ?? "Shop Now"}
-          <ArrowRight size={11} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+          <ArrowRight size={10} className="transition-transform duration-200 group-hover:translate-x-0.5" />
         </Link>
       </div>
 
-      {/* Countdown */}
-      {offer.endAt && <CountdownStrip endAt={offer.endAt} dark={true} />}
+      {/* ── Countdown ── */}
+      <div className="relative shrink-0">
+        {offer.endAt
+          ? <CountdownStrip endAt={offer.endAt} dark={true} />
+          : <div className="h-[38px]" aria-hidden />}
+      </div>
     </article>
   );
 }
@@ -351,22 +366,22 @@ function CardBanner({ offer }: { offer: Offer }) {
   const badge = offer.badgeLabel || defaultBadge(offer);
   return (
     <article className="group relative bg-[#1C3325] border border-[#2E5040]
-      hover:border-[#C6A66B]/60 hover:shadow-[0_6px_32px_rgba(198,166,107,0.15)]
+      hover:border-[#C6A66B]/60 hover:shadow-[0_6px_28px_rgba(198,166,107,0.15)]
       transition-all duration-300 overflow-hidden">
 
       {/* Gold top bar */}
       <div className="h-[3px] bg-gradient-to-r from-[#C6A66B] via-[#e0c080] to-[#C6A66B]
-        scale-x-0 group-hover:scale-x-100 transition-transform duration-400 origin-left" />
+        scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
 
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_1px_320px]">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_1px_300px]">
 
         {/* ── LEFT: main content ──────────────────────────────────────── */}
-        <div className="px-6 sm:px-8 py-8 flex flex-col gap-4">
+        <div className="px-6 sm:px-8 py-7 flex flex-col gap-4">
           {/* Badge + date */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <OfferIcon type={offer.offerType} dark={true} />
-              <span className="font-body text-[10px] font-bold uppercase tracking-[0.18em] text-[#C6A66B]">
+              <span className="font-body text-[10px] font-bold uppercase tracking-[0.16em] text-[#C6A66B]">
                 {badge}
               </span>
             </div>
@@ -379,14 +394,14 @@ function CardBanner({ offer }: { offer: Offer }) {
           </div>
 
           {/* Discount + title inline */}
-          <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-5">
             <DiscountNumber offer={offer} dark={true} />
             <div className="flex flex-col gap-1 pb-1">
-              <h3 className="font-heading text-[20px] font-bold text-[#FFFCF7] leading-snug">
+              <h3 className="font-heading text-[18px] font-bold text-[#FFFCF7] leading-snug">
                 {offer.title}
               </h3>
               {offer.description && (
-                <p className="font-body text-[12px] text-[#A8B5A0] leading-relaxed max-w-sm">
+                <p className="font-body text-[11px] text-[#A8B5A0] leading-relaxed max-w-xs">
                   {offer.description}
                 </p>
               )}
@@ -399,13 +414,13 @@ function CardBanner({ offer }: { offer: Offer }) {
               href="/books"
               aria-label={`${offer.ctaText ?? "Shop Now"} — ${offer.title}`}
               className="inline-flex items-center gap-1.5
-                font-body text-[11px] font-bold uppercase tracking-[0.14em]
-                bg-[#C6A66B] text-[#1C3325] px-5 py-3
+                font-body text-[10px] font-bold uppercase tracking-[0.12em]
+                bg-[#C6A66B] text-[#1C3325] px-4 py-2.5
                 hover:bg-[#D4B47A] active:scale-[0.98]
                 transition-all duration-200"
             >
               {offer.ctaText ?? "Shop Now"}
-              <ArrowRight size={11} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+              <ArrowRight size={10} className="transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
             <EligibilityNote offer={offer} dark={true} />
           </div>
@@ -415,13 +430,13 @@ function CardBanner({ offer }: { offer: Offer }) {
         <div className="hidden md:block bg-white/[0.07]" />
 
         {/* ── RIGHT: coupon + countdown ────────────────────────────────── */}
-        <div className="flex flex-col justify-center gap-4 px-6 sm:px-8 py-8
+        <div className="flex flex-col justify-center gap-4 px-6 sm:px-8 py-7
           border-t border-white/[0.07] md:border-t-0">
 
           {offer.couponCode && offer.displayCouponPublicly ? (
             <>
               <div>
-                <p className="font-body text-[10px] font-semibold uppercase tracking-[0.14em] text-[#A8B5A0] mb-2.5">
+                <p className="font-body text-[10px] font-semibold uppercase tracking-[0.12em] text-[#A8B5A0] mb-2">
                   Your discount code
                 </p>
                 <CopyPill code={offer.couponCode} dark={true} />
@@ -435,7 +450,7 @@ function CardBanner({ offer }: { offer: Offer }) {
               <p className="font-body text-[13px] font-semibold text-[#FFFCF7]">
                 No code needed
               </p>
-              <p className="font-body text-[12px] text-[#A8B5A0] leading-relaxed">
+              <p className="font-body text-[11px] text-[#A8B5A0] leading-relaxed">
                 Discount is applied automatically. Add eligible books to your cart and save instantly.
               </p>
             </div>
@@ -445,7 +460,7 @@ function CardBanner({ offer }: { offer: Offer }) {
             <div className="flex items-center gap-2 border-t border-white/[0.07] pt-3">
               <ShoppingCart size={11} className="text-[#A8B5A0] shrink-0" strokeWidth={1.8} />
               <span className="font-body text-[11px] text-[#A8B5A0]">
-                Minimum cart value: <strong className="text-[#FFFCF7]">{formatINR(offer.minCartValuePaise)}</strong>
+                Min. cart value: <strong className="text-[#FFFCF7]">{formatINR(offer.minCartValuePaise)}</strong>
               </span>
             </div>
           )}
@@ -457,12 +472,11 @@ function CardBanner({ offer }: { offer: Offer }) {
   );
 }
 
-// ─── Mobile card carousel (snap-scroll, playing-card stack effect) ────────────
+// ─── Mobile card carousel ─────────────────────────────────────────────────────
 function MobileCarousel({ offers }: { offers: Offer[] }) {
   const [active, setActive] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
 
-  // Sync dot indicator with native scroll position
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -475,7 +489,6 @@ function MobileCarousel({ offers }: { offers: Offer[] }) {
     return () => el.removeEventListener("scroll", onScroll);
   }, [offers.length]);
 
-  // Tap a dot → scroll to that card
   const goTo = (i: number) => {
     const el = trackRef.current;
     if (!el) return;
@@ -485,32 +498,23 @@ function MobileCarousel({ offers }: { offers: Offer[] }) {
 
   return (
     <div className="relative">
-      {/* Stack shadow cards peeking behind the active card */}
-      <div className="relative h-[26px] mx-4">
-        <div className="absolute inset-x-6 top-2 h-full bg-[#1C3325]/30 rounded-sm" />
-        <div className="absolute inset-x-3 top-1 h-full bg-[#1C3325]/15 rounded-sm" />
-      </div>
-
-      {/* Scroll track — negative margin pulls it edge-to-edge past the section padding */}
+      {/* Scroll track — cards are same width, no tilt/scale to avoid overlap */}
       <div
         ref={trackRef}
         className="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory
-          scrollbar-none pb-2 -mx-4 px-4"
+          scrollbar-none pb-1 -mx-4 px-4"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {offers.map((offer, i) => {
-          const isDark = offer.endAt || i % 2 === 1;
+          const isDark = !!(offer.endAt) || i % 2 === 1;
           return (
             <div
               key={offer.id}
-              className="snap-center shrink-0 w-[calc(100vw-2.5rem)] max-w-sm
-                transition-all duration-300"
+              className="snap-center shrink-0 w-[calc(100vw-3rem)]"
               style={{
-                // Playing-card tilt: alternate ±1.5 deg, active = 0
-                transform: active === i
-                  ? "rotate(0deg) scale(1)"
-                  : `rotate(${i % 2 === 0 ? "1.2deg" : "-1.2deg"}) scale(0.97)`,
-                opacity: active === i ? 1 : 0.72,
+                // Slight opacity fade on non-active; NO rotate/scale to prevent overlap
+                opacity: active === i ? 1 : 0.6,
+                transition: "opacity 0.25s ease",
               }}
             >
               {isDark
@@ -543,7 +547,7 @@ function MobileCarousel({ offers }: { offers: Offer[] }) {
 
       {/* Counter label */}
       {offers.length > 1 && (
-        <p className="text-center font-body text-[10px] text-[#A8B5A0] mt-2 uppercase tracking-[0.15em]">
+        <p className="text-center font-body text-[10px] text-[#A8B5A0] mt-1.5 uppercase tracking-[0.15em]">
           {active + 1} / {offers.length}
         </p>
       )}
@@ -551,76 +555,41 @@ function MobileCarousel({ offers }: { offers: Offer[] }) {
   );
 }
 
-// ─── Desktop grid layout ──────────────────────────────────────────────────────
+// ─── Desktop grid — equal-height cards via CSS grid rows ─────────────────────
+// Uses CSS grid with auto-fit columns so cards in the same implicit row
+// automatically stretch to match the tallest card (align-items: stretch default).
 function DesktopGrid({ offers }: { offers: Offer[] }) {
-  const total = offers.length;
-
-  if (total === 1) {
-    return (
-      <div className="max-w-sm mx-auto">
-        <CardLight offer={offers[0]} />
-      </div>
-    );
-  }
-
-  if (total === 2) {
-    return (
-      <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
-        <CardLight offer={offers[0]} />
-        <CardDark  offer={offers[1]} />
-      </div>
-    );
-  }
-
-  if (total === 3) {
-    return (
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        <CardLight offer={offers[0]} />
-        <CardDark  offer={offers[1]} />
-        <CardLight offer={offers[2]} />
-      </div>
-    );
-  }
-
-  // 4+ cards — 3-col top, banner last
-  const topRow   = offers.slice(0, 3);
-  const rest     = offers.slice(3);
-  const banner   = rest[rest.length - 1];
-  const midCards = rest.slice(0, rest.length - 1);
-
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        {topRow.map((offer, i) =>
-          offer.endAt || i === 1
-            ? <CardDark  key={offer.id} offer={offer} />
-            : <CardLight key={offer.id} offer={offer} />
-        )}
-      </div>
-      {midCards.length > 0 && (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          {midCards.map((offer, i) =>
-            i % 2 === 0
-              ? <CardDark  key={offer.id} offer={offer} />
-              : <CardLight key={offer.id} offer={offer} />
-          )}
+    <div
+      className="grid gap-5"
+      style={{
+        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+      }}
+    >
+      {offers.map((offer, i) => (
+        <div key={offer.id} className="flex">
+          {/* flex wrapper ensures the article fills the cell height */}
+          <div className="w-full">
+            {!!(offer.endAt) || i % 2 === 1
+              ? <CardDark  offer={offer} />
+              : <CardLight offer={offer} />}
+          </div>
         </div>
-      )}
-      {banner && <CardBanner offer={banner} />}
+      ))}
     </div>
   );
 }
 
-// ─── Unified offer grid — carousel on mobile, grid on sm+ ────────────────────
+// ─── Unified offer grid ───────────────────────────────────────────────────────
 function OfferGrid({ offers }: { offers: Offer[] }) {
   return (
     <>
-      {/* Mobile: playing-card carousel */}
+      {/* Mobile: snap carousel */}
       <div className="sm:hidden">
         <MobileCarousel offers={offers} />
       </div>
 
-      {/* sm+: normal grid */}
+      {/* Tablet + Desktop: equal-height grid */}
       <div className="hidden sm:block">
         <DesktopGrid offers={offers} />
       </div>
@@ -631,7 +600,7 @@ function OfferGrid({ offers }: { offers: Offer[] }) {
 // ─── Section header ───────────────────────────────────────────────────────────
 function SectionHeader() {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
+    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
       <div>
         <div className="flex items-center gap-2.5 mb-3">
           <span className="w-6 h-px bg-[#C6A66B]" />
@@ -639,7 +608,7 @@ function SectionHeader() {
             Exclusive Deals
           </p>
         </div>
-        <h2 className="font-heading text-[38px] sm:text-[48px] font-bold text-[#242824] leading-[1.05]">
+        <h2 className="font-heading text-[36px] sm:text-[44px] font-bold text-[#242824] leading-[1.05]">
           Reader Offers
         </h2>
         <p className="font-body text-[13px] text-[#777970] mt-2 max-w-xs leading-relaxed">
@@ -672,10 +641,9 @@ export function OffersSection({ offers }: OffersSectionProps) {
     .filter((o, i, arr) => arr.findIndex((x) => x.id === o.id) === i);
 
   return (
-    <section className="bg-[#F5EFE6] py-14 lg:py-20" aria-label="Exclusive reader deals">
+    <section id="offers" className="bg-[#F5EFE6] py-12 lg:py-16" aria-label="Exclusive reader deals">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader />
-        {/* On mobile the carousel handles its own edge-to-edge overflow */}
         <div className="overflow-hidden sm:overflow-visible">
           <OfferGrid offers={sorted} />
         </div>

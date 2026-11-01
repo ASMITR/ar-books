@@ -3,13 +3,56 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Trash2, ShoppingCart, ArrowRight, ArrowLeft, BookOpen, Shield, Zap } from "lucide-react";
+import { Trash2, ShoppingCart, ArrowRight, ArrowLeft, BookOpen, Shield, Zap, Minus, Plus } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { formatINR } from "@/lib/currency";
 
+// ─── Reusable quantity stepper ────────────────────────────────────────────────
+function QuantityStepper({
+  quantity,
+  onDecrease,
+  onIncrease,
+  onRemove,
+}: {
+  quantity: number;
+  onDecrease: () => void;
+  onIncrease: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex items-center border border-[#E6DFD5]">
+        <button
+          onClick={quantity === 1 ? onRemove : onDecrease}
+          aria-label={quantity === 1 ? "Remove item" : "Decrease quantity"}
+          className={`w-7 h-7 flex items-center justify-center transition-colors
+            ${quantity === 1
+              ? "text-[#bbb] hover:text-[#F12F43] hover:bg-red-50"
+              : "text-[#555] hover:text-[#203A2B] hover:bg-[#F5EFE6]"
+            }`}
+        >
+          {quantity === 1 ? <Trash2 size={11} /> : <Minus size={11} />}
+        </button>
+
+        <span className="w-8 text-center font-body text-[13px] font-semibold text-[#080808] tabular-nums select-none">
+          {quantity}
+        </span>
+
+        <button
+          onClick={onIncrease}
+          aria-label="Increase quantity"
+          className="w-7 h-7 flex items-center justify-center text-[#555] hover:text-[#203A2B] hover:bg-[#F5EFE6] transition-colors"
+        >
+          <Plus size={11} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function CartPage() {
-  const { items, removeItem, totalPaise } = useCart();
+  const { items, removeItem, updateQuantity, totalPaise, count } = useCart();
   const requireAuth = useRequireAuth();
   const router = useRouter();
 
@@ -30,9 +73,9 @@ export default function CartPage() {
               </p>
               <h1 className="font-heading text-3xl sm:text-4xl font-bold text-[#080808] leading-none">
                 Shopping Cart
-                {items.length > 0 && (
+                {count > 0 && (
                   <span className="ml-3 text-xl text-[#789185] font-normal align-middle">
-                    {items.length} {items.length === 1 ? "item" : "items"}
+                    {count} {count === 1 ? "item" : "items"}
                   </span>
                 )}
               </h1>
@@ -79,8 +122,8 @@ export default function CartPage() {
               {/* Column headers — desktop only */}
               <div className="hidden sm:grid grid-cols-[1fr_auto_auto] gap-4 px-4 pb-2 border-b border-[#E9E7E2]">
                 <span className="text-[10px] font-body uppercase tracking-[0.15em] text-[#999]">Book</span>
-                <span className="text-[10px] font-body uppercase tracking-[0.15em] text-[#999] text-right w-20">Price</span>
-                <span className="text-[10px] font-body uppercase tracking-[0.15em] text-[#999] text-right w-16">Remove</span>
+                <span className="text-[10px] font-body uppercase tracking-[0.15em] text-[#999] text-right">Quantity</span>
+                <span className="text-[10px] font-body uppercase tracking-[0.15em] text-[#999] text-right w-24">Total</span>
               </div>
 
               {items.map((item) => (
@@ -90,7 +133,10 @@ export default function CartPage() {
                 >
                   <div className="flex gap-4 p-4 sm:p-5">
                     {/* Cover */}
-                    <Link href={`/books/${item.slug}`} className="relative w-[56px] h-[80px] sm:w-[64px] sm:h-[92px] shrink-0 overflow-hidden bg-[#F5EFE6]">
+                    <Link
+                      href={`/books/${item.slug}`}
+                      className="relative w-[56px] h-[80px] sm:w-[64px] sm:h-[92px] shrink-0 overflow-hidden bg-[#F5EFE6]"
+                    >
                       {item.coverImageUrl ? (
                         <Image
                           src={item.coverImageUrl}
@@ -122,18 +168,25 @@ export default function CartPage() {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#F0EEE9]">
-                        <span className="font-heading text-base font-bold text-[#080808]">
-                          {formatINR(item.pricePaise)}
-                        </span>
-                        <button
-                          onClick={() => removeItem(item.bookId)}
-                          className="flex items-center gap-1.5 text-[11px] font-body text-[#bbb] hover:text-[#F12F43] transition-colors"
-                          aria-label={`Remove ${item.title} from cart`}
-                        >
-                          <Trash2 size={12} />
-                          <span className="hidden sm:inline">Remove</span>
-                        </button>
+                      {/* Bottom row: stepper + price */}
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#F0EEE9] gap-3 flex-wrap">
+                        <QuantityStepper
+                          quantity={item.quantity}
+                          onDecrease={() => updateQuantity(item.bookId, item.quantity - 1)}
+                          onIncrease={() => updateQuantity(item.bookId, item.quantity + 1)}
+                          onRemove={() => removeItem(item.bookId)}
+                        />
+
+                        <div className="flex flex-col items-end gap-0.5">
+                          {item.quantity > 1 && (
+                            <span className="text-[10px] font-body text-[#A8B5A0] tabular-nums">
+                              {formatINR(item.pricePaise)} × {item.quantity}
+                            </span>
+                          )}
+                          <span className="font-heading text-base font-bold text-[#080808] tabular-nums">
+                            {formatINR(item.pricePaise * item.quantity)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -161,9 +214,14 @@ export default function CartPage() {
                 <div className="px-5 py-4 flex flex-col gap-2.5">
                   {items.map((item) => (
                     <div key={item.bookId} className="flex justify-between gap-3 text-sm font-body">
-                      <span className="text-[#555] line-clamp-1 flex-1">{item.title}</span>
+                      <span className="text-[#555] line-clamp-1 flex-1">
+                        {item.title}
+                        {item.quantity > 1 && (
+                          <span className="ml-1 text-[#A8B5A0] text-[11px]">×{item.quantity}</span>
+                        )}
+                      </span>
                       <span className="text-[#080808] shrink-0 font-medium tabular-nums">
-                        {formatINR(item.pricePaise)}
+                        {formatINR(item.pricePaise * item.quantity)}
                       </span>
                     </div>
                   ))}
@@ -173,7 +231,7 @@ export default function CartPage() {
                 <div className="px-5 pt-3 pb-5 border-t border-[#E9E7E2]">
                   <div className="flex justify-between items-baseline mb-5">
                     <span className="font-body text-sm text-[#777777]">
-                      Subtotal ({items.length} {items.length === 1 ? "item" : "items"})
+                      Subtotal ({count} {count === 1 ? "item" : "items"})
                     </span>
                     <span className="font-heading text-xl font-bold text-[#080808] tabular-nums">
                       {formatINR(totalPaise)}

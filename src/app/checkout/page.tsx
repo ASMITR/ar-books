@@ -250,6 +250,15 @@ export default function CheckoutPage() {
   const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
   const [appliedCode, setAppliedCode]         = useState<string>("");
 
+  // Tax state — fetched once from the public store-config endpoint
+  const [taxPercent, setTaxPercent] = useState<number>(0);
+  useEffect(() => {
+    fetch("/api/store-config")
+      .then((r) => r.json())
+      .then((j) => { if (j.success) setTaxPercent(j.data.taxPercent ?? 0); })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (appliedDiscount) {
       setAppliedDiscount(null);
@@ -258,8 +267,11 @@ export default function CheckoutPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items.length]);
 
-  const discountPaise   = appliedDiscount?.discountPaise ?? 0;
-  const finalTotalPaise = Math.max(totalPaise - discountPaise, 100);
+  const discountPaise     = appliedDiscount?.discountPaise ?? 0;
+  const postDiscountPaise = Math.max(totalPaise - discountPaise, 0);
+  // Estimated tax shown in the UI summary (server is authoritative at payment time)
+  const estimatedTaxPaise = taxPercent > 0 ? Math.round(postDiscountPaise * taxPercent / 100) : 0;
+  const finalTotalPaise   = Math.max(postDiscountPaise + estimatedTaxPaise, 100);
 
   const {
     register,
@@ -641,9 +653,12 @@ export default function CheckoutPage() {
                     <div className="flex flex-col justify-between flex-1 py-0.5 min-w-0">
                       <p className="text-[13px] font-body font-medium text-[#080808] line-clamp-2 leading-snug">
                         {item.title}
+                        {item.quantity > 1 && (
+                          <span className="ml-1 text-[#A8B5A0] text-[11px]">×{item.quantity}</span>
+                        )}
                       </p>
                       <p className="text-[13px] font-body font-semibold text-[#080808] tabular-nums mt-1">
-                        {formatINR(item.pricePaise)}
+                        {formatINR(item.pricePaise * item.quantity)}
                       </p>
                     </div>
                   </div>
@@ -669,10 +684,23 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
+                {estimatedTaxPaise > 0 && (
+                  <div className="flex justify-between text-sm font-body text-[#777777]">
+                    <span>Tax ({taxPercent}%)</span>
+                    <span className="tabular-nums">+{formatINR(estimatedTaxPaise)}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between font-body font-bold text-[#080808] text-base border-t border-[#E9E7E2] pt-3 mt-1">
                   <span>Total</span>
                   <span className="tabular-nums">{formatINR(finalTotalPaise)}</span>
                 </div>
+
+                {estimatedTaxPaise > 0 && (
+                  <p className="text-[10px] font-body text-[#A8B5A0] -mt-1">
+                    Incl. {formatINR(estimatedTaxPaise)} tax ({taxPercent}%)
+                  </p>
+                )}
               </div>
             </div>
 
