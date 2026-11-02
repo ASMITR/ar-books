@@ -9,12 +9,11 @@ import {
   CreditCard, Users, Download, Ticket, FileText,
   User, Settings, LogOut, Gift,
   PanelLeftClose, PanelLeftOpen, Menu, X, ExternalLink,
-  ChevronDown,
+  ChevronDown, Library,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ─── Nav structure ─────────────────────────────────────────────────────────────
-// Dashboard and Settings are standalone — everything else lives in dropdown groups.
 const NAV_GROUPS = [
   {
     id: "catalog",
@@ -37,6 +36,16 @@ const NAV_GROUPS = [
       { href: "/admin/downloads", label: "Downloads",        icon: Download    },
       { href: "/admin/offers",    label: "Offers & Coupons", icon: Gift        },
       { href: "/admin/coupons",   label: "Legacy Coupons",   icon: Ticket      },
+    ],
+  },
+  {
+    id: "membership",
+    label: "Membership",
+    icon: Library,
+    items: [
+      { href: "/admin/membership",              label: "Overview",    icon: Library   },
+      { href: "/admin/membership/plans",        label: "Plans",       icon: Tag       },
+      { href: "/admin/membership/subscriptions",label: "Subscribers", icon: Users     },
     ],
   },
 ] as const;

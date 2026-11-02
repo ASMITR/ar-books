@@ -233,25 +233,22 @@ function CardLight({ offer }: { offer: Offer }) {
         )}
       </div>
 
-      {/* ── Coupon ── fixed height slot (visible or invisible placeholder) */}
-      <div className="px-5 pt-3 shrink-0">
-        {offer.couponCode && offer.displayCouponPublicly ? (
+      {/* ── Coupon ── only shown when available */}
+      {offer.couponCode && offer.displayCouponPublicly && (
+        <div className="px-5 pt-3 shrink-0">
           <CopyPill code={offer.couponCode} dark={false} />
-        ) : (
-          /* invisible spacer keeps height consistent when no coupon */
-          <div className="h-[38px]" aria-hidden />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── Footer ── fixed to bottom, consistent height */}
-      <div className="px-5 pt-3 pb-4 flex items-center justify-between gap-2 shrink-0">
+      <div className="px-5 pt-3 pb-5 flex items-center justify-between gap-2 shrink-0">
         <EligibilityNote offer={offer} dark={false} />
         <Link
           href="/books"
           aria-label={`${offer.ctaText ?? "Shop Now"} — ${offer.title}`}
           className="inline-flex items-center gap-1.5 shrink-0
             font-body text-[10px] font-bold uppercase tracking-[0.12em]
-            bg-[#203A2B] text-[#FFFCF7] px-3.5 py-2
+            bg-[#203A2B] text-[#FFFCF7] px-4 py-2.5
             hover:bg-[#315B55] active:scale-[0.98]
             transition-all duration-200"
         >
@@ -260,12 +257,12 @@ function CardLight({ offer }: { offer: Offer }) {
         </Link>
       </div>
 
-      {/* ── Countdown ── always rendered at bottom; CountdownStrip returns null when expired/absent */}
-      <div className="shrink-0">
-        {offer.endAt
-          ? <CountdownStrip endAt={offer.endAt} dark={false} />
-          : <div className="h-[38px]" aria-hidden />}
-      </div>
+      {/* ── Countdown ── only rendered if there is an end date */}
+      {offer.endAt && (
+        <div className="shrink-0">
+          <CountdownStrip endAt={offer.endAt} dark={false} />
+        </div>
+      )}
     </article>
   );
 }
@@ -323,24 +320,22 @@ function CardDark({ offer }: { offer: Offer }) {
         )}
       </div>
 
-      {/* ── Coupon ── fixed height slot */}
-      <div className="relative px-5 pt-3 shrink-0">
-        {offer.couponCode && offer.displayCouponPublicly ? (
+      {/* ── Coupon ── only shown when available */}
+      {offer.couponCode && offer.displayCouponPublicly && (
+        <div className="relative px-5 pt-3 shrink-0">
           <CopyPill code={offer.couponCode} dark={true} />
-        ) : (
-          <div className="h-[38px]" aria-hidden />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── Footer ── */}
-      <div className="relative px-5 pt-3 pb-4 flex items-center justify-between gap-2 shrink-0">
+      <div className="relative px-5 pt-3 pb-5 flex items-center justify-between gap-2 shrink-0">
         <EligibilityNote offer={offer} dark={true} />
         <Link
           href="/books"
           aria-label={`${offer.ctaText ?? "Shop Now"} — ${offer.title}`}
           className="inline-flex items-center gap-1.5 shrink-0
             font-body text-[10px] font-bold uppercase tracking-[0.12em]
-            bg-[#C6A66B] text-[#1C3325] px-3.5 py-2
+            bg-[#C6A66B] text-[#1C3325] px-4 py-2.5
             hover:bg-[#D4B47A] active:scale-[0.98]
             transition-all duration-200"
         >
@@ -349,12 +344,12 @@ function CardDark({ offer }: { offer: Offer }) {
         </Link>
       </div>
 
-      {/* ── Countdown ── */}
-      <div className="relative shrink-0">
-        {offer.endAt
-          ? <CountdownStrip endAt={offer.endAt} dark={true} />
-          : <div className="h-[38px]" aria-hidden />}
-      </div>
+      {/* ── Countdown ── only rendered if there is an end date */}
+      {offer.endAt && (
+        <div className="relative shrink-0">
+          <CountdownStrip endAt={offer.endAt} dark={true} />
+        </div>
+      )}
     </article>
   );
 }
@@ -555,27 +550,98 @@ function MobileCarousel({ offers }: { offers: Offer[] }) {
   );
 }
 
-// ─── Desktop grid — equal-height cards via CSS grid rows ─────────────────────
-// Uses CSS grid with auto-fit columns so cards in the same implicit row
-// automatically stretch to match the tallest card (align-items: stretch default).
-function DesktopGrid({ offers }: { offers: Offer[] }) {
+// ─── Desktop scroll row — horizontal scroll with arrow buttons ───────────────
+function DesktopScrollRow({ offers }: { offers: Offer[] }) {
+  const trackRef  = useRef<HTMLDivElement>(null);
+  const [canLeft,  setCanLeft]  = useState(false);
+  const [canRight, setCanRight] = useState(true);
+
+  const CARD_W = 300; // px — card width + gap
+
+  const updateArrows = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 8);
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 8);
+  };
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    updateArrows();
+    el.addEventListener("scroll", updateArrows, { passive: true });
+    return () => el.removeEventListener("scroll", updateArrows);
+  }, [offers.length]);
+
+  const scroll = (dir: "left" | "right") => {
+    if (!trackRef.current) return;
+    trackRef.current.scrollBy({ left: dir === "left" ? -CARD_W : CARD_W, behavior: "smooth" });
+  };
+
   return (
-    <div
-      className="grid gap-5"
-      style={{
-        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-      }}
-    >
-      {offers.map((offer, i) => (
-        <div key={offer.id} className="flex">
-          {/* flex wrapper ensures the article fills the cell height */}
-          <div className="w-full">
+    <div className="relative">
+      {/* Left fade + arrow — outside scroll track so they never overlap cards */}
+      {canLeft && (
+        <button
+          onClick={() => scroll("left")}
+          aria-label="Scroll left"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-20
+            w-9 h-9 bg-[#FFFCF7] border border-[#E6DFD5] shadow-md
+            flex items-center justify-center text-[#555]
+            hover:border-[#203A2B] hover:text-[#203A2B] hover:bg-[#F5EFE6]
+            active:scale-[0.95] transition-all duration-150 rounded-sm"
+          style={{ marginLeft: "-4px" }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+            <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      )}
+
+      {canRight && (
+        <button
+          onClick={() => scroll("right")}
+          aria-label="Scroll right"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-20
+            w-9 h-9 bg-[#FFFCF7] border border-[#E6DFD5] shadow-md
+            flex items-center justify-center text-[#555]
+            hover:border-[#203A2B] hover:text-[#203A2B] hover:bg-[#F5EFE6]
+            active:scale-[0.95] transition-all duration-150 rounded-sm"
+          style={{ marginRight: "-4px" }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+            <path d="M5 2l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      )}
+
+      {/* Left edge fade — pointer-events-none so it never covers the cards */}
+      <div className={`absolute left-0 inset-y-0 w-12 z-10 pointer-events-none
+        bg-gradient-to-r from-[#F5EFE6] to-transparent transition-opacity duration-200
+        ${canLeft ? "opacity-100" : "opacity-0"}`} />
+      <div className={`absolute right-0 inset-y-0 w-12 z-10 pointer-events-none
+        bg-gradient-to-l from-[#F5EFE6] to-transparent transition-opacity duration-200
+        ${canRight ? "opacity-100" : "opacity-0"}`} />
+
+      {/* Scroll track — px-10 gives clearance so cards don't sit under arrows */}
+      <div
+        ref={trackRef}
+        className="flex gap-5 overflow-x-auto scrollbar-none scroll-smooth py-2 px-10"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        {offers.map((offer, i) => (
+          <div
+            key={offer.id}
+            className="shrink-0 w-[290px] lg:w-[310px] flex"
+          >
             {!!(offer.endAt) || i % 2 === 1
               ? <CardDark  offer={offer} />
               : <CardLight offer={offer} />}
           </div>
-        </div>
-      ))}
+        ))}
+        {/* Right padding so last card doesn't sit against edge */}
+        <div className="shrink-0 w-4" aria-hidden />
+      </div>
     </div>
   );
 }
@@ -589,9 +655,9 @@ function OfferGrid({ offers }: { offers: Offer[] }) {
         <MobileCarousel offers={offers} />
       </div>
 
-      {/* Tablet + Desktop: equal-height grid */}
+      {/* Tablet + Desktop: horizontal scroll row with arrows */}
       <div className="hidden sm:block">
-        <DesktopGrid offers={offers} />
+        <DesktopScrollRow offers={offers} />
       </div>
     </>
   );
@@ -600,18 +666,18 @@ function OfferGrid({ offers }: { offers: Offer[] }) {
 // ─── Section header ───────────────────────────────────────────────────────────
 function SectionHeader() {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
       <div>
-        <div className="flex items-center gap-2.5 mb-3">
-          <span className="w-6 h-px bg-[#C6A66B]" />
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="w-5 h-px bg-[#C6A66B]" />
           <p className="text-[10px] font-body font-bold uppercase tracking-[0.3em] text-[#C6A66B]">
             Exclusive Deals
           </p>
         </div>
-        <h2 className="font-heading text-[36px] sm:text-[44px] font-bold text-[#242824] leading-[1.05]">
+        <h2 className="font-heading text-[28px] sm:text-[34px] font-bold text-[#242824] leading-tight">
           Reader Offers
         </h2>
-        <p className="font-body text-[13px] text-[#777970] mt-2 max-w-xs leading-relaxed">
+        <p className="font-body text-[12px] text-[#777970] mt-1 max-w-xs leading-relaxed">
           Curated discounts for every kind of reader.
         </p>
       </div>
@@ -641,12 +707,10 @@ export function OffersSection({ offers }: OffersSectionProps) {
     .filter((o, i, arr) => arr.findIndex((x) => x.id === o.id) === i);
 
   return (
-    <section id="offers" className="bg-[#F5EFE6] py-12 lg:py-16" aria-label="Exclusive reader deals">
+    <section id="offers" className="bg-[#F5EFE6] py-6 lg:py-8" aria-label="Exclusive reader deals">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader />
-        <div className="overflow-hidden sm:overflow-visible">
-          <OfferGrid offers={sorted} />
-        </div>
+        <OfferGrid offers={sorted} />
       </div>
     </section>
   );

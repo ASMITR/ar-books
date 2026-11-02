@@ -6,6 +6,7 @@ import {
   getStoreSettings,
   getActivePublicOffers,
 } from "@/lib/firebase/firestore";
+import { getActiveMembershipPlans } from "@/lib/firebase/subscriptions";
 import { HeroSection }         from "@/components/home/HeroSection";
 import { CategorySection }     from "@/components/home/CategorySection";
 import { BookCarousel }        from "@/components/home/BookCarousel";
@@ -13,6 +14,7 @@ import { BrandStoryBanner }    from "@/components/home/BrandStoryBanner";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { NewsletterForm }      from "@/components/home/NewsletterForm";
 import { OffersSection }       from "@/components/home/OffersSection";
+import { MembershipSection }   from "@/components/home/MembershipSection";
 import {
   Sparkles,
   CheckCircle,
@@ -34,13 +36,14 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [featuredBooks, allPublished, categories, settings, activeOffers] =
+  const [featuredBooks, allPublished, categories, settings, activeOffers, membershipPlans] =
     await Promise.all([
       getFeaturedBooks(),
       getPublishedBooks(),
       getVisibleCategories(),
       getStoreSettings(),
       getActivePublicOffers(),
+      getActiveMembershipPlans(),
     ]);
 
   // Bestselling = featured books (admin-curated)
@@ -125,6 +128,11 @@ export default async function HomePage() {
           3 · EXCLUSIVE OFFERS  (only when active offers exist)
       ══════════════════════════════════════════════════════════════ */}
       <OffersSection offers={activeOffers} />
+
+      {/* ══════════════════════════════════════════════════════════════
+          3b · MEMBERSHIP PLANS
+      ══════════════════════════════════════════════════════════════ */}
+      <MembershipSection plans={membershipPlans} />
 
       {/* ══════════════════════════════════════════════════════════════
           4 · BROWSE BY CATEGORY  (horizontal circular scroll)

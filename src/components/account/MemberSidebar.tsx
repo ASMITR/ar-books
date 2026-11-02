@@ -8,18 +8,20 @@ import { useState, useRef, useEffect } from "react";
 import {
   LayoutDashboard, BookOpen, ShoppingBag, Download,
   User, Shield, HelpCircle, ShoppingCart, LogOut,
-  ChevronRight, ChevronDown,
+  ChevronRight, ChevronDown, Library,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/account/dashboard", label: "Overview",         icon: LayoutDashboard },
-  { href: "/account/library",   label: "My Library",       icon: BookOpen },
-  { href: "/account/orders",    label: "My Orders",        icon: ShoppingBag },
-  { href: "/account/downloads", label: "Download History", icon: Download },
-  { href: "/account/profile",   label: "Profile Settings", icon: User },
-  { href: "/account/security",  label: "Security",         icon: Shield },
-  { href: "/contact",           label: "Help & Support",   icon: HelpCircle },
+  { href: "/account/dashboard",          label: "Overview",         icon: LayoutDashboard },
+  { href: "/account/membership",         label: "My Membership",    icon: Library         },
+  { href: "/account/membership/library", label: "Member Library",   icon: BookOpen        },
+  { href: "/account/library",            label: "Purchased Books",  icon: BookOpen        },
+  { href: "/account/orders",             label: "My Orders",        icon: ShoppingBag     },
+  { href: "/account/downloads",          label: "Download History", icon: Download        },
+  { href: "/account/profile",            label: "Profile Settings", icon: User            },
+  { href: "/account/security",           label: "Security",         icon: Shield          },
+  { href: "/contact",                    label: "Help & Support",   icon: HelpCircle      },
 ];
 
 // ─── Shared link row (used in both sidebar and dropdown) ─────────────────────
