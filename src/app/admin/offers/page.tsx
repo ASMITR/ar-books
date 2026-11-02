@@ -172,7 +172,7 @@ export default function AdminOffersPage() {
         ...form,
         couponCode:       form.couponCode?.toUpperCase().trim() || undefined,
         startAt:          form.startAt ? new Date(form.startAt).toISOString() : undefined,
-        endAt:            form.endAt   ? new Date(form.endAt).toISOString()   : undefined,
+        endAt:            form.endAt   ? new Date(form.endAt).toISOString()   : null,
         maxDiscountPaise: form.maxDiscountPaise ? Number(form.maxDiscountPaise) : undefined,
         minCartValuePaise: form.minCartValuePaise ? Number(form.minCartValuePaise) : undefined,
       };
@@ -342,8 +342,13 @@ export default function AdminOffersPage() {
                     </td>
                     <td className="px-4 py-3.5 text-xs text-[#888]">
                       <div>{new Date(offer.startAt).toLocaleDateString("en-IN")}</div>
-                      {offer.endAt && (
+                      {offer.endAt ? (
                         <div className="text-[#bbb]">→ {new Date(offer.endAt).toLocaleDateString("en-IN")}</div>
+                      ) : (
+                        <div className="inline-flex items-center gap-1 text-emerald-600 font-semibold mt-0.5">
+                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          Unlimited
+                        </div>
                       )}
                     </td>
                     <td className="px-4 py-3.5 text-sm text-[#555]">
@@ -477,8 +482,46 @@ export default function AdminOffersPage() {
               <input type="datetime-local" value={form.startAt ?? ""} onChange={(e) => set("startAt", e.target.value)} required className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>End Date & Time (blank = no expiry)</label>
-              <input type="datetime-local" value={form.endAt ?? ""} onChange={(e) => set("endAt", e.target.value)} className={inputCls} />
+              <label className={labelCls}>End Date & Time</label>
+              {/* Unlimited toggle */}
+              <label className="flex items-center gap-2 mb-2 cursor-pointer group w-fit">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={form.endAt === "" || form.endAt == null}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        // unlimited — clear the end date
+                        set("endAt", "");
+                      } else {
+                        // set a default 30 days from now so the input isn't blank
+                        const d = new Date();
+                        d.setDate(d.getDate() + 30);
+                        set("endAt", d.toISOString().slice(0, 16));
+                      }
+                    }}
+                  />
+                  <div className="w-8 h-4 bg-[#E6E3DD] peer-checked:bg-[#203A2B] rounded-full transition-colors" />
+                  <div className="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4" />
+                </div>
+                <span className="text-[11px] font-body font-semibold text-[#777] group-hover:text-[#080808] transition-colors select-none">
+                  Unlimited (no expiry)
+                </span>
+              </label>
+              <input
+                type="datetime-local"
+                value={form.endAt ?? ""}
+                onChange={(e) => set("endAt", e.target.value)}
+                disabled={form.endAt === "" || form.endAt == null}
+                className={`${inputCls} disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-[#F9F8F6]`}
+              />
+              {(form.endAt === "" || form.endAt == null) && (
+                <p className="text-[10px] font-body text-[#A8B5A0] mt-1 flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  This offer will run indefinitely until manually paused or deleted.
+                </p>
+              )}
             </div>
           </div>
 

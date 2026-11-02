@@ -11,6 +11,7 @@ import {
   PlusCircle, Tag, FileText, Settings,
 } from "lucide-react";
 import { AdminButton } from "@/components/admin/AdminButton";
+import { ClearCacheButton } from "@/components/admin/ClearCacheButton";
 
 export const metadata: Metadata = { title: "Admin Dashboard" };
 
@@ -65,9 +66,12 @@ export default async function AdminDashboardPage() {
       title="Dashboard"
       subtitle={`${greeting} 👋`}
       action={
-        <Link href="/admin/books">
-          <AdminButton icon={<PlusCircle />}>Add Book</AdminButton>
-        </Link>
+        <div className="flex items-center gap-2">
+          <ClearCacheButton />
+          <Link href="/admin/books">
+            <AdminButton icon={<PlusCircle />}>Add Book</AdminButton>
+          </Link>
+        </div>
       }
     >
       <div className="space-y-6">

@@ -19,7 +19,9 @@ import Link from "next/link";
 
 interface Props { params: Promise<{ slug: string }>; }
 
-export const revalidate = 300;
+// No time-based ISR floor — rely purely on revalidateTag("books") called by
+// admin mutations so the page updates instantly after a book is saved.
+export const revalidate = false;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -208,7 +210,7 @@ export default async function BookPage({ params }: Props) {
               </div>
 
               {/* ── Free sample CTA ─────────────────────────────────── */}
-              {book.previewPdfPath ? (
+              {(book.previewPdfPath || book.previewPdfUrl) ? (
                 <a
                   href={`/api/downloads/preview?bookId=${book.id}`}
                   target="_blank"
@@ -369,7 +371,7 @@ export default async function BookPage({ params }: Props) {
               )}
 
               {/* ── Free sample inline banner ──────────────────────────── */}
-              {book.previewPdfPath ? (
+              {(book.previewPdfPath || book.previewPdfUrl) ? (
                 <div className="relative overflow-hidden rounded-sm border border-[#2E5040] bg-[#1C3325]">
                   <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-[#C6A66B]/10 blur-3xl -translate-y-1/3 translate-x-1/4 pointer-events-none" />
                   <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 px-6 py-6">

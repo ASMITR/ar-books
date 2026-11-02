@@ -17,6 +17,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
   // Rehydrate from localStorage on mount
   useEffect(() => {
@@ -28,12 +29,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setItems(parsed.map((i) => ({ ...i, quantity: i.quantity ?? 1 })));
       }
     } catch {}
+    setHydrated(true);
   }, []);
 
-  // Persist on every change
+  // Persist on every change — but only after the initial rehydration so we
+  // never overwrite localStorage with the empty initial state on first render.
   useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem("ar-cart", JSON.stringify(items));
-  }, [items]);
+  }, [items, hydrated]);
 
   const addItem = useCallback((item: Omit<CartItem, "quantity">) => {
     setItems((prev) => {

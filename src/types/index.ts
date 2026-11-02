@@ -23,7 +23,9 @@ export interface Book {
   coverImageUrl?: string;
   coverImagePath?: string;
   privatePdfPath?: string;
+  privatePdfUrl?: string;
   previewPdfPath?: string;
+  previewPdfUrl?: string;
   pageCount?: number;
   language: string;
   published: boolean;

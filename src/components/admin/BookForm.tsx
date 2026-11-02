@@ -245,6 +245,7 @@ export function BookForm({ book, categories, onSuccess }: Props) {
         try {
           const r = await uploadFile(pdfFile, "pdf");
           extra.privatePdfPath = r.publicId;
+          extra.privatePdfUrl = r.secureUrl;
           setUploadStatus((s) => ({ ...s, pdf: "done" }));
         } catch (err) {
           setUploadStatus((s) => ({ ...s, pdf: "error" }));
@@ -258,6 +259,7 @@ export function BookForm({ book, categories, onSuccess }: Props) {
         try {
           const r = await uploadFile(previewFile, "preview");
           extra.previewPdfPath = r.publicId;
+          extra.previewPdfUrl = r.secureUrl;
           setUploadStatus((s) => ({ ...s, preview: "done" }));
         } catch (err) {
           setUploadStatus((s) => ({ ...s, preview: "error" }));
@@ -488,6 +490,18 @@ export function BookForm({ book, categories, onSuccess }: Props) {
                 onChange={setPreviewFile}
                 isUploading={uploadStatus.preview === "uploading"}
               />
+              {/* Test link — visible once a preview PDF is saved */}
+              {!previewFile && book?.id && (book.previewPdfPath || book.previewPdfUrl) && (
+                <a
+                  href={`/api/downloads/preview?bookId=${book.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 mt-2 text-[12px] font-body text-[#789185] hover:text-[#3a6b5f] hover:underline"
+                >
+                  <FileText size={12} />
+                  Test preview PDF ↗
+                </a>
+              )}
             </div>
             <div className="mt-8 shrink-0">{statusIcon(uploadStatus.preview)}</div>
           </div>

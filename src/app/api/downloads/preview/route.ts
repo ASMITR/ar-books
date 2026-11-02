@@ -14,23 +14,26 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Book not found" }, { status: 404 });
     }
 
-    const { previewPdfPath, published, title } = bookDoc.data()!;
-    if (!published || !previewPdfPath) {
+    const { previewPdfPath, previewPdfUrl, published, title } = bookDoc.data()!;
+
+    if (!published) {
       return NextResponse.json({ error: "Preview not available" }, { status: 404 });
     }
 
-    // Build the direct Cloudinary URL for the raw resource (no signing needed —
-    // files uploaded as resource_type "raw" without access_mode "authenticated"
-    // are publicly reachable via their delivery URL).
-    const directUrl = cloudinary.url(previewPdfPath as string, {
-      resource_type: "raw",
-      type: "upload",
-      secure: true,
-    });
+    if (!previewPdfPath && !previewPdfUrl) {
+      return NextResponse.json({ error: "Preview not available" }, { status: 404 });
+    }
 
-    // Fetch the PDF from Cloudinary and proxy it through this route so the
-    // browser always receives the correct Content-Type / Content-Disposition
-    // headers, regardless of what Cloudinary sets on the raw file.
+    // Prefer the stored secureUrl — it's already correct and needs no reconstruction.
+    // Fall back to building it from the public_id for older documents that predate
+    // the previewPdfUrl field.
+    const directUrl = (previewPdfUrl as string | undefined) ??
+      cloudinary.url(previewPdfPath as string, {
+        resource_type: "raw",
+        type: "upload",
+        secure: true,
+      });
+
     const upstream = await fetch(directUrl);
     if (!upstream.ok) {
       console.error("[preview] Cloudinary fetch failed", upstream.status, directUrl);
@@ -39,7 +42,6 @@ export async function GET(req: NextRequest) {
 
     const pdfBuffer = await upstream.arrayBuffer();
 
-    // Sanitise the book title for use as a filename
     const safeTitle = (title as string ?? "preview")
       .replace(/[^a-zA-Z0-9 _-]/g, "")
       .trim()
@@ -50,10 +52,8 @@ export async function GET(req: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        // inline → browser renders in PDF viewer; attachment → force download
         "Content-Disposition": `inline; filename="${safeTitle}_preview.pdf"`,
         "Content-Length": String(pdfBuffer.byteLength),
-        // Short cache — 10 min in browser, not stored in shared caches
         "Cache-Control": "private, max-age=600",
       },
     });

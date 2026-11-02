@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdmin } from "@/lib/firebase/auth-server";
 import cloudinary from "@/lib/cloudinary";
@@ -26,8 +26,18 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     await requireAdmin();
     const { id } = await params;
     const body = await req.json();
+
+    // Fetch the slug before updating so we can revalidate the exact page path.
+    const existing = await adminDb.collection("books").doc(id).get();
+    const slug = existing.exists ? (existing.data()?.slug as string | undefined) : undefined;
+
     await adminDb.collection("books").doc(id).update({ ...body, updatedAt: new Date().toISOString() });
+
     revalidateTag("books", { expire: 0 });
+    // Also revalidate the specific book page so the render cache is busted
+    // immediately — not just the data cache.
+    if (slug) revalidatePath(`/books/${slug}`);
+
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdmin } from "@/lib/firebase/auth-server";
+import { FieldValue } from "firebase-admin/firestore";
 
 interface Params { params: Promise<{ id: string }> }
 
@@ -29,10 +30,18 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       return NextResponse.json({ success: false, error: "Invalid JSON" }, { status: 400 });
     }
 
-    // Sanitise couponCode if present
     const update = body as Record<string, unknown>;
+
+    // Sanitise couponCode if present
     if (typeof update.couponCode === "string") {
       update.couponCode = update.couponCode.toUpperCase().trim();
+    }
+
+    // When endAt is explicitly null (unlimited offer), delete the field in
+    // Firestore so it's fully removed — not just set to null. This ensures
+    // the frontend correctly treats the offer as having no expiry.
+    if (update.endAt === null || update.endAt === "") {
+      update.endAt = FieldValue.delete();
     }
 
     await adminDb.collection("offers").doc(id).update({

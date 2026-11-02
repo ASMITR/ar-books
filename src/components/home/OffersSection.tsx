@@ -4,56 +4,75 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Copy, Check, Clock, ArrowRight, ShoppingCart,
-  BookOpen, Layers, Tag, Zap, Gift, PackageOpen,
+  BookOpen, Layers, Tag, Zap, Gift, PackageOpen, Sparkles,
 } from "lucide-react";
 import type { Offer } from "@/types";
 import { formatINR } from "@/lib/currency";
 
-// ─── Countdown hook ───────────────────────────────────────────────────────────
+// ─── Countdown hook (updates every second) ───────────────────────────────────
 function useCountdown(endAt: string) {
   const calc = () => {
     const diff = new Date(endAt).getTime() - Date.now();
-    if (diff <= 0) return { days: 0, hours: 0, mins: 0, expired: true };
+    if (diff <= 0) return { days: 0, hours: 0, mins: 0, secs: 0, expired: true };
     return {
       days:    Math.floor(diff / 86400000),
       hours:   Math.floor((diff % 86400000) / 3600000),
       mins:    Math.floor((diff % 3600000) / 60000),
+      secs:    Math.floor((diff % 60000) / 1000),
       expired: false,
     };
   };
   const [tick, setTick] = useState(calc);
   useEffect(() => {
-    const t = setInterval(() => setTick(calc()), 60000);
+    const t = setInterval(() => setTick(calc()), 1000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endAt]);
   return tick;
 }
 
-// ─── Countdown strip ──────────────────────────────────────────────────────────
-function CountdownStrip({ endAt, dark }: { endAt: string; dark: boolean }) {
-  const { days, hours, mins, expired } = useCountdown(endAt);
+// ─── Countdown bar ────────────────────────────────────────────────────────────
+function CountdownBar({ endAt, dark }: { endAt: string; dark: boolean }) {
+  const { days, hours, mins, secs, expired } = useCountdown(endAt);
   if (expired) return null;
 
-  const bg   = dark ? "bg-white/[0.07]" : "bg-[#203A2B]/[0.06]";
-  const text = dark ? "text-[#A8B5A0]"  : "text-[#5A7060]";
-  const num  = dark ? "text-[#FFFCF7]"  : "text-[#203A2B]";
+  const wrapBg  = dark ? "bg-[#152A1C]"      : "bg-[#F5EFE6]";
+  const border  = dark ? "border-[#2E5040]"  : "border-[#E6DFD5]";
+  const label   = dark ? "text-[#A8B5A0]"   : "text-[#777970]";
+  const boxBg   = dark ? "bg-[#1C3325] border-[#2E5040]" : "bg-[#FFFCF7] border-[#E6DFD5]";
+  const numTxt  = dark ? "text-[#FFFCF7]"   : "text-[#203A2B]";
+  const unitTxt = dark ? "text-[#A8B5A0]"   : "text-[#A8B5A0]";
+
+  const units = [
+    { v: days,  l: "Days" },
+    { v: hours, l: "Hrs"  },
+    { v: mins,  l: "Min"  },
+    { v: secs,  l: "Sec"  },
+  ].filter(({ l }) => l !== "Days" || days > 0);
 
   return (
-    <div className={`flex items-center gap-3 px-3.5 py-2.5 ${bg} border-t ${dark ? "border-white/[0.08]" : "border-[#203A2B]/[0.08]"}`}>
-      <Clock size={11} className={text} strokeWidth={1.8} />
-      <span className={`font-body text-[10px] font-semibold uppercase tracking-[0.1em] ${text}`}>
-        Ends in
-      </span>
-      {[{ v: days, l: "d" }, { v: hours, l: "h" }, { v: mins, l: "m" }].map(({ v, l }, i) => (
-        <span key={l} className="flex items-baseline gap-0.5">
-          {i > 0 && <span className={`${text} text-[11px] mr-1`}>:</span>}
-          <span className={`font-heading text-[15px] font-bold ${num} leading-none`}>
-            {String(v).padStart(2, "0")}
-          </span>
-          <span className={`font-body text-[9px] ${text}`}>{l}</span>
+    <div className={`flex items-center gap-3 px-4 py-3 ${wrapBg} border-t ${border}`}>
+      <div className="flex items-center gap-1.5 shrink-0">
+        <Clock size={10} className={label} strokeWidth={2} />
+        <span className={`font-body text-[9px] font-bold uppercase tracking-[0.15em] ${label}`}>
+          Ends in
         </span>
-      ))}
+      </div>
+      <div className="flex items-center gap-1">
+        {units.map(({ v, l }, i) => (
+          <div key={l} className="flex items-center gap-1">
+            {i > 0 && <span className={`${label} text-[11px] font-bold mx-0.5`}>:</span>}
+            <div className={`flex flex-col items-center min-w-[34px] border ${boxBg} px-1.5 py-1`}>
+              <span className={`font-heading text-[15px] font-bold leading-none tabular-nums ${numTxt}`}>
+                {String(v).padStart(2, "0")}
+              </span>
+              <span className={`font-body text-[7px] uppercase tracking-[0.08em] ${unitTxt} leading-none mt-0.5`}>
+                {l}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -61,44 +80,46 @@ function CountdownStrip({ endAt, dark }: { endAt: string; dark: boolean }) {
 // ─── Copy code pill ───────────────────────────────────────────────────────────
 function CopyPill({ code, dark }: { code: string; dark: boolean }) {
   const [copied, setCopied] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleCopy = async () => {
     try { await navigator.clipboard.writeText(code); }
     catch {
       const el = document.createElement("textarea");
-      el.value = code; document.body.appendChild(el);
-      el.select(); document.execCommand("copy");
+      el.value = code;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
       document.body.removeChild(el);
     }
     setCopied(true);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setCopied(false), 2000);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setCopied(false), 2000);
   };
 
+  const base = "w-full flex items-center justify-between gap-3 px-4 py-3 border-2 border-dashed transition-all duration-200 group";
+  const idle = dark
+    ? "border-[#C6A66B]/40 bg-[#C6A66B]/5 hover:border-[#C6A66B]/80 hover:bg-[#C6A66B]/10"
+    : "border-[#203A2B]/25 bg-[#203A2B]/4 hover:border-[#203A2B]/55 hover:bg-[#203A2B]/8";
+  const done = "border-emerald-500/50 bg-emerald-50/40";
+
   return (
-    <button
-      onClick={handleCopy}
-      aria-label={`Copy code ${code}`}
-      className={`w-full flex items-center justify-between gap-3 border-2 border-dashed rounded-sm
-        px-4 py-2.5 transition-all duration-150 group
-        ${dark
-          ? "border-white/20 hover:border-[#C6A66B]/60 bg-white/[0.04] hover:bg-white/[0.08]"
-          : "border-[#203A2B]/20 hover:border-[#203A2B]/50 bg-[#203A2B]/[0.03] hover:bg-[#203A2B]/[0.06]"
-        }`}
-    >
-      <div className="flex items-center gap-2 min-w-0">
-        <Tag size={12} className={dark ? "text-[#C6A66B] shrink-0" : "text-[#315B55] shrink-0"} />
-        <span className={`font-mono text-[12px] font-bold tracking-[0.18em] truncate ${dark ? "text-[#FFFCF7]" : "text-[#203A2B]"}`}>
+    <button onClick={handleCopy} aria-label={`Copy code ${code}`}
+      className={`${base} ${copied ? done : idle}`}>
+      <div className="flex items-center gap-2.5 min-w-0">
+        <Tag size={11} strokeWidth={2}
+          className={dark ? "text-[#C6A66B] shrink-0" : "text-[#315B55] shrink-0"} />
+        <span className={`font-mono text-[13px] font-bold tracking-[0.22em] truncate
+          ${dark ? "text-[#FFFCF7]" : "text-[#203A2B]"}`}>
           {code}
         </span>
       </div>
-      <span className={`flex items-center gap-1.5 shrink-0 font-body text-[10px] font-bold uppercase tracking-[0.1em] transition-colors
-        ${copied
-          ? "text-emerald-500"
-          : dark ? "text-[#A8B5A0] group-hover:text-[#FFFCF7]" : "text-[#9e9a94] group-hover:text-[#203A2B]"
-        }`}>
-        {copied ? <Check size={10} /> : <Copy size={10} />}
+      <span className={`flex items-center gap-1.5 shrink-0 font-body text-[10px] font-bold uppercase
+        tracking-[0.1em] transition-colors
+        ${copied ? "text-emerald-500"
+          : dark  ? "text-[#A8B5A0] group-hover:text-[#C6A66B]"
+                  : "text-[#A8B5A0] group-hover:text-[#203A2B]"}`}>
+        {copied ? <Check size={11} strokeWidth={2.5} /> : <Copy size={10} />}
         {copied ? "Copied!" : "Copy"}
       </span>
     </button>
@@ -108,69 +129,73 @@ function CopyPill({ code, dark }: { code: string; dark: boolean }) {
 // ─── Offer type icon ──────────────────────────────────────────────────────────
 function OfferIcon({ type, dark }: { type: string; dark: boolean }) {
   const cls = `shrink-0 ${dark ? "text-[#C6A66B]" : "text-[#203A2B]"}`;
-  if (type === "bundle" || type === "buy_x_get_y") return <PackageOpen size={15} strokeWidth={1.7} className={cls} />;
-  if (type === "first_order") return <Gift size={15} strokeWidth={1.7} className={cls} />;
-  return <Zap size={15} strokeWidth={1.7} className={cls} />;
+  if (type === "bundle" || type === "buy_x_get_y")
+    return <PackageOpen size={14} strokeWidth={1.8} className={cls} />;
+  if (type === "first_order")
+    return <Gift size={14} strokeWidth={1.8} className={cls} />;
+  if (type === "category" || type === "product_specific")
+    return <Layers size={14} strokeWidth={1.8} className={cls} />;
+  return <Zap size={14} strokeWidth={1.8} className={cls} />;
 }
 
-// ─── Discount headline ────────────────────────────────────────────────────────
-// Fixed height container so all cards have the same discount block height
-function DiscountNumber({ offer, dark }: { offer: Offer; dark: boolean }) {
-  const mainCls = `font-heading font-bold leading-none tracking-tight ${dark ? "text-[#C6A66B]" : "text-[#203A2B]"}`;
-  const subCls  = `font-body font-semibold uppercase tracking-[0.1em] ${dark ? "text-[#A8B5A0]" : "text-[#789185]"}`;
+// ─── Big discount number ──────────────────────────────────────────────────────
+function DiscountSlab({ offer, dark }: { offer: Offer; dark: boolean }) {
+  const num  = `font-heading font-bold leading-none tracking-tight ${dark ? "text-[#C6A66B]" : "text-[#203A2B]"}`;
+  const mute = `font-body font-bold uppercase tracking-[0.1em] ${dark ? "text-[#A8B5A0]" : "text-[#789185]"}`;
 
   if (offer.offerType === "bundle" || offer.offerType === "buy_x_get_y") {
     return (
-      <div className="flex items-end gap-2 h-12">
-        <span className={`${mainCls} text-[36px]`}>
-          {offer.discountValue}
-          <span className={`${mainCls} text-[20px] ml-0.5`}>%</span>
+      <div className="flex items-end gap-2">
+        <span className={`${num} text-[50px]`}>
+          {offer.discountValue}<span className="text-[26px] ml-0.5">%</span>
         </span>
-        <span className={`${subCls} text-[10px] mb-1 truncate`}>
-          buy {offer.buyX ?? 3}+
-        </span>
+        <span className={`${mute} text-[9px] mb-2`}>buy {offer.buyX ?? 3}+</span>
       </div>
     );
   }
   if (offer.discountType === "flat") {
     return (
-      <div className="flex items-start gap-0.5 h-12">
-        <span className={`${mainCls} text-[18px] mt-1`}>₹</span>
-        <span className={`${mainCls} text-[36px]`}>
-          {(offer.discountValue).toLocaleString("en-IN")}
+      <div className="flex items-start gap-0.5">
+        <span className={`${num} text-[22px] mt-2`}>₹</span>
+        <span className={`${num} text-[50px]`}>
+          {offer.discountValue.toLocaleString("en-IN")}
         </span>
-        <span className={`${subCls} text-[10px] mb-1 self-end`}>off</span>
+        <span className={`${mute} text-[9px] self-end mb-2 ml-1`}>off</span>
       </div>
     );
   }
-  // percent
   return (
-    <div className="flex items-end gap-1 h-12">
-      <span className={`${mainCls} text-[40px]`}>{offer.discountValue}</span>
-      <span className={`${mainCls} text-[20px] mb-0.5`}>%</span>
-      <span className={`${subCls} text-[10px] mb-1`}>off</span>
+    <div className="flex items-end gap-1">
+      <span className={`${num} text-[54px]`}>{offer.discountValue}</span>
+      <span className={`${num} text-[26px] mb-1`}>%</span>
+      <span className={`${mute} text-[9px] mb-2`}>off</span>
     </div>
   );
 }
 
-// ─── Eligibility note ─────────────────────────────────────────────────────────
-function EligibilityNote({ offer, dark }: { offer: Offer; dark: boolean }) {
-  const cls = `font-body text-[10px] flex items-center gap-1.5 ${dark ? "text-[#A8B5A0]/70" : "text-[#A8B5A0]"}`;
+// ─── Eligibility badge ────────────────────────────────────────────────────────
+function EligibilityBadge({ offer, dark }: { offer: Offer; dark: boolean }) {
+  const cls = `inline-flex items-center gap-1.5 font-body text-[9px] font-bold uppercase
+    tracking-[0.12em] px-2 py-1 border
+    ${dark
+      ? "border-[#2E5040] bg-[#152A1C] text-[#A8B5A0]"
+      : "border-[#E6DFD5] bg-[#F5EFE6] text-[#777970]"}`;
   if (offer.customerEligibility === "new_customers")
-    return <span className={cls}><BookOpen size={9} strokeWidth={1.8} /> First-time customers only</span>;
+    return <span className={cls}><BookOpen size={8} strokeWidth={2} /> New customers</span>;
   if (offer.minCartValuePaise)
-    return <span className={cls}><ShoppingCart size={9} strokeWidth={1.8} /> Min. order {formatINR(offer.minCartValuePaise)}</span>;
+    return <span className={cls}><ShoppingCart size={8} strokeWidth={2} /> Min {formatINR(offer.minCartValuePaise)}</span>;
   if (offer.applicableBookIds?.length)
-    return <span className={cls}><Layers size={9} strokeWidth={1.8} /> On selected eBooks</span>;
-  return <span className={cls}><Layers size={9} strokeWidth={1.8} /> All eligible books</span>;
+    return <span className={cls}><Layers size={8} strokeWidth={2} /> Selected books</span>;
+  return <span className={cls}><Sparkles size={8} strokeWidth={2} /> All books</span>;
 }
 
-// ─── Default badge label ──────────────────────────────────────────────────────
-function defaultBadge(offer: Offer): string {
+// ─── Badge label ─────────────────────────────────────────────────────────────
+function badgeFor(offer: Offer): string {
+  if (offer.badgeLabel) return offer.badgeLabel;
   const map: Record<string, string> = {
     first_order:      "Welcome Offer",
-    bundle:           "Book Bundle",
-    buy_x_get_y:      "Bundle Deal",
+    bundle:           "Bundle Deal",
+    buy_x_get_y:      "Buy More Save More",
     combo:            "Combo Deal",
     category:         "Category Deal",
     product_specific: "Limited Offer",
@@ -180,50 +205,53 @@ function defaultBadge(offer: Offer): string {
   return map[offer.offerType] ?? "Special Offer";
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SHARED CARD SHELL — enforces identical dimensions for every card
-// h-full ensures all cards in the same row stretch to the tallest card's height
-// ─────────────────────────────────────────────────────────────────────────────
-
-// ─── CARD LIGHT  (cream/ivory, forest accent) ─────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
+//  CARD LIGHT  — ivory / forest
+// ═════════════════════════════════════════════════════════════════════════════
 function CardLight({ offer }: { offer: Offer }) {
-  const badge = offer.badgeLabel || defaultBadge(offer);
   return (
-    <article className="group relative flex flex-col h-full bg-[#FFFCF7] border border-[#E6DFD5]
-      hover:border-[#C6A66B]/70 hover:shadow-[0_6px_28px_rgba(32,58,43,0.10)]
+    <article className="group relative flex flex-col h-full bg-[#FFFCF7]
+      border border-[#E6DFD5] hover:border-[#C6A66B]
+      hover:shadow-[0_8px_32px_rgba(32,58,43,0.11)]
       transition-all duration-300 overflow-hidden">
 
-      {/* Gold top bar */}
-      <div className="h-[3px] w-full bg-gradient-to-r from-[#C6A66B] via-[#e0c080] to-[#C6A66B]
-        scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+      {/* Gold left stripe on hover */}
+      <div className="absolute left-0 inset-y-0 w-[3px] bg-[#C6A66B]
+        scale-y-0 group-hover:scale-y-100 origin-bottom transition-transform duration-300" />
 
-      {/* ── Header: badge + date ── fixed height */}
-      <div className="flex items-center justify-between gap-2 px-5 pt-4 pb-0 h-9 shrink-0">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <OfferIcon type={offer.offerType} dark={false} />
-          <span className="font-body text-[10px] font-bold uppercase tracking-[0.16em] text-[#315B55] truncate">
-            {badge}
+      {/* Top accent line */}
+      <div className="h-[3px] bg-gradient-to-r from-[#C6A66B]/50 via-[#C6A66B]/20 to-transparent" />
+
+      {/* Badge row */}
+      <div className="flex items-center justify-between gap-2 px-5 pt-4 shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 bg-[#203A2B]/8 flex items-center justify-center shrink-0">
+            <OfferIcon type={offer.offerType} dark={false} />
+          </div>
+          <span className="font-body text-[9px] font-bold uppercase tracking-[0.18em] text-[#315B55] truncate">
+            {badgeFor(offer)}
           </span>
         </div>
         {offer.endAt && (
-          <span className="font-body text-[10px] text-[#A8B5A0] flex items-center gap-1 shrink-0">
-            <Clock size={9} strokeWidth={1.8} />
+          <span className="font-body text-[9px] text-[#A8B5A0] flex items-center gap-1
+            shrink-0 border border-[#E6DFD5] px-2 py-0.5">
+            <Clock size={8} strokeWidth={2} />
             {new Date(offer.endAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
           </span>
         )}
       </div>
 
-      {/* ── Discount number ── fixed height via h-12 in DiscountNumber */}
-      <div className="px-5 pt-3 pb-0 shrink-0">
-        <DiscountNumber offer={offer} dark={false} />
+      {/* Discount */}
+      <div className="px-5 pt-3 shrink-0">
+        <DiscountSlab offer={offer} dark={false} />
       </div>
 
-      {/* Divider */}
-      <div className="mx-5 mt-3 h-px bg-[#EDE8E1] shrink-0" />
+      {/* Ruled divider */}
+      <div className="mx-5 mt-2 h-px bg-gradient-to-r from-[#C6A66B]/40 via-[#E6DFD5] to-transparent shrink-0" />
 
-      {/* ── Title + description ── flex-1 so all cards share remaining space */}
-      <div className="px-5 pt-3 pb-0 flex flex-col gap-1 flex-1 min-h-0">
-        <h3 className="font-heading text-[15px] font-bold text-[#1a1a1a] leading-snug line-clamp-2">
+      {/* Title + desc — flex-1 fills remaining height */}
+      <div className="px-5 pt-3 flex flex-col gap-1.5 flex-1">
+        <h3 className="font-heading text-[17px] font-bold text-[#1a1a1a] leading-snug line-clamp-2">
           {offer.title}
         </h3>
         {offer.description && (
@@ -233,84 +261,87 @@ function CardLight({ offer }: { offer: Offer }) {
         )}
       </div>
 
-      {/* ── Coupon ── only shown when available */}
+      {/* Coupon */}
       {offer.couponCode && offer.displayCouponPublicly && (
-        <div className="px-5 pt-3 shrink-0">
+        <div className="px-5 pt-4 shrink-0">
           <CopyPill code={offer.couponCode} dark={false} />
         </div>
       )}
 
-      {/* ── Footer ── fixed to bottom, consistent height */}
+      {/* Footer */}
       <div className="px-5 pt-3 pb-5 flex items-center justify-between gap-2 shrink-0">
-        <EligibilityNote offer={offer} dark={false} />
-        <Link
-          href="/books"
+        <EligibilityBadge offer={offer} dark={false} />
+        <Link href="/books"
           aria-label={`${offer.ctaText ?? "Shop Now"} — ${offer.title}`}
           className="inline-flex items-center gap-1.5 shrink-0
-            font-body text-[10px] font-bold uppercase tracking-[0.12em]
+            font-body text-[9px] font-bold uppercase tracking-[0.14em]
             bg-[#203A2B] text-[#FFFCF7] px-4 py-2.5
-            hover:bg-[#315B55] active:scale-[0.98]
-            transition-all duration-200"
-        >
+            hover:bg-[#315B55] active:scale-[0.98] transition-all">
           {offer.ctaText ?? "Shop Now"}
-          <ArrowRight size={10} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+          <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform duration-200" />
         </Link>
       </div>
 
-      {/* ── Countdown ── only rendered if there is an end date */}
       {offer.endAt && (
         <div className="shrink-0">
-          <CountdownStrip endAt={offer.endAt} dark={false} />
+          <CountdownBar endAt={offer.endAt} dark={false} />
         </div>
       )}
     </article>
   );
 }
 
-// ─── CARD DARK  (forest green, gold accent) ───────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
+//  CARD DARK  — forest green / gold
+// ═════════════════════════════════════════════════════════════════════════════
 function CardDark({ offer }: { offer: Offer }) {
-  const badge = offer.badgeLabel || defaultBadge(offer);
   return (
     <article className="group relative flex flex-col h-full bg-[#1C3325]
-      border border-[#2E5040]
-      hover:border-[#C6A66B]/60 hover:shadow-[0_6px_28px_rgba(198,166,107,0.15)]
+      border border-[#2E5040] hover:border-[#C6A66B]/70
+      hover:shadow-[0_8px_36px_rgba(198,166,107,0.16)]
       transition-all duration-300 overflow-hidden">
 
-      {/* Gold top bar */}
-      <div className="h-[3px] w-full bg-gradient-to-r from-[#C6A66B] via-[#e0c080] to-[#C6A66B]
-        scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+      {/* Gold left stripe on hover */}
+      <div className="absolute left-0 inset-y-0 w-[3px] bg-[#C6A66B]
+        scale-y-0 group-hover:scale-y-100 origin-bottom transition-transform duration-300" />
 
-      {/* Subtle noise/texture overlay */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none
-        bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJhIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBudW1PY3RhdmVzPSI0Ii8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iMSIvPjwvc3ZnPg==')]" />
+      {/* Gold top line */}
+      <div className="h-[3px] bg-gradient-to-r from-[#C6A66B] via-[#C6A66B]/60 to-transparent" />
 
-      {/* ── Header: badge + date ── fixed height */}
-      <div className="relative flex items-center justify-between gap-2 px-5 pt-4 pb-0 h-9 shrink-0">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <OfferIcon type={offer.offerType} dark={true} />
-          <span className="font-body text-[10px] font-bold uppercase tracking-[0.16em] text-[#C6A66B] truncate">
-            {badge}
+      {/* Subtle texture overlay */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.025]"
+        style={{backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E\")"}} />
+
+      {/* Badge row */}
+      <div className="relative flex items-center justify-between gap-2 px-5 pt-4 shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 bg-[#C6A66B]/15 flex items-center justify-center shrink-0">
+            <OfferIcon type={offer.offerType} dark={true} />
+          </div>
+          <span className="font-body text-[9px] font-bold uppercase tracking-[0.18em] text-[#C6A66B] truncate">
+            {badgeFor(offer)}
           </span>
         </div>
         {offer.endAt && (
-          <span className="font-body text-[10px] text-[#A8B5A0]/70 flex items-center gap-1 shrink-0">
-            <Clock size={9} strokeWidth={1.8} />
+          <span className="font-body text-[9px] text-[#A8B5A0]/70 flex items-center gap-1
+            shrink-0 border border-[#2E5040] px-2 py-0.5">
+            <Clock size={8} strokeWidth={2} />
             {new Date(offer.endAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
           </span>
         )}
       </div>
 
-      {/* ── Discount number ── */}
-      <div className="relative px-5 pt-3 pb-0 shrink-0">
-        <DiscountNumber offer={offer} dark={true} />
+      {/* Discount */}
+      <div className="relative px-5 pt-3 shrink-0">
+        <DiscountSlab offer={offer} dark={true} />
       </div>
 
       {/* Divider */}
-      <div className="mx-5 mt-3 h-px bg-white/[0.07] shrink-0" />
+      <div className="mx-5 mt-2 h-px bg-gradient-to-r from-[#C6A66B]/30 via-[#2E5040] to-transparent shrink-0" />
 
-      {/* ── Title + description ── flex-1 */}
-      <div className="relative px-5 pt-3 pb-0 flex flex-col gap-1 flex-1 min-h-0">
-        <h3 className="font-heading text-[15px] font-bold text-[#FFFCF7] leading-snug line-clamp-2">
+      {/* Title + desc */}
+      <div className="relative px-5 pt-3 flex flex-col gap-1.5 flex-1">
+        <h3 className="font-heading text-[17px] font-bold text-[#FFFCF7] leading-snug line-clamp-2">
           {offer.title}
         </h3>
         {offer.description && (
@@ -320,154 +351,164 @@ function CardDark({ offer }: { offer: Offer }) {
         )}
       </div>
 
-      {/* ── Coupon ── only shown when available */}
+      {/* Coupon */}
       {offer.couponCode && offer.displayCouponPublicly && (
-        <div className="relative px-5 pt-3 shrink-0">
+        <div className="relative px-5 pt-4 shrink-0">
           <CopyPill code={offer.couponCode} dark={true} />
         </div>
       )}
 
-      {/* ── Footer ── */}
+      {/* Footer */}
       <div className="relative px-5 pt-3 pb-5 flex items-center justify-between gap-2 shrink-0">
-        <EligibilityNote offer={offer} dark={true} />
-        <Link
-          href="/books"
+        <EligibilityBadge offer={offer} dark={true} />
+        <Link href="/books"
           aria-label={`${offer.ctaText ?? "Shop Now"} — ${offer.title}`}
           className="inline-flex items-center gap-1.5 shrink-0
-            font-body text-[10px] font-bold uppercase tracking-[0.12em]
+            font-body text-[9px] font-bold uppercase tracking-[0.14em]
             bg-[#C6A66B] text-[#1C3325] px-4 py-2.5
-            hover:bg-[#D4B47A] active:scale-[0.98]
-            transition-all duration-200"
-        >
+            hover:bg-[#D4B47A] active:scale-[0.98] transition-all">
           {offer.ctaText ?? "Shop Now"}
-          <ArrowRight size={10} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+          <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform duration-200" />
         </Link>
       </div>
 
-      {/* ── Countdown ── only rendered if there is an end date */}
       {offer.endAt && (
         <div className="relative shrink-0">
-          <CountdownStrip endAt={offer.endAt} dark={true} />
+          <CountdownBar endAt={offer.endAt} dark={true} />
         </div>
       )}
     </article>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CARD BANNER  (full-width, 3-column layout on md+)
-// ─────────────────────────────────────────────────────────────────────────────
-function CardBanner({ offer }: { offer: Offer }) {
-  const badge = offer.badgeLabel || defaultBadge(offer);
+// ═════════════════════════════════════════════════════════════════════════════
+//  HERO BANNER  — top offer, full-width two-panel layout
+// ═════════════════════════════════════════════════════════════════════════════
+function HeroBanner({ offer }: { offer: Offer }) {
   return (
     <article className="group relative bg-[#1C3325] border border-[#2E5040]
-      hover:border-[#C6A66B]/60 hover:shadow-[0_6px_28px_rgba(198,166,107,0.15)]
-      transition-all duration-300 overflow-hidden">
+      hover:border-[#C6A66B]/55 transition-all duration-300 overflow-hidden">
 
-      {/* Gold top bar */}
-      <div className="h-[3px] bg-gradient-to-r from-[#C6A66B] via-[#e0c080] to-[#C6A66B]
-        scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+      {/* Gold top band */}
+      <div className="h-[3px] bg-gradient-to-r from-[#C6A66B]/40 via-[#C6A66B] to-[#C6A66B]/40" />
 
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_1px_300px]">
+      {/* Ambient glow */}
+      <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-[#C6A66B]/5 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-60 h-60 rounded-full bg-[#203A2B]/40 blur-2xl pointer-events-none" />
 
-        {/* ── LEFT: main content ──────────────────────────────────────── */}
-        <div className="px-6 sm:px-8 py-7 flex flex-col gap-4">
-          {/* Badge + date */}
-          <div className="flex items-center gap-3">
+      <div className="relative grid grid-cols-1 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_340px]">
+
+        {/* LEFT — main offer content */}
+        <div className="px-7 sm:px-10 py-8 flex flex-col gap-5">
+
+          {/* Badge + expiry */}
+          <div className="flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-2">
-              <OfferIcon type={offer.offerType} dark={true} />
-              <span className="font-body text-[10px] font-bold uppercase tracking-[0.16em] text-[#C6A66B]">
-                {badge}
+              <div className="w-7 h-7 bg-[#C6A66B]/15 border border-[#C6A66B]/20 flex items-center justify-center shrink-0">
+                <OfferIcon type={offer.offerType} dark={true} />
+              </div>
+              <span className="font-body text-[9px] font-bold uppercase tracking-[0.2em] text-[#C6A66B]">
+                {badgeFor(offer)}
               </span>
             </div>
             {offer.endAt && (
-              <span className="font-body text-[10px] text-[#A8B5A0]/70 flex items-center gap-1 ml-auto">
-                <Clock size={9} strokeWidth={1.8} />
+              <span className="font-body text-[9px] text-[#A8B5A0]/70 flex items-center gap-1.5
+                border border-[#2E5040] px-2.5 py-1">
+                <Clock size={8} strokeWidth={2} />
                 Ends {new Date(offer.endAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
               </span>
             )}
           </div>
 
-          {/* Discount + title inline */}
-          <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-5">
-            <DiscountNumber offer={offer} dark={true} />
-            <div className="flex flex-col gap-1 pb-1">
-              <h3 className="font-heading text-[18px] font-bold text-[#FFFCF7] leading-snug">
+          {/* Discount + title side by side on sm+ */}
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-6">
+            <div className="shrink-0">
+              <DiscountSlab offer={offer} dark={true} />
+            </div>
+            <div className="flex flex-col gap-1.5 sm:pb-2">
+              <div className="w-8 h-px bg-[#C6A66B]/40 hidden sm:block" />
+              <h3 className="font-heading text-[22px] sm:text-[26px] font-bold text-[#FFFCF7] leading-snug">
                 {offer.title}
               </h3>
               {offer.description && (
-                <p className="font-body text-[11px] text-[#A8B5A0] leading-relaxed max-w-xs">
+                <p className="font-body text-[12px] text-[#A8B5A0] leading-relaxed max-w-sm">
                   {offer.description}
                 </p>
               )}
             </div>
           </div>
 
-          {/* CTA + eligibility */}
+          {/* CTA */}
           <div className="flex items-center gap-4 flex-wrap">
-            <Link
-              href="/books"
+            <Link href="/books"
               aria-label={`${offer.ctaText ?? "Shop Now"} — ${offer.title}`}
-              className="inline-flex items-center gap-1.5
-                font-body text-[10px] font-bold uppercase tracking-[0.12em]
-                bg-[#C6A66B] text-[#1C3325] px-4 py-2.5
-                hover:bg-[#D4B47A] active:scale-[0.98]
-                transition-all duration-200"
-            >
+              className="inline-flex items-center gap-2
+                font-body text-[10px] font-bold uppercase tracking-[0.18em]
+                bg-[#C6A66B] text-[#1C3325] px-6 py-3.5
+                hover:bg-[#D4B47A] active:scale-[0.98] transition-all shadow-sm">
               {offer.ctaText ?? "Shop Now"}
-              <ArrowRight size={10} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+              <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
-            <EligibilityNote offer={offer} dark={true} />
+            <EligibilityBadge offer={offer} dark={true} />
           </div>
         </div>
 
-        {/* ── DIVIDER ─────────────────────────────────────────────────── */}
-        <div className="hidden md:block bg-white/[0.07]" />
+        {/* Vertical divider */}
+        <div className="hidden lg:block w-px bg-[#2E5040]" />
 
-        {/* ── RIGHT: coupon + countdown ────────────────────────────────── */}
-        <div className="flex flex-col justify-center gap-4 px-6 sm:px-8 py-7
-          border-t border-white/[0.07] md:border-t-0">
+        {/* RIGHT — coupon + countdown */}
+        <div className="px-7 sm:px-10 lg:px-8 py-8 flex flex-col justify-center gap-5
+          border-t border-[#2E5040] lg:border-t-0">
 
           {offer.couponCode && offer.displayCouponPublicly ? (
             <>
               <div>
-                <p className="font-body text-[10px] font-semibold uppercase tracking-[0.12em] text-[#A8B5A0] mb-2">
+                <p className="font-body text-[9px] font-bold uppercase tracking-[0.18em] text-[#A8B5A0] mb-2.5">
                   Your discount code
                 </p>
                 <CopyPill code={offer.couponCode} dark={true} />
               </div>
               <p className="font-body text-[11px] text-[#A8B5A0]/70 leading-relaxed">
-                Apply this code at checkout to unlock your discount. Terms and conditions apply.
+                Apply at checkout to unlock your savings. Terms and conditions apply.
               </p>
             </>
           ) : (
-            <div className="flex flex-col gap-2">
-              <p className="font-body text-[13px] font-semibold text-[#FFFCF7]">
-                No code needed
-              </p>
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 bg-[#C6A66B]/15 flex items-center justify-center shrink-0">
+                  <Check size={10} className="text-[#C6A66B]" strokeWidth={2.5} />
+                </div>
+                <p className="font-body text-[12px] font-semibold text-[#FFFCF7]">No code needed</p>
+              </div>
               <p className="font-body text-[11px] text-[#A8B5A0] leading-relaxed">
-                Discount is applied automatically. Add eligible books to your cart and save instantly.
+                Discount applies automatically at checkout on all eligible books.
               </p>
             </div>
           )}
 
           {offer.minCartValuePaise && (
-            <div className="flex items-center gap-2 border-t border-white/[0.07] pt-3">
+            <div className="flex items-center gap-2 border-t border-[#2E5040] pt-4">
               <ShoppingCart size={11} className="text-[#A8B5A0] shrink-0" strokeWidth={1.8} />
               <span className="font-body text-[11px] text-[#A8B5A0]">
-                Min. cart value: <strong className="text-[#FFFCF7]">{formatINR(offer.minCartValuePaise)}</strong>
+                Min. cart: <strong className="text-[#FFFCF7]">{formatINR(offer.minCartValuePaise)}</strong>
               </span>
             </div>
           )}
 
-          {offer.endAt && <CountdownStrip endAt={offer.endAt} dark={true} />}
+          {offer.endAt && (
+            <div className="border-t border-[#2E5040] -mx-7 sm:-mx-10 lg:-mx-8 -mb-8">
+              <CountdownBar endAt={offer.endAt} dark={true} />
+            </div>
+          )}
         </div>
       </div>
     </article>
   );
 }
 
-// ─── Mobile card carousel ─────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
+//  MOBILE CAROUSEL
+// ═════════════════════════════════════════════════════════════════════════════
 function MobileCarousel({ offers }: { offers: Offer[] }) {
   const [active, setActive] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -476,9 +517,8 @@ function MobileCarousel({ offers }: { offers: Offer[] }) {
     const el = trackRef.current;
     if (!el) return;
     const onScroll = () => {
-      const cardWidth = el.scrollWidth / offers.length;
-      const idx = Math.round(el.scrollLeft / cardWidth);
-      setActive(Math.min(Math.max(idx, 0), offers.length - 1));
+      const w = el.scrollWidth / offers.length;
+      setActive(Math.min(Math.max(Math.round(el.scrollLeft / w), 0), offers.length - 1));
     };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
@@ -487,230 +527,178 @@ function MobileCarousel({ offers }: { offers: Offer[] }) {
   const goTo = (i: number) => {
     const el = trackRef.current;
     if (!el) return;
-    const cardWidth = el.scrollWidth / offers.length;
-    el.scrollTo({ left: cardWidth * i, behavior: "smooth" });
+    el.scrollTo({ left: (el.scrollWidth / offers.length) * i, behavior: "smooth" });
   };
 
   return (
-    <div className="relative">
-      {/* Scroll track — cards are same width, no tilt/scale to avoid overlap */}
-      <div
-        ref={trackRef}
-        className="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory
-          scrollbar-none pb-1 -mx-4 px-4"
-        style={{ WebkitOverflowScrolling: "touch" }}
-      >
-        {offers.map((offer, i) => {
-          const isDark = !!(offer.endAt) || i % 2 === 1;
-          return (
-            <div
-              key={offer.id}
-              className="snap-center shrink-0 w-[calc(100vw-3rem)]"
-              style={{
-                // Slight opacity fade on non-active; NO rotate/scale to prevent overlap
-                opacity: active === i ? 1 : 0.6,
-                transition: "opacity 0.25s ease",
-              }}
-            >
-              {isDark
-                ? <CardDark  offer={offer} />
-                : <CardLight offer={offer} />}
-            </div>
-          );
-        })}
-        {/* Right spacer so last card centres properly */}
+    <div>
+      <div ref={trackRef}
+        className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-3 -mx-4 px-4 pb-1"
+        style={{ WebkitOverflowScrolling: "touch" }}>
+        {offers.map((offer, i) => (
+          <div key={offer.id}
+            className="snap-center shrink-0 w-[calc(100vw-3rem)] transition-opacity duration-300"
+            style={{ opacity: active === i ? 1 : 0.5 }}>
+            {i % 2 === 0 ? <CardLight offer={offer} /> : <CardDark offer={offer} />}
+          </div>
+        ))}
         <div className="shrink-0 w-4" aria-hidden />
       </div>
 
-      {/* Dot indicators */}
       {offers.length > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-4">
+        <div className="flex items-center justify-center gap-2 mt-5">
           {offers.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => goTo(i)}
-              aria-label={`Go to offer ${i + 1}`}
-              className={`rounded-full transition-all duration-300 ${
-                active === i
-                  ? "w-5 h-2 bg-[#203A2B]"
-                  : "w-2 h-2 bg-[#C6A66B]/40 hover:bg-[#C6A66B]/70"
-              }`}
-            />
+            <button key={i} onClick={() => goTo(i)} aria-label={`Go to offer ${i + 1}`}
+              className={`rounded-full transition-all duration-300
+                ${active === i ? "w-6 h-2 bg-[#203A2B]" : "w-2 h-2 bg-[#C6A66B]/35 hover:bg-[#C6A66B]/70"}`} />
           ))}
         </div>
-      )}
-
-      {/* Counter label */}
-      {offers.length > 1 && (
-        <p className="text-center font-body text-[10px] text-[#A8B5A0] mt-1.5 uppercase tracking-[0.15em]">
-          {active + 1} / {offers.length}
-        </p>
       )}
     </div>
   );
 }
 
-// ─── Desktop scroll row — horizontal scroll with arrow buttons ───────────────
+// ═════════════════════════════════════════════════════════════════════════════
+//  DESKTOP SCROLL ROW
+// ═════════════════════════════════════════════════════════════════════════════
 function DesktopScrollRow({ offers }: { offers: Offer[] }) {
-  const trackRef  = useRef<HTMLDivElement>(null);
-  const [canLeft,  setCanLeft]  = useState(false);
-  const [canRight, setCanRight] = useState(true);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [canLeft, setCanLeft]   = useState(false);
+  const [canRight, setCanRight] = useState(false);
 
-  const CARD_W = 300; // px — card width + gap
-
-  const updateArrows = () => {
+  const update = () => {
     const el = trackRef.current;
     if (!el) return;
-    setCanLeft(el.scrollLeft > 8);
-    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 8);
+    setCanLeft(el.scrollLeft > 4);
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
   };
 
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
-    updateArrows();
-    el.addEventListener("scroll", updateArrows, { passive: true });
-    return () => el.removeEventListener("scroll", updateArrows);
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      el.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offers.length]);
 
-  const scroll = (dir: "left" | "right") => {
-    if (!trackRef.current) return;
-    trackRef.current.scrollBy({ left: dir === "left" ? -CARD_W : CARD_W, behavior: "smooth" });
-  };
+  const scroll = (dir: "left" | "right") =>
+    trackRef.current?.scrollBy({ left: dir === "left" ? -320 : 320, behavior: "smooth" });
 
   return (
     <div className="relative">
-      {/* Left fade + arrow — outside scroll track so they never overlap cards */}
       {canLeft && (
-        <button
-          onClick={() => scroll("left")}
-          aria-label="Scroll left"
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-20
+        <button onClick={() => scroll("left")} aria-label="Scroll left"
+          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20
             w-9 h-9 bg-[#FFFCF7] border border-[#E6DFD5] shadow-md
             flex items-center justify-center text-[#555]
             hover:border-[#203A2B] hover:text-[#203A2B] hover:bg-[#F5EFE6]
-            active:scale-[0.95] transition-all duration-150 rounded-sm"
-          style={{ marginLeft: "-4px" }}
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-            <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            active:scale-95 transition-all">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden>
+            <path d="M8.5 1.5L4 6.5l4.5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
       )}
-
       {canRight && (
-        <button
-          onClick={() => scroll("right")}
-          aria-label="Scroll right"
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-20
+        <button onClick={() => scroll("right")} aria-label="Scroll right"
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20
             w-9 h-9 bg-[#FFFCF7] border border-[#E6DFD5] shadow-md
             flex items-center justify-center text-[#555]
             hover:border-[#203A2B] hover:text-[#203A2B] hover:bg-[#F5EFE6]
-            active:scale-[0.95] transition-all duration-150 rounded-sm"
-          style={{ marginRight: "-4px" }}
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-            <path d="M5 2l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            active:scale-95 transition-all">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden>
+            <path d="M4.5 1.5L9 6.5l-4.5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
       )}
 
-      {/* Left edge fade — pointer-events-none so it never covers the cards */}
-      <div className={`absolute left-0 inset-y-0 w-12 z-10 pointer-events-none
-        bg-gradient-to-r from-[#F5EFE6] to-transparent transition-opacity duration-200
-        ${canLeft ? "opacity-100" : "opacity-0"}`} />
-      <div className={`absolute right-0 inset-y-0 w-12 z-10 pointer-events-none
-        bg-gradient-to-l from-[#F5EFE6] to-transparent transition-opacity duration-200
-        ${canRight ? "opacity-100" : "opacity-0"}`} />
+      {/* Edge fades */}
+      <div className={`absolute left-0 inset-y-0 w-12 z-10 pointer-events-none transition-opacity duration-200
+        bg-gradient-to-r from-[#F5EFE6] to-transparent ${canLeft ? "opacity-100" : "opacity-0"}`} />
+      <div className={`absolute right-0 inset-y-0 w-12 z-10 pointer-events-none transition-opacity duration-200
+        bg-gradient-to-l from-[#F5EFE6] to-transparent ${canRight ? "opacity-100" : "opacity-0"}`} />
 
-      {/* Scroll track — px-10 gives clearance so cards don't sit under arrows */}
-      <div
-        ref={trackRef}
-        className="flex gap-5 overflow-x-auto scrollbar-none scroll-smooth py-2 px-10"
-        style={{ WebkitOverflowScrolling: "touch" }}
-      >
+      <div ref={trackRef}
+        className="flex gap-5 overflow-x-auto scrollbar-none scroll-smooth py-2">
         {offers.map((offer, i) => (
-          <div
-            key={offer.id}
-            className="shrink-0 w-[290px] lg:w-[310px] flex"
-          >
-            {!!(offer.endAt) || i % 2 === 1
-              ? <CardDark  offer={offer} />
-              : <CardLight offer={offer} />}
+          <div key={offer.id} className="shrink-0 w-[300px] lg:w-[315px] flex">
+            {i % 2 === 0 ? <CardLight offer={offer} /> : <CardDark offer={offer} />}
           </div>
         ))}
-        {/* Right padding so last card doesn't sit against edge */}
-        <div className="shrink-0 w-4" aria-hidden />
+        <div className="shrink-0 w-2" aria-hidden />
       </div>
     </div>
   );
 }
 
-// ─── Unified offer grid ───────────────────────────────────────────────────────
-function OfferGrid({ offers }: { offers: Offer[] }) {
-  return (
-    <>
-      {/* Mobile: snap carousel */}
-      <div className="sm:hidden">
-        <MobileCarousel offers={offers} />
-      </div>
-
-      {/* Tablet + Desktop: horizontal scroll row with arrows */}
-      <div className="hidden sm:block">
-        <DesktopScrollRow offers={offers} />
-      </div>
-    </>
-  );
-}
-
-// ─── Section header ───────────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
+//  SECTION HEADER
+// ═════════════════════════════════════════════════════════════════════════════
 function SectionHeader() {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
+    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-7">
       <div>
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="w-5 h-px bg-[#C6A66B]" />
+        <div className="flex items-center gap-2.5 mb-2">
+          <span className="w-6 h-px bg-[#C6A66B]" />
           <p className="text-[10px] font-body font-bold uppercase tracking-[0.3em] text-[#C6A66B]">
             Exclusive Deals
           </p>
         </div>
-        <h2 className="font-heading text-[28px] sm:text-[34px] font-bold text-[#242824] leading-tight">
+        <h2 className="font-heading text-[30px] sm:text-[36px] font-bold text-[#242824] leading-tight">
           Reader Offers
         </h2>
-        <p className="font-body text-[12px] text-[#777970] mt-1 max-w-xs leading-relaxed">
-          Curated discounts for every kind of reader.
+        <p className="font-body text-[12px] text-[#777970] mt-1.5 leading-relaxed">
+          Curated discounts — for every kind of reader.
         </p>
       </div>
-      <Link
-        href="/books"
-        className="group inline-flex items-center gap-2 text-[11px] font-body font-bold uppercase tracking-[0.15em]
-          text-[#FFFCF7] bg-[#203A2B] px-5 py-3
-          hover:bg-[#315B55] transition-colors shrink-0 self-start sm:self-auto"
-      >
+      <Link href="/books"
+        className="group inline-flex items-center gap-2 font-body text-[10px] font-bold uppercase
+          tracking-[0.16em] text-[#FFFCF7] bg-[#203A2B] px-5 py-3
+          hover:bg-[#315B55] transition-colors shrink-0 self-start sm:self-auto">
         Browse All Books
-        <ArrowRight size={11} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+        <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform duration-200" />
       </Link>
     </div>
   );
 }
 
-// ─── Main export ──────────────────────────────────────────────────────────────
-interface OffersSectionProps {
-  offers: Offer[];
-}
-
-export function OffersSection({ offers }: OffersSectionProps) {
+// ═════════════════════════════════════════════════════════════════════════════
+//  MAIN EXPORT
+// ═════════════════════════════════════════════════════════════════════════════
+export function OffersSection({ offers }: { offers: Offer[] }) {
   if (offers.length === 0) return null;
 
   const sorted = [...offers]
     .sort((a, b) => b.priority - a.priority || b.startAt.localeCompare(a.startAt))
     .filter((o, i, arr) => arr.findIndex((x) => x.id === o.id) === i);
 
+  const [hero, ...rest] = sorted;
+
   return (
-    <section id="offers" className="bg-[#F5EFE6] py-6 lg:py-8" aria-label="Exclusive reader deals">
+    <section id="offers" className="bg-[#F5EFE6] py-8 lg:py-12" aria-label="Exclusive reader deals">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+
         <SectionHeader />
-        <OfferGrid offers={sorted} />
+
+        {/* Highest-priority offer = hero banner */}
+        <HeroBanner offer={hero} />
+
+        {/* Remaining offers */}
+        {rest.length > 0 && (
+          <div className="mt-5">
+            <div className="sm:hidden">
+              <MobileCarousel offers={rest} />
+            </div>
+            <div className="hidden sm:block">
+              <DesktopScrollRow offers={rest} />
+            </div>
+          </div>
+        )}
+
       </div>
     </section>
   );

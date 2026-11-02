@@ -13,7 +13,7 @@ const offerSchema = z.object({
   offerType: z.enum(["percent", "flat", "buy_x_get_y", "bundle", "first_order", "combo", "category", "product_specific"] as [OfferType, ...OfferType[]]),
   couponCode: z.string().optional().transform((v) => v ? v.toUpperCase().trim() : undefined),
   startAt: z.string().min(1),
-  endAt: z.string().optional(),
+  endAt: z.string().nullable().optional().transform((v) => v || undefined),
   status: z.enum(["draft", "scheduled", "active", "paused", "expired"] as [OfferStatus, ...OfferStatus[]]),
   priority: z.number().int().default(0),
 
