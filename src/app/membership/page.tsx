@@ -57,37 +57,29 @@ export default async function MembershipPage() {
     <div className="bg-[#F5EFE6] min-h-screen">
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="bg-[#1C3325] relative overflow-hidden">
-        {/* Dot grid texture */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.07]" aria-hidden>
-          <defs>
-            <pattern id="mem-dots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
-              <circle cx="1.5" cy="1.5" r="1" fill="#A8B5A0" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#mem-dots)" />
-        </svg>
-        {/* Gold top accent */}
-        <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-transparent via-[#C6A66B] to-transparent" />
-        {/* Radial glow */}
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 60% 40%, rgba(198,166,107,0.12) 0%, transparent 60%)" }} />
+      <section className="bg-[#FFFCF7] border-b border-[#E6DFD5]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 text-center">
 
-        <div className="relative z-10 max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center">
-          <div className="flex items-center justify-center gap-2.5 mb-5">
-            <span className="w-8 h-px bg-[#C6A66B]" />
-            <p className="font-body text-[10px] font-bold uppercase tracking-[0.35em] text-[#C6A66B]">
+          {/* Eyebrow */}
+          <div className="flex items-center justify-center gap-2.5 mb-4">
+            <span className="w-5 h-px bg-[#C6A66B]" />
+            <p className="font-body text-[10px] font-bold uppercase tracking-[0.25em] text-[#A8B5A0]">
               Membership Plans
             </p>
-            <span className="w-8 h-px bg-[#C6A66B]" />
+            <span className="w-5 h-px bg-[#C6A66B]" />
           </div>
-          <h1 className="font-heading text-[38px] sm:text-[54px] lg:text-[62px] font-bold text-[#FFFCF7] leading-[1.04] mb-5">
-            Choose Your<br />Reading Membership
+
+          {/* Heading */}
+          <h1 className="font-heading text-[36px] sm:text-[48px] lg:text-[56px] font-bold text-[#242824] leading-[1.06] mb-4">
+            Choose Your Reading Membership
           </h1>
-          <p className="font-body text-[15px] sm:text-[17px] text-[#A8B5A0] leading-relaxed max-w-xl mx-auto mb-10">
-            Discover more. Read more. Learn more.<br />
+
+          {/* Subtext */}
+          <p className="font-body text-[14px] sm:text-[16px] text-[#777970] leading-relaxed max-w-xl mx-auto mb-8">
+            Discover more. Read more. Learn more.
             One monthly membership, unlimited reading.
           </p>
+
           {/* Feature pills */}
           <div className="flex flex-wrap items-center justify-center gap-3">
             {[
@@ -97,9 +89,9 @@ export default async function MembershipPage() {
               { Icon: Shield,    text: "Secure payments"       },
             ].map(({ Icon, text }) => (
               <span key={text}
-                className="inline-flex items-center gap-2 bg-white/8 border border-white/15 text-[#FFFCF7]
+                className="inline-flex items-center gap-2 bg-[#F5EFE6] border border-[#E6DFD5] text-[#242824]
                   font-body text-[11px] font-semibold px-4 py-2 rounded-full">
-                <Icon size={12} className="text-[#C6A66B]" strokeWidth={2} />
+                <Icon size={12} className="text-[#203A2B]" strokeWidth={2} />
                 {text}
               </span>
             ))}

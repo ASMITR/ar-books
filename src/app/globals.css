@@ -137,6 +137,8 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-inter), system-ui, sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-cormorant), Georgia, serif;
@@ -159,5 +161,10 @@
   }
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+  /* Skip rendering work for off-screen sections — major paint speedup */
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
   }
 }

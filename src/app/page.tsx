@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import {
   getFeaturedBooks,
   getPublishedBooks,
@@ -69,7 +70,7 @@ export default async function HomePage() {
       {/* ══════════════════════════════════════════════════════════════
           2 · SHOPPING BENEFITS BAR
       ══════════════════════════════════════════════════════════════ */}
-      <section className="bg-[#FFFCF7] border-y border-[#E6DFD5] shadow-sm">
+      <section className="cv-auto bg-[#FFFCF7] border-y border-[#E6DFD5] shadow-sm">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4">
             {[
@@ -127,64 +128,79 @@ export default async function HomePage() {
       {/* ══════════════════════════════════════════════════════════════
           3 · EXCLUSIVE OFFERS  (only when active offers exist)
       ══════════════════════════════════════════════════════════════ */}
-      <OffersSection offers={activeOffers} />
-
-      {/* ══════════════════════════════════════════════════════════════
-          3b · MEMBERSHIP PLANS
-      ══════════════════════════════════════════════════════════════ */}
-      <MembershipSection plans={membershipPlans} />
+      <div className="cv-auto">
+        <OffersSection offers={activeOffers} />
+      </div>
 
       {/* ══════════════════════════════════════════════════════════════
           4 · BROWSE BY CATEGORY  (horizontal circular scroll)
       ══════════════════════════════════════════════════════════════ */}
-      <CategorySection categories={categories} />
+      <div className="cv-auto">
+        <CategorySection categories={categories} />
+      </div>
 
       {/* ══════════════════════════════════════════════════════════════
           5 · BESTSELLING eBOOKS  (carousel)
       ══════════════════════════════════════════════════════════════ */}
-      <BookCarousel
-        heading="Bestselling eBooks"
-        eyebrow="Top Picks"
-        viewAllHref="/books?filter=bestsellers"
-        books={bestsellers}
-        bgColor="#F5EFE6"
-      />
+      <div className="cv-auto">
+        <BookCarousel
+          heading="Bestselling eBooks"
+          eyebrow="Top Picks"
+          viewAllHref="/books?filter=bestsellers"
+          books={bestsellers}
+          bgColor="#F5EFE6"
+        />
+      </div>
 
       {/* ══════════════════════════════════════════════════════════════
           6 · EXPLORE MORE eBOOKS  (carousel)
       ══════════════════════════════════════════════════════════════ */}
-      <BookCarousel
-        heading="Explore More eBooks"
-        eyebrow="More to Discover"
-        viewAllHref="/books"
-        books={exploreBooks}
-        bgColor="#FFFCF7"
-      />
+      <div className="cv-auto">
+        <BookCarousel
+          heading="Explore More eBooks"
+          eyebrow="More to Discover"
+          viewAllHref="/books"
+          books={exploreBooks}
+          bgColor="#FFFCF7"
+        />
+      </div>
 
       {/* ══════════════════════════════════════════════════════════════
-          7 · BRAND STORY BANNER
+          7 · MEMBERSHIP PLANS
       ══════════════════════════════════════════════════════════════ */}
-      <BrandStoryBanner />
+      <div className="cv-auto">
+        <MembershipSection plans={membershipPlans} />
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════
+          8 · BRAND STORY BANNER
+      ══════════════════════════════════════════════════════════════ */}
+      <div className="cv-auto">
+        <BrandStoryBanner />
+      </div>
 
       {/* ══════════════════════════════════════════════════════════════
           8 · CUSTOMER TESTIMONIALS
       ══════════════════════════════════════════════════════════════ */}
-      <TestimonialsSection />
+      <div className="cv-auto">
+        <TestimonialsSection />
+      </div>
 
       {/* ══════════════════════════════════════════════════════════════
           9 · NEWSLETTER SUBSCRIPTION BANNER
       ══════════════════════════════════════════════════════════════ */}
-      <section className="bg-[#FFFCF7] py-12 lg:py-16">
+      <section className="cv-auto bg-[#FFFCF7] py-12 lg:py-16">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden">
 
             {/* Background photo */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1600&q=90"
+            <Image
+              src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1600&q=80"
               alt=""
-              aria-hidden="true"
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              fill
+              sizes="100vw"
+              className="object-cover object-center"
+              aria-hidden
             />
             {/* Layered gradient: strong left, fades right */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#203A2B]/96 via-[#203A2B]/82 to-[#203A2B]/45" />
@@ -262,7 +278,7 @@ export default async function HomePage() {
       {/* ══════════════════════════════════════════════════════════════
           10 · TRUST STRIP  (bottom of page, above footer)
       ══════════════════════════════════════════════════════════════ */}
-      <section className="bg-[#F5EFE6] border-t border-[#E6DFD5]">
+      <section className="cv-auto bg-[#F5EFE6] border-t border-[#E6DFD5]">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4">
             {[

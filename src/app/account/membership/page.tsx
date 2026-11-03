@@ -38,9 +38,21 @@ export default async function AccountMembershipPage() {
     <div className="flex flex-col gap-6">
 
       {/* ── Page header ───────────────────────────────────────────────── */}
-      <div>
-        <p className="text-[10px] font-body uppercase tracking-[0.25em] text-[#A8B5A0] mb-1">Account</p>
-        <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#080808]">My Membership</h1>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-body uppercase tracking-[0.25em] text-[#A8B5A0] mb-1">Account</p>
+          <h1 className="font-heading text-3xl sm:text-4xl font-bold text-[#080808] leading-none">My Membership</h1>
+          <p className="font-body text-sm text-[#777777] mt-2">
+            {isActive ? "Manage your subscription and benefits." : "Subscribe to unlock our curated eBook library."}
+          </p>
+        </div>
+        <Link
+          href="/membership"
+          className="hidden sm:inline-flex items-center gap-2 bg-[#203A2B] text-[#FFFCF7] font-body text-[11px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 hover:bg-[#315B55] transition-colors shrink-0"
+        >
+          <Library size={13} />
+          {isActive ? "View Plans" : "Explore Plans"}
+        </Link>
       </div>
 
       {/* ── No subscription ───────────────────────────────────────────── */}

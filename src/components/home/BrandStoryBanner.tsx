@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 
 export function BrandStoryBanner() {
@@ -9,11 +10,12 @@ export function BrandStoryBanner() {
 
           {/* ── Left: Editorial image ── */}
           <div className="relative min-h-[280px] sm:min-h-[360px] lg:min-h-[480px] overflow-hidden bg-[#1C3325]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=900&q=85"
+            <Image
+              src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=900&q=80"
               alt="Books and reading environment — Asmit Rajaramkar Books"
-              className="absolute inset-0 w-full h-full object-cover object-center opacity-70 mix-blend-luminosity"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover object-center opacity-70 mix-blend-luminosity"
             />
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#1C3325]/80 via-[#203A2B]/60 to-[#203A2B]/30" />
