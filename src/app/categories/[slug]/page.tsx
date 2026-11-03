@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getCategoryBySlug, getPublishedBooks, getVisibleCategories } from "@/lib/firebase/firestore";
+import { getCategoryBySlug, getPublishedBooks } from "@/lib/firebase/firestore";
 import { BookCard } from "@/components/book/BookCard";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -25,8 +25,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export async function generateStaticParams() {
-  const categories = await getVisibleCategories();
-  return categories.map((c) => ({ slug: c.slug }));
+  // Skip prebuilding — pages render on demand to avoid Firestore calls
+  // with placeholder credentials during Vercel builds.
+  return [];
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {

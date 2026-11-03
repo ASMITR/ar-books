@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import {
-  getBookBySlug, getPublishedBooks, getAllCategories, getFeaturedBooks,
+  getBookBySlug, getAllCategories, getFeaturedBooks,
 } from "@/lib/firebase/firestore";
 import { BookCover } from "@/components/book/BookCover";
 import { BookCard } from "@/components/book/BookCard";
@@ -35,8 +35,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export async function generateStaticParams() {
-  const books = await getPublishedBooks();
-  return books.map((b) => ({ slug: b.slug }));
+  // Skip prebuilding at build time — book pages render on demand so they
+  // always reflect the latest data without ISR delays. This also avoids
+  // hitting Firestore with placeholder credentials during Vercel builds.
+  return [];
 }
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
