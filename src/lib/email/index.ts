@@ -2,7 +2,15 @@ import { Resend } from "resend";
 import type { Order } from "@/types";
 import { formatINR } from "@/lib/currency";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy init — the Resend constructor throws if the API key is undefined,
+// which breaks Vercel's build-time page data collection. Initialize only
+// on first use (at request time when env vars are available).
+let _resend: Resend | null = null;
+function getResend() {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY!);
+  return _resend;
+}
+
 const FROM = process.env.EMAIL_FROM ?? "AR Books <noreply@arbooks.in>";
 
 export async function sendOrderConfirmation(order: Order): Promise<void> {
@@ -16,7 +24,7 @@ export async function sendOrderConfirmation(order: Order): Promise<void> {
     )
     .join("");
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: order.customerEmail,
     subject: `Order Confirmed — ${order.orderNumber}`,
@@ -84,7 +92,7 @@ export async function sendEmailVerificationLink(
   verificationLink: string
 ): Promise<void> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://arbooks.in";
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: email,
     subject: "Verify your AR Books email address",
@@ -146,7 +154,7 @@ export async function sendWelcomeEmail(
   name: string
 ): Promise<void> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://arbooks.in";
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: email,
     subject: "Welcome to AR Books 🎉",
@@ -221,7 +229,7 @@ export async function sendPaymentFailureEmail(
   name: string,
   orderNumber: string
 ): Promise<void> {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: email,
     subject: `Payment Failed — Order ${orderNumber}`,
