@@ -2,11 +2,7 @@ import { Resend } from "resend";
 import { formatINR } from "@/lib/currency";
 import type { MembershipSubscription, MembershipPlan } from "@/types/subscription";
 
-let _resend: Resend | null = null;
-function getResend() {
-  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY!);
-  return _resend;
-}
+const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM   = process.env.EMAIL_FROM ?? "AR Books <noreply@arbooks.in>";
 const BASE   = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.asmitrajaramkarbooks.store";
 
@@ -63,7 +59,7 @@ export async function sendSubscriptionActivated(
     </ul>
     ${ctaButton(`${BASE}/account/membership/library`, "Explore My Library")}
   `;
-  await getResend().emails.send({
+  await resend.emails.send({
     from: FROM,
     to: sub.customerEmail,
     subject: `Welcome to ${plan.name} Membership — Asmit Rajaramkar Books`,
@@ -90,7 +86,7 @@ export async function sendSubscriptionRenewed(
     </div>
     ${ctaButton(`${BASE}/account/membership`, "View My Membership")}
   `;
-  await getResend().emails.send({
+  await resend.emails.send({
     from: FROM,
     to: sub.customerEmail,
     subject: `Membership Renewed — ${plan.name} — Asmit Rajaramkar Books`,
@@ -113,7 +109,7 @@ export async function sendSubscriptionPaymentFailed(
     </div>
     ${ctaButton(`${BASE}/account/membership`, "Manage My Membership")}
   `;
-  await getResend().emails.send({
+  await resend.emails.send({
     from: FROM,
     to: sub.customerEmail,
     subject: `Payment Failed — ${plan.name} Membership — Asmit Rajaramkar Books`,
@@ -141,7 +137,7 @@ export async function sendSubscriptionCancelled(
     <p style="color: #555; font-size: 13px;">We hope to see you again. You can reactivate your membership at any time from our membership page.</p>
     ${ctaButton(`${BASE}/membership`, "Explore Membership Plans")}
   `;
-  await getResend().emails.send({
+  await resend.emails.send({
     from: FROM,
     to: sub.customerEmail,
     subject: `Membership Cancelled — Asmit Rajaramkar Books`,
@@ -165,7 +161,7 @@ export async function sendRenewalReminder(
     <p style="color: #555; font-size: 13px;">No action is needed. If you wish to change your plan or cancel, please do so before the renewal date.</p>
     ${ctaButton(`${BASE}/account/membership`, "Manage My Membership")}
   `;
-  await getResend().emails.send({
+  await resend.emails.send({
     from: FROM,
     to: sub.customerEmail,
     subject: `Membership Renews in 3 Days — ${plan.name} — Asmit Rajaramkar Books`,
@@ -189,7 +185,7 @@ export async function sendSubscriptionUpgraded(
     </ul>
     ${ctaButton(`${BASE}/account/membership/library`, "Explore New Books")}
   `;
-  await getResend().emails.send({
+  await resend.emails.send({
     from: FROM,
     to: sub.customerEmail,
     subject: `Membership Upgraded to ${newPlan.name} — Asmit Rajaramkar Books`,
