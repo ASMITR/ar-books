@@ -153,7 +153,10 @@ export async function sendWelcomeEmail(
   email: string,
   name: string
 ): Promise<void> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://arbooks.in";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.asmitrajaramkarbooks.store";
+  const instagramUrl = "https://www.instagram.com/asmitrajaramkarbooks/";
+  const websiteUrl = baseUrl;
+
   await getResend().emails.send({
     from: FROM,
     to: email,
@@ -162,58 +165,106 @@ export async function sendWelcomeEmail(
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #FAF9F6;">
 
         <!-- Header -->
-        <div style="background: #080808; padding: 28px 40px;">
-          <h1 style="color: #FFC928; font-size: 22px; margin: 0; letter-spacing: 2px;">AR BOOKS</h1>
-          <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin: 4px 0 0; letter-spacing: 1px; text-transform: uppercase;">by Asmit Rajaramkar</p>
+        <div style="background: #080808; padding: 32px 40px; text-align: center;">
+          <img src="${baseUrl}/Horizontal_Logo.png" alt="AR Books" width="160" style="display: inline-block; filter: brightness(0) invert(1);" />
+          <p style="color: rgba(255,255,255,0.35); font-size: 11px; margin: 8px 0 0; letter-spacing: 1.5px; text-transform: uppercase;">by Asmit Rajaramkar</p>
         </div>
 
         <!-- Brand stripe -->
         <div style="height: 4px; background: linear-gradient(to right, #FFC928, #789185, #080808);"></div>
 
-        <!-- Body -->
-        <div style="padding: 40px;">
-          <h2 style="font-size: 24px; color: #080808; margin: 0 0 8px;">Welcome, ${name}!</h2>
-          <p style="color: #777; font-size: 15px; line-height: 1.7; margin: 0 0 24px;">
-            Your account is all set. You can now browse our library, purchase eBooks,
-            and access everything you buy instantly from your personal library.
-          </p>
-
-          <!-- Feature list -->
-          <div style="background: #fff; border: 1px solid #E9E7E2; border-radius: 8px; padding: 20px 24px; margin-bottom: 28px;">
-            <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #999; margin: 0 0 16px;">What you get</p>
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr>
-                <td style="padding: 8px 0; border-bottom: 1px solid #E9E7E2; color: #080808; font-size: 14px;">📚 Instant access to all purchased eBooks</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; border-bottom: 1px solid #E9E7E2; color: #080808; font-size: 14px;">⬇️ Download your books anytime, anywhere</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; border-bottom: 1px solid #E9E7E2; color: #080808; font-size: 14px;">🔔 Be the first to know about new releases & offers</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #080808; font-size: 14px;">🔒 Your orders and downloads — all in one place</td>
-              </tr>
-            </table>
-          </div>
-
-          <!-- CTA -->
-          <a href="${baseUrl}/books"
-             style="display: inline-block; background: #FFC928; color: #080808; font-weight: 700;
-                    font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase;
-                    padding: 14px 32px; text-decoration: none;">
-            Browse Books &rarr;
-          </a>
-
-          <p style="color: #aaa; font-size: 13px; margin: 28px 0 0; line-height: 1.6;">
-            Questions? Reply to this email or reach us at
-            <a href="mailto:support@arbooks.in" style="color: #789185;">support@arbooks.in</a>.
+        <!-- Welcome hero -->
+        <div style="background: #fff; padding: 40px 40px 32px; text-align: center; border-bottom: 1px solid #E9E7E2;">
+          <div style="width: 56px; height: 56px; background: #FFC928; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 16px;">👋</div>
+          <h1 style="font-size: 26px; color: #080808; margin: 0 0 8px; font-weight: 700;">Welcome, ${name}!</h1>
+          <p style="color: #777; font-size: 15px; line-height: 1.7; margin: 0; max-width: 420px; display: inline-block;">
+            Your AR Books account is ready. Dive into a world of stories, knowledge, and ideas — all in one place.
           </p>
         </div>
 
+        <!-- Quick access buttons -->
+        <div style="padding: 32px 40px; background: #FAF9F6;">
+          <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #999; margin: 0 0 16px; text-align: center;">Quick Access</p>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 0 6px 0 0; width: 50%;">
+                <a href="${baseUrl}/books"
+                   style="display: block; background: #FFC928; color: #080808; font-weight: 700;
+                          font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+                          padding: 14px 16px; text-decoration: none; text-align: center;">
+                  📚 Browse Books
+                </a>
+              </td>
+              <td style="padding: 0 0 0 6px; width: 50%;">
+                <a href="${baseUrl}/account/library"
+                   style="display: block; background: #080808; color: #fff; font-weight: 700;
+                          font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+                          padding: 14px 16px; text-decoration: none; text-align: center;">
+                  🗂️ My Library
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 6px 0 0; width: 50%;">
+                <a href="${baseUrl}/account/orders"
+                   style="display: block; background: #fff; color: #080808; font-weight: 700;
+                          font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+                          padding: 14px 16px; text-decoration: none; text-align: center;
+                          border: 1px solid #E9E7E2;">
+                  🧾 My Orders
+                </a>
+              </td>
+              <td style="padding: 12px 0 0 6px; width: 50%;">
+                <a href="${baseUrl}/account/dashboard"
+                   style="display: block; background: #fff; color: #080808; font-weight: 700;
+                          font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+                          padding: 14px 16px; text-decoration: none; text-align: center;
+                          border: 1px solid #E9E7E2;">
+                  👤 My Account
+                </a>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- What you get -->
+        <div style="padding: 0 40px 32px;">
+          <div style="background: #fff; border: 1px solid #E9E7E2; padding: 24px;">
+            <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #999; margin: 0 0 16px;">What you get</p>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr><td style="padding: 9px 0; border-bottom: 1px solid #F0EEE9; color: #080808; font-size: 14px;">📖 Instant access to all purchased eBooks</td></tr>
+              <tr><td style="padding: 9px 0; border-bottom: 1px solid #F0EEE9; color: #080808; font-size: 14px;">⬇️ Download your books anytime, anywhere</td></tr>
+              <tr><td style="padding: 9px 0; border-bottom: 1px solid #F0EEE9; color: #080808; font-size: 14px;">🔔 Early access to new releases &amp; exclusive offers</td></tr>
+              <tr><td style="padding: 9px 0; color: #080808; font-size: 14px;">🔒 All your orders &amp; downloads in one place</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Author card -->
+        <div style="margin: 0 40px 32px; background: #080808; padding: 28px 32px;">
+          <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.35); margin: 0 0 12px;">From the Author</p>
+          <p style="color: rgba(255,255,255,0.85); font-size: 14px; line-height: 1.8; margin: 0 0 20px; font-style: italic;">
+            &ldquo;Thank you for joining AR Books. Every book here is written with heart — I hope they inspire, challenge, and stay with you long after the last page.&rdquo;
+          </p>
+          <p style="color: #FFC928; font-size: 14px; font-weight: 700; margin: 0 0 16px;">— Asmit Rajaramkar</p>
+          <table style="border-collapse: collapse;">
+            <tr>
+              <td style="padding-right: 12px;">
+                <a href="${websiteUrl}" style="display: inline-block; background: #FFC928; color: #080808; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 9px 18px; text-decoration: none;">🌐 Website</a>
+              </td>
+              <td>
+                <a href="${instagramUrl}" style="display: inline-block; background: transparent; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 9px 18px; text-decoration: none; border: 1px solid rgba(255,255,255,0.2);">📸 Instagram</a>
+              </td>
+            </tr>
+          </table>
+        </div>
+
         <!-- Footer -->
-        <div style="padding: 20px 40px; background: #080808;">
-          <p style="color: rgba(255,255,255,0.3); font-size: 12px; margin: 0; line-height: 1.6;">
+        <div style="padding: 24px 40px; background: #080808; text-align: center;">
+          <p style="color: rgba(255,255,255,0.3); font-size: 12px; margin: 0 0 8px; line-height: 1.6;">
+            Questions? <a href="mailto:support@arbooks.in" style="color: #789185;">support@arbooks.in</a>
+          </p>
+          <p style="color: rgba(255,255,255,0.2); font-size: 11px; margin: 0; line-height: 1.6;">
             &copy; 2025 Asmit Rajaramkar. All rights reserved.<br/>
             All eBooks are digital products. No physical shipping.
           </p>
