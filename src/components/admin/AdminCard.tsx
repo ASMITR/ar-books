@@ -10,9 +10,9 @@ interface AdminCardProps {
 
 export function AdminCard({ children, className, title, action }: AdminCardProps) {
   return (
-    <div className={cn("bg-white border border-[#E8E6E1] rounded-xl overflow-hidden shadow-sm", className)}>
+    <div className={cn("bg-white border border-[#E8E4DE] rounded-2xl overflow-hidden", className)}>
       {(title || action) && (
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#F0EEE9] bg-[#FAFAF8]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#F0EDE8]">
           {title && <h2 className="font-heading text-[15px] font-bold text-[#0a0a0a] tracking-tight">{title}</h2>}
           {action && <div>{action}</div>}
         </div>

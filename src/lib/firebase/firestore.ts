@@ -259,6 +259,26 @@ export async function getOfferByCouponCode(code: string): Promise<Offer | null> 
   return active ?? null;
 }
 
+// ─── Referrals ──────────────────────────────────────────────────────────────────────────────
+export async function getUserByReferralCode(code: string) {
+  const snap = await adminDb
+    .collection("users")
+    .where("referralCode", "==", code.toUpperCase())
+    .limit(1)
+    .get();
+  if (snap.empty) return null;
+  return { uid: snap.docs[0].id, ...snap.docs[0].data() } as import("@/types").AppUser;
+}
+
+export async function getReferralRewardsByReferrer(referrerId: string) {
+  const snap = await adminDb
+    .collection("referralRewards")
+    .where("referrerId", "==", referrerId)
+    .orderBy("createdAt", "desc")
+    .get();
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as import("@/types").ReferralReward));
+}
+
 export async function getOfferRedemptionCountByCustomer(
   offerId: string,
   customerId: string

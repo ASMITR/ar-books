@@ -1,5 +1,6 @@
 import { getStoreSettings, getFeaturedBooks } from "@/lib/firebase/firestore";
 import { BookCard } from "@/components/book/BookCard";
+import { CtaBanner } from "@/components/shared/PageHeader";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, User, PenLine, BookOpen, Mail } from "lucide-react";
@@ -28,10 +29,10 @@ export default async function AboutPage() {
   ]);
 
   return (
-    <div className="bg-[#F5EFE6] min-h-screen">
+    <div className="bg-[#FAFAF7] min-h-screen">
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="bg-[#FFFCF7] border-b border-[#E6DFD5]">
+      <section className="bg-white border-b border-[#ECEAE5]">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center">
 
@@ -40,7 +41,7 @@ export default async function AboutPage() {
               <div className="relative w-full max-w-[340px] sm:max-w-[400px]">
                 {/* Offset border accent */}
                 <div className="absolute -bottom-3 -right-3 w-full h-full border-2 border-[#C6A66B] rounded-sm" />
-                <div className="relative bg-[#F5EFE6] border border-[#E6DFD5] rounded-sm overflow-hidden aspect-[4/5]">
+                <div className="relative bg-[#F5F2EE] border border-[#ECEAE5] rounded-2xl overflow-hidden aspect-[4/5]">
                   {settings?.authorPhotoUrl ? (
                     <Image
                       src={settings.authorPhotoUrl}
@@ -98,16 +99,12 @@ export default async function AboutPage() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/books"
-                  className="inline-flex items-center gap-2 bg-[#203A2B] text-[#FFFCF7] font-body text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-3 hover:bg-[#315B55] transition-colors rounded-sm"
-                >
+                <Link href="/books"
+                  className="inline-flex items-center gap-2 bg-[#0D1F17] text-white font-body text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-3 rounded-xl hover:bg-[#203A2B] transition-colors">
                   <BookOpen size={13} /> Browse Books
                 </Link>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center gap-2 border border-[#E6DFD5] text-[#242824] font-body text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-3 hover:border-[#203A2B] hover:text-[#203A2B] transition-colors rounded-sm"
-                >
+                <Link href="/contact"
+                  className="inline-flex items-center gap-2 border border-[#E8E4DF] text-[#333] font-body text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-3 rounded-xl hover:border-[#203A2B] hover:text-[#203A2B] transition-colors">
                   <Mail size={13} /> Get in Touch
                 </Link>
               </div>
@@ -118,7 +115,7 @@ export default async function AboutPage() {
       </section>
 
       {/* ── Why I Write ───────────────────────────────────────────────────── */}
-      <section className="py-14 lg:py-20">
+      <section className="py-14 lg:py-20 bg-[#FAFAF7]">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-8 lg:gap-20 items-start">
 
@@ -150,7 +147,7 @@ export default async function AboutPage() {
                   body: "Every book is published independently, which means you get it straight from the source — no middlemen, no markups, just the work itself.",
                 },
               ].map((item) => (
-                <div key={item.title} className="bg-[#FFFCF7] border border-[#E6DFD5] rounded-sm px-6 py-5 flex gap-4 items-start hover:border-[#203A2B]/30 hover:shadow-sm transition-all duration-200">
+                <div key={item.title} className="bg-white border border-[#ECEAE5] rounded-2xl px-6 py-5 flex gap-4 items-start hover:border-[#203A2B]/20 hover:shadow-sm transition-all duration-200">
                   <span className="mt-0.5 shrink-0 text-[#203A2B]">{item.icon}</span>
                   <div>
                     <p className="font-heading text-[15px] font-bold text-[#242824] mb-1">{item.title}</p>
@@ -165,7 +162,7 @@ export default async function AboutPage() {
       </section>
 
       {/* ── What I Write About ────────────────────────────────────────────── */}
-      <section className="bg-[#FFFCF7] border-y border-[#E6DFD5] py-14 lg:py-20">
+      <section className="bg-white border-y border-[#ECEAE5] py-14 lg:py-20">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between gap-4 mb-10">
             <div>
@@ -179,10 +176,8 @@ export default async function AboutPage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {subjects.map((s) => (
-              <div
-                key={s.label}
-                className="group bg-[#F5EFE6] border border-[#E6DFD5] rounded-sm p-4 sm:p-5 hover:border-[#203A2B]/40 hover:bg-[#FFFCF7] hover:shadow-sm transition-all duration-200"
-              >
+              <div key={s.label}
+                className="group bg-[#F5F2EE] border border-[#ECEAE5] rounded-2xl p-4 sm:p-5 hover:border-[#203A2B]/25 hover:bg-white hover:shadow-sm transition-all duration-200">
                 <span className="font-heading text-[28px] font-bold text-[#E6DFD5] group-hover:text-[#C6A66B]/50 transition-colors leading-none block mb-2">
                   {s.icon}
                 </span>
@@ -197,7 +192,7 @@ export default async function AboutPage() {
 
       {/* ── Featured Books ────────────────────────────────────────────────── */}
       {featuredBooks.length > 0 && (
-        <section className="py-14 lg:py-20">
+        <section className="py-14 lg:py-20 bg-[#FAFAF7]">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-end justify-between gap-4 mb-10">
               <div>
@@ -223,29 +218,7 @@ export default async function AboutPage() {
         </section>
       )}
 
-      {/* ── CTA ───────────────────────────────────────────────────────────── */}
-      <section className="bg-[#FFFCF7] border-t border-[#E6DFD5] py-12 lg:py-16">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-sm bg-[#203A2B] px-8 sm:px-12 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="absolute top-0 right-0 w-72 h-72 bg-[#315B55] rounded-full blur-3xl opacity-25 -translate-y-1/2 translate-x-1/4" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="w-4 h-px bg-[#C6A66B]" />
-                <p className="text-[10px] font-body font-bold uppercase tracking-[0.2em] text-[#A8B5A0]">Ready to Read?</p>
-              </div>
-              <h2 className="font-heading text-[26px] sm:text-[32px] font-bold text-[#FFFCF7] leading-tight">
-                Find your next great read.
-              </h2>
-            </div>
-            <Link
-              href="/books"
-              className="relative z-10 shrink-0 inline-flex items-center gap-2.5 bg-[#C6A66B] text-[#242824] font-body text-[11px] font-bold uppercase tracking-[0.15em] px-7 py-3.5 hover:bg-[#d4b77e] transition-colors rounded-sm"
-            >
-              Explore Books <ArrowRight size={13} />
-            </Link>
-          </div>
-        </div>
-      </section>
+      <CtaBanner eyebrow="Ready to Read?" title="Find your next great read." href="/books" label="Explore Books →" />
 
     </div>
   );

@@ -1,205 +1,128 @@
-import { getStoreSettings } from "@/lib/firebase/firestore";
+"use client";
+
+import { useState } from "react";
 import { Mail, Clock, MessageSquare, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import type { Metadata } from "next";
+import { PageHeader, CtaBanner } from "@/components/shared/PageHeader";
 
-export const metadata: Metadata = {
-  title: "Contact",
-  description: "Get in touch with Asmit Rajaramkar for support, feedback, or inquiries.",
-};
+export default function ContactPage() {
+  const supportEmail = "support@arbooks.in";
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-export default async function ContactPage() {
-  const settings = await getStoreSettings();
-  const supportEmail = settings?.supportEmail ?? "support@arbooks.in";
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setStatus("sending");
+    const fd = new FormData(e.currentTarget);
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: fd.get("name"), email: fd.get("email"), subject: fd.get("subject"), message: fd.get("body") }),
+    });
+    setStatus(res.ok ? "sent" : "error");
+  }
 
-  const inputCls =
-    "w-full border border-[#E6DFD5] bg-[#FFFCF7] px-3.5 py-2.5 text-[13px] font-body text-[#242824] placeholder:text-[#A8B5A0] focus:outline-none focus:border-[#203A2B] focus:ring-2 focus:ring-[#203A2B]/10 transition-colors rounded-sm";
+  const inputCls = "w-full border border-[#E8E4DF] bg-white px-3.5 py-2.5 text-[13px] font-body text-[#222] placeholder:text-[#C0BBB3] focus:outline-none focus:border-[#203A2B] focus:ring-2 focus:ring-[#203A2B]/8 transition-colors rounded-xl";
 
   return (
-    <div className="bg-[#F5EFE6] min-h-screen">
+    <div className="bg-[#FAFAF7] min-h-screen">
+      <PageHeader
+        eyebrow="Get in Touch"
+        title="Contact"
+        subtitle="Questions, feedback, or purchase support"
+      />
 
-      {/* ── Page header ───────────────────────────────────────────────────── */}
-      <section className="bg-[#FFFCF7] border-b border-[#E6DFD5]">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-8">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="w-1 h-7 rounded-full bg-[#203A2B]" />
-              <div>
-                <h1 className="font-heading text-[22px] sm:text-[26px] font-bold text-[#242824] leading-none">
-                  Contact
-                </h1>
-                <p className="font-body text-[11px] text-[#A8B5A0] mt-1 tracking-wide">
-                  Questions, feedback, or purchase support
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Main ──────────────────────────────────────────────────────────── */}
       <section className="py-10 lg:py-14">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6 lg:gap-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 lg:gap-10 items-start">
 
-            {/* ── Form ────────────────────────────────────────────────────── */}
-            <div className="bg-[#FFFCF7] border border-[#E6DFD5] rounded-sm px-6 sm:px-8 py-8">
+            {/* Form */}
+            <div className="bg-white border border-[#ECEAE5] rounded-2xl px-6 sm:px-8 py-8">
               <div className="mb-7">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-1 h-5 rounded-full bg-[#203A2B]" />
-                  <p className="text-[10px] font-body font-bold uppercase tracking-[0.2em] text-[#A8B5A0]">Send a Message</p>
-                </div>
-                <h2 className="font-heading text-[22px] sm:text-[26px] font-bold text-[#242824] leading-tight">
+                <h2 className="font-heading text-[22px] sm:text-[26px] font-bold text-[#111] leading-tight">
                   How can I help you?
                 </h2>
-                <p className="font-body text-[13px] text-[#777] mt-1.5 leading-relaxed">
+                <p className="font-body text-[13px] text-[#888] mt-1.5 leading-relaxed">
                   Whether it&apos;s a purchase issue, download problem, or just feedback — I&apos;ll get back to you within 24–48 hours.
                 </p>
               </div>
 
-              <form action={`mailto:${supportEmail}`} method="GET" className="flex flex-col gap-4">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="contact-name" className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
-                      Your Name
-                    </label>
+                    <label htmlFor="contact-name" className="block text-[10.5px] font-body font-bold uppercase tracking-[0.12em] text-[#B8B3AB] mb-1.5">Your Name</label>
                     <input id="contact-name" name="name" required placeholder="Full name" className={inputCls} />
                   </div>
                   <div>
-                    <label htmlFor="contact-email" className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
-                      Email Address
-                    </label>
+                    <label htmlFor="contact-email" className="block text-[10.5px] font-body font-bold uppercase tracking-[0.12em] text-[#B8B3AB] mb-1.5">Email Address</label>
                     <input id="contact-email" name="email" type="email" required placeholder="your@email.com" className={inputCls} />
                   </div>
                 </div>
-
                 <div>
-                  <label htmlFor="contact-subject" className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
-                    Subject
-                  </label>
+                  <label htmlFor="contact-subject" className="block text-[10.5px] font-body font-bold uppercase tracking-[0.12em] text-[#B8B3AB] mb-1.5">Subject</label>
                   <input id="contact-subject" name="subject" required placeholder="e.g. Download issue with order ARB-..." className={inputCls} />
                 </div>
-
                 <div>
-                  <label htmlFor="contact-body" className="block text-[10px] font-body font-bold uppercase tracking-[0.12em] text-[#A8B5A0] mb-1.5">
-                    Message
-                  </label>
-                  <textarea
-                    id="contact-body"
-                    name="body"
-                    required
-                    rows={5}
-                    placeholder="Describe your question or issue in detail..."
-                    className={`${inputCls} resize-none`}
-                  />
+                  <label htmlFor="contact-body" className="block text-[10.5px] font-body font-bold uppercase tracking-[0.12em] text-[#B8B3AB] mb-1.5">Message</label>
+                  <textarea id="contact-body" name="body" required rows={5} placeholder="Describe your question or issue in detail..." className={`${inputCls} resize-none`} />
                 </div>
 
-                <button
-                  type="submit"
-                  className="inline-flex items-center justify-center gap-2 bg-[#203A2B] text-[#FFFCF7] font-body text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-3 hover:bg-[#315B55] active:scale-[0.98] transition-all rounded-sm"
-                >
-                  Send Message <ArrowRight size={13} />
+                <button type="submit" disabled={status === "sending" || status === "sent"}
+                  className="inline-flex items-center justify-center gap-2 bg-[#0D1F17] text-white font-body text-[11.5px] font-bold uppercase tracking-[0.12em] px-6 py-3 rounded-xl hover:bg-[#203A2B] active:scale-[0.98] transition-all disabled:opacity-60">
+                  {status === "sending" ? "Sending…" : status === "sent" ? "Message Sent ✓" : <>{" Send Message"} <ArrowRight size={13} /></>}
                 </button>
 
-                <p className="text-[11px] font-body text-[#A8B5A0]">
-                  This opens your email client. Or write directly to{" "}
-                  <a href={`mailto:${supportEmail}`} className="text-[#203A2B] hover:underline">
-                    {supportEmail}
-                  </a>
-                </p>
+                {status === "error" && (
+                  <p className="text-[11px] font-body text-red-600">Something went wrong. Please email directly at{" "}
+                    <a href={`mailto:${supportEmail}`} className="underline">{supportEmail}</a>.
+                  </p>
+                )}
+                {status !== "error" && (
+                  <p className="text-[11px] font-body text-[#B8B3AB]">
+                    Or write directly to{" "}
+                    <a href={`mailto:${supportEmail}`} className="text-[#203A2B] hover:underline">{supportEmail}</a>
+                  </p>
+                )}
               </form>
             </div>
 
-            {/* ── Sidebar ─────────────────────────────────────────────────── */}
-            <aside className="flex flex-col gap-4 lg:sticky lg:top-28">
-
-              {/* Email */}
-              <div className="bg-[#FFFCF7] border border-[#E6DFD5] rounded-sm p-5 flex gap-4 items-start hover:border-[#203A2B]/40 hover:shadow-sm transition-all duration-200">
-                <div className="w-9 h-9 rounded-sm bg-[#203A2B]/8 border border-[#203A2B]/15 flex items-center justify-center shrink-0">
-                  <Mail size={15} className="text-[#203A2B]" />
-                </div>
-                <div>
-                  <p className="font-heading text-[13px] font-bold text-[#242824] mb-0.5">Email Support</p>
-                  <a
-                    href={`mailto:${supportEmail}`}
-                    className="font-body text-[12px] text-[#203A2B] hover:underline break-all"
-                  >
-                    {supportEmail}
-                  </a>
-                </div>
-              </div>
-
-              {/* Response time */}
-              <div className="bg-[#FFFCF7] border border-[#E6DFD5] rounded-sm p-5 flex gap-4 items-start hover:border-[#203A2B]/40 hover:shadow-sm transition-all duration-200">
-                <div className="w-9 h-9 rounded-sm bg-[#203A2B]/8 border border-[#203A2B]/15 flex items-center justify-center shrink-0">
-                  <Clock size={15} className="text-[#203A2B]" />
-                </div>
-                <div>
-                  <p className="font-heading text-[13px] font-bold text-[#242824] mb-0.5">Response Time</p>
-                  <p className="font-body text-[12px] text-[#777]">Typically within 24–48 hours.</p>
-                </div>
-              </div>
-
-              {/* Common questions */}
-              <div className="bg-[#FFFCF7] border border-[#E6DFD5] rounded-sm p-5 flex gap-4 items-start hover:border-[#203A2B]/40 hover:shadow-sm transition-all duration-200">
-                <div className="w-9 h-9 rounded-sm bg-[#203A2B]/8 border border-[#203A2B]/15 flex items-center justify-center shrink-0">
-                  <MessageSquare size={15} className="text-[#203A2B]" />
-                </div>
-                <div>
-                  <p className="font-heading text-[13px] font-bold text-[#242824] mb-2">Common Topics</p>
-                  <ul className="flex flex-col gap-1.5">
-                    {[
-                      "Download issues after purchase",
-                      "Refund & cancellation requests",
-                      "Account access problems",
-                      "Book content feedback",
-                    ].map((q) => (
-                      <li key={q} className="flex items-center gap-2 font-body text-[12px] text-[#777]">
-                        <span className="w-1 h-1 rounded-full bg-[#C6A66B] shrink-0" />
-                        {q}
+            {/* Sidebar */}
+            <aside className="flex flex-col gap-3 lg:sticky lg:top-28">
+              {[
+                { icon: Mail, title: "Email Support", content: <a href={`mailto:${supportEmail}`} className="font-body text-[12px] text-[#203A2B] hover:underline break-all">{supportEmail}</a> },
+                { icon: Clock, title: "Response Time", content: <p className="font-body text-[12px] text-[#888]">Typically within 24–48 hours.</p> },
+                { icon: MessageSquare, title: "Common Topics", content: (
+                  <ul className="flex flex-col gap-1.5 mt-1">
+                    {["Download issues after purchase", "Refund & cancellation requests", "Account access problems", "Book content feedback"].map((q) => (
+                      <li key={q} className="flex items-center gap-2 font-body text-[12px] text-[#888]">
+                        <span className="w-1 h-1 rounded-full bg-[#C6A66B] shrink-0" />{q}
                       </li>
                     ))}
                   </ul>
+                )},
+              ].map(({ icon: Icon, title, content }) => (
+                <div key={title} className="bg-white border border-[#ECEAE5] rounded-2xl p-5 flex gap-4 items-start hover:border-[#203A2B]/20 hover:shadow-sm transition-all duration-200">
+                  <div className="w-9 h-9 rounded-xl bg-[#0D1F17]/6 flex items-center justify-center shrink-0">
+                    <Icon size={15} className="text-[#203A2B]" />
+                  </div>
+                  <div>
+                    <p className="font-heading text-[13.5px] font-bold text-[#111] mb-1">{title}</p>
+                    {content}
+                  </div>
                 </div>
-              </div>
+              ))}
 
-              {/* Tip */}
-              <div className="bg-[#203A2B]/6 border border-[#203A2B]/15 rounded-sm p-5">
-                <p className="font-heading text-[13px] font-bold text-[#242824] mb-1">💡 Purchase Support Tip</p>
-                <p className="font-body text-[12px] text-[#555] leading-relaxed">
+              <div className="bg-[#0D1F17]/5 border border-[#0D1F17]/10 rounded-2xl p-5">
+                <p className="font-heading text-[13.5px] font-bold text-[#111] mb-1">💡 Purchase Support Tip</p>
+                <p className="font-body text-[12px] text-[#666] leading-relaxed">
                   Include your order number (e.g. <span className="font-semibold text-[#203A2B]">ARB-...</span>) so I can assist you faster.
                 </p>
               </div>
-
             </aside>
           </div>
         </div>
       </section>
 
-      {/* ── CTA ───────────────────────────────────────────────────────────── */}
-      <section className="bg-[#FFFCF7] border-t border-[#E6DFD5] py-12 lg:py-14">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-sm bg-[#203A2B] px-8 sm:px-12 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="absolute top-0 right-0 w-72 h-72 bg-[#315B55] rounded-full blur-3xl opacity-25 -translate-y-1/2 translate-x-1/4" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="w-4 h-px bg-[#C6A66B]" />
-                <p className="text-[10px] font-body font-bold uppercase tracking-[0.2em] text-[#A8B5A0]">While You&apos;re Here</p>
-              </div>
-              <h2 className="font-heading text-[26px] sm:text-[32px] font-bold text-[#FFFCF7] leading-tight">
-                Browse the book catalog.
-              </h2>
-            </div>
-            <Link
-              href="/books"
-              className="relative z-10 shrink-0 inline-flex items-center gap-2.5 bg-[#C6A66B] text-[#242824] font-body text-[11px] font-bold uppercase tracking-[0.15em] px-7 py-3.5 hover:bg-[#d4b77e] transition-colors rounded-sm"
-            >
-              Explore Books <ArrowRight size={13} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
+      <CtaBanner eyebrow="While You're Here" title="Browse the book catalog." href="/books" label="Explore Books →" />
     </div>
   );
 }

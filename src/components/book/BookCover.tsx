@@ -22,7 +22,7 @@ export function BookCover({ src, title, size = "md", perspective = false, classN
 
   return (
     <div
-      className={cn("relative shrink-0 rounded-sm overflow-hidden shadow-lg", className)}
+      className={cn("relative shrink-0 rounded-xl overflow-hidden shadow-lg", className)}
       style={{
         width: w,
         height: h,

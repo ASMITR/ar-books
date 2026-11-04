@@ -70,7 +70,7 @@ export default async function HomePage() {
       {/* ══════════════════════════════════════════════════════════════
           2 · SHOPPING BENEFITS BAR
       ══════════════════════════════════════════════════════════════ */}
-      <section className="cv-auto bg-[#FFFCF7] border-y border-[#E6DFD5] shadow-sm">
+      <section className="cv-auto bg-white border-y border-[#ECEAE5]">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4">
             {[
@@ -102,8 +102,8 @@ export default async function HomePage() {
               <div
                 key={title}
                 className={`flex items-center gap-4 px-6 py-5
-                  ${i < 3 ? "border-r border-[#E6DFD5]" : ""}
-                  ${i >= 2 ? "border-t border-[#E6DFD5] lg:border-t-0" : ""}`}
+                  ${i < 3 ? "border-r border-[#ECEAE5]" : ""}
+                  ${i >= 2 ? "border-t border-[#ECEAE5] lg:border-t-0" : ""}`}
               >
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
@@ -189,7 +189,7 @@ export default async function HomePage() {
       {/* ══════════════════════════════════════════════════════════════
           9 · NEWSLETTER SUBSCRIPTION BANNER
       ══════════════════════════════════════════════════════════════ */}
-      <section className="cv-auto bg-[#FFFCF7] py-12 lg:py-16">
+      <section className="cv-auto bg-white py-12 lg:py-16">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden">
 
@@ -253,7 +253,7 @@ export default async function HomePage() {
               </div>
 
               {/* Right – form card */}
-              <div className="bg-[#FFFCF7] p-6 shadow-2xl">
+              <div className="bg-white p-6 shadow-2xl rounded-2xl">
                 <p className="font-heading text-[20px] font-bold text-[#203A2B] mb-1">
                   Join the community
                 </p>
@@ -278,7 +278,7 @@ export default async function HomePage() {
       {/* ══════════════════════════════════════════════════════════════
           10 · TRUST STRIP  (bottom of page, above footer)
       ══════════════════════════════════════════════════════════════ */}
-      <section className="cv-auto bg-[#F5EFE6] border-t border-[#E6DFD5]">
+      <section className="cv-auto bg-[#F5F2EE] border-t border-[#ECEAE5]">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4">
             {[
@@ -310,8 +310,8 @@ export default async function HomePage() {
               <div
                 key={title}
                 className={`flex items-center gap-4 px-6 py-6
-                  ${i < 3 ? "border-r border-[#E6DFD5]" : ""}
-                  ${i >= 2 ? "border-t border-[#E6DFD5] lg:border-t-0" : ""}`}
+                  ${i < 3 ? "border-r border-[#ECEAE5]" : ""}
+                  ${i >= 2 ? "border-t border-[#ECEAE5] lg:border-t-0" : ""}`}
               >
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"

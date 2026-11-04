@@ -21,110 +21,93 @@ export default async function DownloadsPage() {
 
   const logs = snap.docs.map((d) => ({ id: d.id, ...d.data() } as DownloadLog & { id: string }));
 
-  /* ── Empty state ──────────────────────────────────────────────────────────── */
   if (logs.length === 0) {
     return (
       <div className="flex flex-col gap-6">
         <PageHeader count={0} />
-        <div className="bg-white border border-[#E6DFD5] flex flex-col items-center justify-center py-20 px-4 text-center gap-5">
-          <div className="w-16 h-16 bg-[#F5EFE6] flex items-center justify-center">
-            <Download size={24} className="text-[#C6A66B]" strokeWidth={1.5} />
+        <div className="bg-white border border-black/[0.06] rounded-2xl flex flex-col items-center justify-center py-20 px-4 text-center gap-4">
+          <div className="w-11 h-11 bg-[#F5F2EE] rounded-2xl flex items-center justify-center">
+            <Download size={18} className="text-[#C8C3BC]" strokeWidth={1.5} />
           </div>
           <div>
-            <h3 className="font-heading text-xl font-bold text-[#080808] mb-1">No downloads yet</h3>
-            <p className="font-body text-sm text-[#777777]">Your download history will appear here.</p>
+            <h3 className="font-heading text-[17px] font-bold text-[#111] mb-1">No downloads yet</h3>
+            <p className="font-body text-[13px] text-[#999]">Your download history will appear here.</p>
           </div>
-          <Link
-            href="/account/library"
-            className="flex items-center gap-2 bg-[#203A2B] text-[#FFFCF7] font-body text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-3 hover:bg-[#315B55] transition-colors"
-          >
-            <Library size={13} /> Go to My Library
+          <Link href="/account/library"
+            className="inline-flex items-center gap-2 bg-[#0D1F17] text-white font-body text-[11px] font-bold uppercase tracking-[0.14em] px-5 py-2.5 rounded-xl hover:bg-[#203A2B] transition-colors">
+            <Library size={12} /> Go to My Library
           </Link>
         </div>
       </div>
     );
   }
 
-  /* ── Fetch book metadata (batched) ───────────────────────────────────────── */
   const bookIds  = [...new Set(logs.map((l) => l.productId))];
   const docRefs  = bookIds.map((id) => adminDb.collection("books").doc(id));
   const bookDocs = await adminDb.getAll(...docRefs);
-  const bookMap  = Object.fromEntries(
-    bookDocs.map((d) => [d.id, d.exists ? (d.data() as Book) : null])
-  );
+  const bookMap  = Object.fromEntries(bookDocs.map((d) => [d.id, d.exists ? (d.data() as Book) : null]));
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader count={logs.length} />
 
-      {/* ── Log list ──────────────────────────────────────────────────────── */}
-      <div className="bg-white border border-[#E6DFD5] overflow-hidden">
-
-        {/* Table header — desktop */}
-        <div className="hidden sm:grid grid-cols-[1fr_160px_120px] gap-4 px-5 py-3 border-b border-[#E6DFD5] bg-[#FAF9F6]">
-          <span className="text-[10px] font-body uppercase tracking-[0.18em] text-[#A8B5A0]">Book</span>
-          <span className="text-[10px] font-body uppercase tracking-[0.18em] text-[#A8B5A0]">Date</span>
-          <span className="text-[10px] font-body uppercase tracking-[0.18em] text-[#A8B5A0]">Action</span>
+      <div className="bg-white border border-black/[0.06] rounded-2xl overflow-hidden">
+        {/* Table header */}
+        <div className="hidden sm:grid sm:grid-cols-[1fr_150px_130px] gap-4 px-5 py-3 border-b border-black/[0.05] bg-[#FAFAF8]">
+          <span className="text-[10px] font-body font-bold uppercase tracking-[0.18em] text-[#B8B3AB]">Book</span>
+          <span className="text-[10px] font-body font-bold uppercase tracking-[0.18em] text-[#B8B3AB]">Date</span>
+          <span className="text-[10px] font-body font-bold uppercase tracking-[0.18em] text-[#B8B3AB]">Action</span>
         </div>
 
-        <div className="divide-y divide-[#F0EEE9]">
+        <div className="divide-y divide-black/[0.04]">
           {logs.map((log) => {
             const book = bookMap[log.productId];
             return (
-              <div
-                key={log.id}
-                className="group px-5 py-4 flex flex-col sm:grid sm:grid-cols-[1fr_160px_120px] gap-3 sm:gap-4 sm:items-center hover:bg-[#FAF9F6] transition-colors"
-              >
-                {/* Book */}
+              <div key={log.id}
+                className="px-5 py-4 flex flex-col sm:grid sm:grid-cols-[1fr_150px_130px] gap-2.5 sm:gap-4 sm:items-center hover:bg-[#FAFAF8] transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative w-8 h-11 shrink-0 overflow-hidden bg-gradient-to-br from-[#203A2B] to-[#315B55]">
+                  <div className="relative w-8 h-11 shrink-0 overflow-hidden rounded-lg bg-[#0D1F17]">
                     {book?.coverImageUrl ? (
                       <Image src={book.coverImageUrl} alt={book.title ?? ""} fill className="object-cover" sizes="32px" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <BookOpen size={10} className="text-[#A8B5A0]" strokeWidth={1.5} />
+                        <BookOpen size={10} className="text-white/30" strokeWidth={1.5} />
                       </div>
                     )}
                   </div>
-                  <p className="text-[13px] font-body font-semibold text-[#080808] truncate">
+                  <p className="text-[13px] font-body font-semibold text-[#111] truncate">
                     {book?.title ?? log.productId}
                   </p>
                 </div>
 
-                {/* Date */}
-                <div className="flex items-center gap-1.5 sm:gap-1">
-                  <Clock size={11} className="text-[#A8B5A0] shrink-0" />
-                  <p className="text-[12px] font-body text-[#A8B5A0]">{formatDate(log.timestamp)}</p>
+                <div className="flex items-center gap-1.5 pl-11 sm:pl-0">
+                  <Clock size={11} className="text-[#B8B3AB] shrink-0" />
+                  <p className="text-[11.5px] font-body text-[#B8B3AB]">{formatDate(log.timestamp)}</p>
                 </div>
 
-                {/* Action */}
-                <a
-                  href={`/api/downloads/secure?bookId=${log.productId}`}
-                  className="inline-flex items-center gap-1.5 text-[11px] font-body font-semibold text-[#203A2B] hover:text-[#315B55] transition-colors w-fit"
-                >
-                  <Download size={12} />
-                  Download again
-                </a>
+                <div className="pl-11 sm:pl-0">
+                  <a href={`/api/downloads/secure?bookId=${log.productId}`}
+                    className="inline-flex items-center gap-1.5 text-[11.5px] font-body font-bold text-[#203A2B] hover:text-[#0D1F17] transition-colors">
+                    <Download size={11} /> Download again
+                  </a>
+                </div>
               </div>
             );
           })}
         </div>
       </div>
-
     </div>
   );
 }
 
 function PageHeader({ count }: { count: number }) {
   return (
-    <div className="flex items-end justify-between gap-4">
+    <div className="flex items-end justify-between gap-3">
       <div>
-        <p className="text-[10px] font-body uppercase tracking-[0.25em] text-[#A8B5A0] mb-1">Activity log</p>
-        <h1 className="font-heading text-3xl sm:text-4xl font-bold text-[#080808] leading-none">Download History</h1>
+        <p className="text-[10px] font-body uppercase tracking-[0.28em] text-[#B8B3AB] mb-1.5">Activity log</p>
+        <h1 className="font-heading text-[28px] sm:text-[32px] font-bold text-[#111] leading-none">Download History</h1>
       </div>
-      {count > 0 && (
-        <span className="font-body text-[12px] text-[#A8B5A0] pb-0.5">{count} records</span>
-      )}
+      {count > 0 && <span className="font-body text-[12px] text-[#B8B3AB] shrink-0">{count} records</span>}
     </div>
   );
 }

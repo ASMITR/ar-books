@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, getIdToken, sendEmailVerification } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 import { registerSchema, type RegisterInput } from "@/lib/validations";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Gift } from "lucide-react";
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -20,13 +20,41 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const inputCls = "w-full border border-[#E9E7E2] bg-[#FAF9F6] px-4 py-3 text-sm font-body focus:outline-none focus:border-[#789185] focus:ring-2 focus:ring-[#789185]/10 transition-colors rounded-sm";
+const Field = ({
+  id, label, error, children,
+}: {
+  id: string; label: string; error?: string; children: React.ReactNode;
+}) => (
+  <div className="flex flex-col gap-1.5">
+    <label htmlFor={id} className="text-[11px] font-body font-semibold uppercase tracking-[0.1em] text-[#6B6B6B]">
+      {label}
+    </label>
+    {children}
+    {error && <p className="text-[11px] text-[#E53935] font-body">{error}</p>}
+  </div>
+);
+
+const inputBase = "w-full bg-[#F7F5F2] border border-[#E2DDD8] px-4 py-3 text-[14px] font-body text-[#111] placeholder:text-[#C4BFB9] focus:outline-none focus:border-[#203A2B] focus:bg-white focus:ring-2 focus:ring-[#203A2B]/8 transition-all rounded-lg";
+
+const perks = [
+  { emoji: "📚", text: "Instant access to all purchased eBooks" },
+  { emoji: "⬇️", text: "Download & read anywhere, anytime" },
+  { emoji: "🎁", text: "Earn rewards by referring friends" },
+  { emoji: "🔔", text: "Early access to new releases" },
+];
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [refCode, setRefCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    if (ref) setRefCode(ref.toUpperCase());
+  }, [searchParams]);
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
 
@@ -34,10 +62,9 @@ export default function RegisterPage() {
     await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken }) });
   };
 
-  /** Fire-and-forget welcome email — does not block the registration flow. */
   const sendWelcome = (idToken: string) => {
-    fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken }) })
-      .catch(() => { /* non-fatal */ });
+    fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken, referralCode: refCode }) })
+      .catch(() => {});
   };
 
   const onSubmit = async (data: RegisterInput) => {
@@ -70,96 +97,149 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left panel — brand */}
-      <div className="hidden lg:flex lg:w-5/12 xl:w-1/2 bg-[#080808] flex-col items-center justify-center p-12 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "radial-gradient(circle at 30% 70%, #789185 0%, transparent 60%), radial-gradient(circle at 80% 20%, #FFC928 0%, transparent 50%)" }} />
-        <div className="relative z-10 flex flex-col items-center gap-8 text-center">
-          <Link href="/">
-            <Image src="/Horizontal_Logo.png" alt="AR Books" width={220} height={60} className="brightness-0 invert" priority />
+    <div className="min-h-screen flex bg-[#FAFAF7]">
+
+      {/* ── Left panel ─────────────────────────────────────────────────────── */}
+      <div className="hidden lg:flex lg:w-[44%] xl:w-[42%] bg-[#0D1F17] flex-col relative overflow-hidden">
+        <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(ellipse at 15% 85%, rgba(120,145,133,0.20) 0%, transparent 55%), radial-gradient(ellipse at 90% 10%, rgba(255,201,40,0.12) 0%, transparent 50%)" }} />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
+
+        <div className="relative z-10 flex flex-col h-full px-12 py-10">
+          <Link href="/" className="shrink-0">
+            <Image src="/Horizontal_Logo.png" alt="AR Books" width={160} height={44} className="brightness-0 invert opacity-90" priority />
           </Link>
-          <div className="w-12 h-px bg-[#FFC928]" />
-          <p className="font-body text-[#aaa] text-sm leading-relaxed max-w-xs">
-            Join thousands of readers. Create your free account and start building your digital library today.
-          </p>
+
+          <div className="flex-1 flex flex-col justify-center gap-10">
+            <div>
+              <h2 className="font-heading text-3xl font-bold text-white leading-snug">
+                Start your<br />reading journey.
+              </h2>
+              <p className="font-body text-[#7A9A8A] text-sm leading-relaxed mt-3 max-w-[260px]">
+                Join thousands of readers. Create your free account and build your digital library today.
+              </p>
+            </div>
+
+            {/* Perks list */}
+            <div className="flex flex-col gap-3">
+              {perks.map(({ emoji, text }) => (
+                <div key={text} className="flex items-center gap-3">
+                  <span className="w-8 h-8 bg-white/[0.06] rounded-lg flex items-center justify-center text-base shrink-0">{emoji}</span>
+                  <span className="font-body text-[13px] text-white/60">{text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-white/[0.07] pt-6">
+            <p className="font-body text-[13px] text-white/30 italic leading-relaxed">
+              &ldquo;Not all those who wander are lost.&rdquo;
+            </p>
+            <p className="font-body text-[11px] text-white/20 mt-1.5 tracking-wide">— J.R.R. Tolkien</p>
+          </div>
         </div>
       </div>
 
-      {/* Right panel — form */}
-      <div className="flex-1 bg-[#FAF9F6] flex flex-col items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md">
+      {/* ── Right panel ────────────────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 overflow-y-auto">
+        <div className="w-full max-w-[400px]">
 
           {/* Mobile logo */}
-          <div className="flex flex-col items-center mb-8 lg:hidden">
-            <Link href="/">
-              <Image src="/Horizontal_Logo.png" alt="AR Books" width={180} height={48} priority />
-            </Link>
+          <div className="flex justify-center mb-10 lg:hidden">
+            <Link href="/"><Image src="/Horizontal_Logo.png" alt="AR Books" width={160} height={44} priority /></Link>
           </div>
 
-          <div className="mb-7">
-            <h1 className="font-heading text-2xl font-bold text-[#080808]">Create your account</h1>
-            <p className="font-body text-sm text-[#777777] mt-1">Free to join — start reading instantly</p>
+          {/* Heading */}
+          <div className="mb-6">
+            <h1 className="font-heading text-[28px] font-bold text-[#0D1F17] leading-tight">Create your account</h1>
+            <p className="font-body text-[14px] text-[#888] mt-1.5">Free to join — start reading instantly</p>
           </div>
 
-          <div className="bg-white border border-[#E9E7E2] p-7 sm:p-8 rounded-sm shadow-sm">
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-              <div>
-                <label htmlFor="register-name" className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Full Name</label>
-                <input id="register-name" {...register("displayName")} placeholder="Your full name" className={inputCls} />
-                {errors.displayName && <p className="text-xs text-[#F12F43] mt-1">{errors.displayName.message}</p>}
-              </div>
-
-              <div>
-                <label htmlFor="register-email" className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Email</label>
-                <input id="register-email" {...register("email")} type="email" autoComplete="email" placeholder="your@email.com" className={inputCls} />
-                {errors.email && <p className="text-xs text-[#F12F43] mt-1">{errors.email.message}</p>}
-              </div>
-
-              <div>
-                <label htmlFor="register-password" className="block text-xs font-body uppercase tracking-wider text-[#777777] mb-1.5">Password</label>
-                <div className="relative">
-                  <input id="register-password" {...register("password")} type={showPw ? "text" : "password"} autoComplete="new-password" placeholder="Min. 8 characters" className={`${inputCls} pr-10`} />
-                  <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aaa] hover:text-[#555] transition-colors" aria-label={showPw ? "Hide password" : "Show password"}>
-                    {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
-                  </button>
-                </div>
-                {errors.password && <p className="text-xs text-[#F12F43] mt-1">{errors.password.message}</p>}
-              </div>
-
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" {...register("acceptTerms")} className="mt-0.5 shrink-0 accent-[#080808]" />
-                <span className="text-xs font-body text-[#777777] leading-relaxed">
-                  I accept the{" "}
-                  <Link href="/terms" target="_blank" className="text-[#080808] underline underline-offset-2">Terms & Conditions</Link>{" "}
-                  and{" "}
-                  <Link href="/privacy" target="_blank" className="text-[#080808] underline underline-offset-2">Privacy Policy</Link>
-                </span>
-              </label>
-              {errors.acceptTerms && <p className="text-xs text-[#F12F43]">{errors.acceptTerms.message}</p>}
-
-              {error && <div className="bg-[#FFF0F0] border border-[#F12F43]/30 text-[#F12F43] text-xs font-body p-3 rounded-sm">{error}</div>}
-
-              <button type="submit" disabled={loading} className="w-full bg-[#FFC928] text-[#080808] font-body text-xs font-bold uppercase tracking-widest py-3.5 hover:bg-[#F2B916] transition-colors disabled:opacity-60 mt-1 rounded-sm">
-                {loading ? "Creating account…" : "Create Account"}
-              </button>
-            </form>
-
-            <div className="flex items-center gap-3 my-5">
-              <div className="flex-1 h-px bg-[#E9E7E2]" />
-              <span className="text-xs text-[#aaa] font-body">or</span>
-              <div className="flex-1 h-px bg-[#E9E7E2]" />
+          {/* Referral banner */}
+          {refCode && (
+            <div className="bg-[#FFFBEB] border border-[#FFC928]/40 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
+              <Gift size={16} className="text-[#D4A017] shrink-0" />
+              <p className="font-body text-[13px] text-[#111]">
+                You were referred by a friend! Sign up to give them a reward.
+              </p>
             </div>
+          )}
 
-            <button onClick={handleGoogle} disabled={loading} className="w-full border border-[#E9E7E2] bg-white text-[#080808] font-body text-sm font-medium py-3 hover:bg-[#FAF9F6] transition-colors flex items-center justify-center gap-3 disabled:opacity-60 rounded-sm">
-              <GoogleIcon /> Continue with Google
-            </button>
+          {/* Google */}
+          <button
+            onClick={handleGoogle}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 bg-white border border-[#E2DDD8] text-[#111] font-body text-[13px] font-semibold py-3 rounded-xl hover:bg-[#F7F5F2] hover:border-[#C4BFB9] transition-all disabled:opacity-50 shadow-sm mb-5"
+          >
+            <GoogleIcon /> Continue with Google
+          </button>
+
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-px bg-[#E8E4DF]" />
+            <span className="text-[11px] font-body text-[#C4BFB9] uppercase tracking-wider">or</span>
+            <div className="flex-1 h-px bg-[#E8E4DF]" />
           </div>
 
-          <p className="text-center text-sm font-body text-[#777777] mt-5">
-            Already have an account?{" "}
-            <Link href="/login" className="text-[#080808] font-semibold hover:text-[#789185] transition-colors">Sign in</Link>
-          </p>
+          {/* Form */}
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            <Field id="register-name" label="Full Name" error={errors.displayName?.message}>
+              <input id="register-name" {...register("displayName")} placeholder="Your full name" className={inputBase} />
+            </Field>
 
+            <Field id="register-email" label="Email" error={errors.email?.message}>
+              <input id="register-email" {...register("email")} type="email" autoComplete="email" placeholder="you@example.com" className={inputBase} />
+            </Field>
+
+            <Field id="register-password" label="Password" error={errors.password?.message}>
+              <div className="relative">
+                <input
+                  id="register-password"
+                  {...register("password")}
+                  type={showPw ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder="Min. 8 characters"
+                  className={`${inputBase} pr-11`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw((v) => !v)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#C4BFB9] hover:text-[#555] transition-colors"
+                  aria-label={showPw ? "Hide password" : "Show password"}
+                >
+                  {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+            </Field>
+
+            <label className="flex items-start gap-3 cursor-pointer mt-1">
+              <input type="checkbox" {...register("acceptTerms")} className="mt-0.5 shrink-0 w-4 h-4 accent-[#203A2B] rounded" />
+              <span className="text-[12px] font-body text-[#888] leading-relaxed">
+                I accept the{" "}
+                <Link href="/terms" target="_blank" className="text-[#203A2B] underline underline-offset-2 hover:text-[#789185]">Terms & Conditions</Link>
+                {" "}and{" "}
+                <Link href="/privacy" target="_blank" className="text-[#203A2B] underline underline-offset-2 hover:text-[#789185]">Privacy Policy</Link>
+              </span>
+            </label>
+            {errors.acceptTerms && <p className="text-[11px] text-[#E53935] font-body -mt-2">{errors.acceptTerms.message}</p>}
+
+            {error && (
+              <div className="bg-[#FFF0F0] border border-[#E53935]/20 text-[#E53935] text-[12px] font-body px-4 py-3 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#0D1F17] text-white font-body text-[13px] font-bold uppercase tracking-[0.1em] py-3.5 rounded-xl hover:bg-[#203A2B] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 mt-1"
+            >
+              {loading ? "Creating account…" : <><span>Create Account</span><ArrowRight size={14} /></>}
+            </button>
+          </form>
+
+          <p className="text-center text-[13px] font-body text-[#999] mt-6">
+            Already have an account?{" "}
+            <Link href="/login" className="text-[#203A2B] font-semibold hover:text-[#789185] transition-colors">Sign in</Link>
+          </p>
         </div>
       </div>
     </div>

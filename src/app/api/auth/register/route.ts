@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase/admin";
+import { FieldValue } from "firebase-admin/firestore";
 import { sendWelcomeEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/ratelimit";
+import { getUserByReferralCode } from "@/lib/firebase/firestore";
 
 function sanitizeLog(value: string): string {
   return value.replace(/[\r\n]/g, "_");
@@ -9,6 +11,11 @@ function sanitizeLog(value: string): string {
 
 function errMsg(e: unknown): string {
   return sanitizeLog(e instanceof Error ? e.message : String(e));
+}
+
+/** Generate a short unique referral code from uid */
+function generateReferralCode(uid: string): string {
+  return uid.slice(0, 8).toUpperCase();
 }
 
 /**
@@ -33,7 +40,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { idToken } = await req.json();
+    const { idToken, referralCode } = await req.json();
     if (!idToken || typeof idToken !== "string") {
       return NextResponse.json({ error: "Missing token" }, { status: 400 });
     }
@@ -58,6 +65,17 @@ export async function POST(req: NextRequest) {
 
     // ── Write user document to Firestore so it appears in the admin dashboard ──
     const now = new Date().toISOString();
+    const myReferralCode = generateReferralCode(userRecord.uid);
+
+    // Resolve referrer if a valid referral code was provided
+    let referrerId: string | null = null;
+    if (referralCode && typeof referralCode === "string") {
+      const referrer = await getUserByReferralCode(referralCode.trim());
+      if (referrer && referrer.uid !== userRecord.uid) {
+        referrerId = referrer.uid;
+      }
+    }
+
     await adminDb
       .collection("users")
       .doc(userRecord.uid)
@@ -68,12 +86,53 @@ export async function POST(req: NextRequest) {
           emailVerified: userRecord.emailVerified ?? false,
           photoURL: userRecord.photoURL ?? null,
           role: "member",
+          referralCode: myReferralCode,
+          referredBy: referrerId ? referralCode!.trim().toUpperCase() : null,
+          referralCount: 0,
           createdAt: now,
           updatedAt: now,
           provider: userRecord.providerData?.[0]?.providerId ?? "password",
         },
         { merge: true }
       );
+
+    // ── Credit referrer: increment count + create a reward coupon ────────────
+    if (referrerId) {
+      const rewardCode = `REF-${myReferralCode}-${Date.now().toString(36).toUpperCase()}`;
+      const couponRef = adminDb.collection("coupons").doc();
+      const rewardRef = adminDb.collection("referralRewards").doc();
+
+      const batch = adminDb.batch();
+
+      // Create a 10% discount coupon for the referrer
+      batch.set(couponRef, {
+        code: rewardCode,
+        discountType: "percent",
+        discountValue: 10,
+        usageLimit: 1,
+        usageCount: 0,
+        enabled: true,
+        createdAt: now,
+      });
+
+      // Record the referral reward
+      batch.set(rewardRef, {
+        referrerId,
+        referredUserId: userRecord.uid,
+        referredEmail: email,
+        couponId: couponRef.id,
+        couponCode: rewardCode,
+        createdAt: now,
+      });
+
+      // Increment referrer's count
+      batch.update(adminDb.collection("users").doc(referrerId), {
+        referralCount: FieldValue.increment(1),
+        updatedAt: now,
+      });
+
+      await batch.commit();
+    }
 
     // Non-fatal — don't block the registration flow
     sendWelcomeEmail(email, name).catch((e) =>

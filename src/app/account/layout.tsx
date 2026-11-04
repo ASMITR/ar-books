@@ -9,16 +9,13 @@ export default async function AccountLayout({ children }: { children: React.Reac
   if (!user) redirect("/login");
 
   return (
-    <div className="bg-[#FAF9F6] min-h-screen">
-      {/* Thin forest-green top bar */}
-      <div className="h-1 bg-gradient-to-r from-[#203A2B] via-[#FFC928] to-[#203A2B]" />
-
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 items-start">
-          <MemberSidebar />
-          <div className="flex-1 min-w-0">{children}</div>
+    <div className="flex flex-col lg:flex-row lg:h-screen lg:overflow-hidden bg-[#F7F5F1]">
+      <MemberSidebar />
+      <main className="flex-1 min-w-0 overflow-y-auto scrollbar-none">
+        <div className="max-w-[900px] mx-auto px-5 sm:px-8 py-8 sm:py-10">
+          {children}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

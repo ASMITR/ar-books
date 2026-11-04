@@ -37,7 +37,16 @@ export const metadata: Metadata = {
   openGraph: {
     siteName: "AR Books",
     type: "website",
-    images: [{ url: "/Main_Logo.png" }],
+    images: [{
+      url: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://www.asmitrajaramkarbooks.store"}/og-image.png`,
+      width: 1200,
+      height: 630,
+      alt: "Asmit Rajaramkar Books — Official eBook Store",
+    }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: [`${process.env.NEXT_PUBLIC_APP_URL ?? "https://www.asmitrajaramkarbooks.store"}/og-image.png`],
   },
 };
 

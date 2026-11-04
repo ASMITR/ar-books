@@ -119,8 +119,8 @@ function CouponPanel({ cartItems, subtotalPaise, appliedDiscount, onApply, onRem
   };
 
   return (
-    <div className="bg-white border border-[#E9E7E2]">
-      <div className="px-5 py-4 border-b border-[#E9E7E2] flex items-center gap-2">
+    <div className="bg-white border border-[#ECEAE5] rounded-2xl overflow-hidden">
+      <div className="px-5 py-4 border-b border-[#F0EDE8] flex items-center gap-2">
         <Tag size={14} className="text-[#203A2B]" strokeWidth={2} />
         <h2 className="font-heading text-base font-semibold text-[#080808]">Offers &amp; Coupons</h2>
       </div>
@@ -128,7 +128,7 @@ function CouponPanel({ cartItems, subtotalPaise, appliedDiscount, onApply, onRem
       <div className="px-5 py-4">
         {appliedDiscount ? (
           /* ── Applied ──────────────────────────────────────────────── */
-          <div className="flex items-center justify-between gap-3 bg-emerald-50 border border-emerald-200 px-4 py-3">
+          <div className="flex items-center justify-between gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-5 h-5 bg-emerald-500 flex items-center justify-center shrink-0">
                 <Check size={11} className="text-white" strokeWidth={2.5} />
@@ -162,14 +162,14 @@ function CouponPanel({ cartItems, subtotalPaise, appliedDiscount, onApply, onRem
                 onChange={(e) => { setCode(e.target.value.toUpperCase()); setCouponError(null); }}
                 onKeyDown={handleKeyDown}
                 placeholder="Enter coupon code"
-                className="flex-1 border border-[#E9E7E2] px-4 py-2.5 text-sm font-mono uppercase tracking-wider focus:outline-none focus:border-[#789185] bg-white placeholder:text-[#ccc] placeholder:normal-case placeholder:font-sans placeholder:tracking-normal"
+                className="flex-1 border border-[#E8E4DF] px-4 py-2.5 text-sm font-mono uppercase tracking-wider focus:outline-none focus:border-[#203A2B] bg-white rounded-xl placeholder:text-[#CCC] placeholder:normal-case placeholder:font-sans placeholder:tracking-normal"
                 aria-label="Coupon code"
               />
               <button
                 type="button"
                 onClick={handleApply}
                 disabled={!code.trim() || validating}
-                className="bg-[#203A2B] text-[#FFFCF7] font-body text-[11px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 hover:bg-[#315B55] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 shrink-0"
+                className="bg-[#0D1F17] text-white font-body text-[11px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-xl hover:bg-[#203A2B] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 shrink-0"
               >
                 {validating ? <Loader2 size={12} className="animate-spin" /> : null}
                 Apply
@@ -223,7 +223,7 @@ function CouponPanel({ cartItems, subtotalPaise, appliedDiscount, onApply, onRem
                       <button
                         type="button"
                         onClick={() => useOfferCode(offer.couponCode!)}
-                        className="shrink-0 font-mono text-[11px] font-bold bg-[#203A2B] text-white px-2.5 py-1 hover:bg-[#315B55] transition-colors whitespace-nowrap"
+                        className="shrink-0 font-mono text-[11px] font-bold bg-[#0D1F17] text-white px-2.5 py-1 rounded-lg hover:bg-[#203A2B] transition-colors whitespace-nowrap"
                       >
                         {offer.couponCode}
                       </button>
@@ -385,19 +385,17 @@ export default function CheckoutPage() {
   /* ── Empty cart ──────────────────────────────────────────────────────────── */
   if (items.length === 0) {
     return (
-      <div className="bg-[#FAF9F6] min-h-screen flex items-center justify-center px-4">
+      <div className="bg-[#FAFAF7] min-h-screen flex items-center justify-center px-4">
         <div className="text-center flex flex-col items-center gap-5 max-w-xs">
-          <div className="w-16 h-16 bg-[#E9E7E2] flex items-center justify-center">
-            <ShoppingCart size={22} className="text-[#aaa]" strokeWidth={1.5} />
+          <div className="w-16 h-16 bg-[#F0EDE8] rounded-2xl flex items-center justify-center">
+            <ShoppingCart size={22} className="text-[#C8C3BC]" strokeWidth={1.5} />
           </div>
           <div>
             <h2 className="font-heading text-xl font-bold text-[#080808] mb-2">Nothing to checkout</h2>
             <p className="font-body text-sm text-[#777777]">Your cart is empty. Add some books first.</p>
           </div>
-          <Link
-            href="/books"
-            className="inline-flex items-center gap-2 bg-[#203A2B] text-[#FFFCF7] font-body text-[11px] font-bold uppercase tracking-[0.15em] px-7 py-3.5 hover:bg-[#315B55] transition-colors"
-          >
+          <Link href="/books"
+            className="inline-flex items-center gap-2 bg-[#0D1F17] text-white font-body text-[11px] font-bold uppercase tracking-[0.15em] px-7 py-3.5 rounded-xl hover:bg-[#203A2B] transition-colors">
             Browse Books <ArrowRight size={13} />
           </Link>
         </div>
@@ -406,28 +404,25 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="bg-[#FAF9F6] min-h-screen">
+    <div className="bg-[#FAFAF7] min-h-screen">
 
       {/* ── Page Header ───────────────────────────────────────────────────── */}
-      <div className="border-b border-[#E9E7E2] bg-[#FFFCF7]">
+      <div className="border-b border-[#ECEAE5] bg-white">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-9">
-          {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-3">
-            <Link
-              href="/cart"
-              className="inline-flex items-center gap-1.5 border border-[#E6DFD5] text-[#555] font-body text-[11px] font-semibold uppercase tracking-[0.1em] px-3.5 py-2 hover:border-[#789185] hover:text-[#203A2B] transition-colors"
-            >
+            <Link href="/cart"
+              className="inline-flex items-center gap-1.5 border border-[#E8E4DF] text-[#666] font-body text-[11px] font-semibold uppercase tracking-[0.1em] px-3.5 py-2 rounded-xl hover:border-[#203A2B] hover:text-[#203A2B] transition-colors">
               <ArrowLeft size={12} /> Cart
             </Link>
             <span className="text-[#D0CEC9] text-xs">›</span>
-            <span className="text-[11px] font-body text-[#080808] font-semibold uppercase tracking-[0.1em]">Checkout</span>
+            <span className="text-[11px] font-body text-[#111] font-semibold uppercase tracking-[0.1em]">Checkout</span>
           </div>
-          <h1 className="font-heading text-3xl sm:text-4xl font-bold text-[#080808] leading-none">Checkout</h1>
+          <h1 className="font-heading text-[26px] sm:text-[32px] font-bold text-[#111] leading-none">Checkout</h1>
         </div>
       </div>
 
       {/* ── Progress Steps ─────────────────────────────────────────────────── */}
-      <div className="bg-[#FFFCF7] border-b border-[#E9E7E2]">
+      <div className="bg-white border-b border-[#ECEAE5]">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-11 gap-0">
             {[
@@ -436,22 +431,16 @@ export default function CheckoutPage() {
               { label: "Payment", done: false },
             ].map((step, i) => (
               <div key={step.label} className="flex items-center gap-0">
-                {i > 0 && <div className="w-8 h-px bg-[#E9E7E2] mx-1" />}
+                {i > 0 && <div className="w-8 h-px bg-[#ECEAE5] mx-1" />}
                 <div className="flex items-center gap-1.5">
-                  <div
-                    className={`w-4 h-4 flex items-center justify-center text-[9px] font-bold
-                      ${step.done   ? "bg-[#203A2B] text-white"                  : ""}
-                      ${step.active ? "border-2 border-[#203A2B] text-[#203A2B]" : ""}
-                      ${!step.done && !step.active ? "border border-[#D0CEC9] text-[#bbb]" : ""}
-                    `}
-                  >
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold
+                    ${step.done   ? "bg-[#0D1F17] text-white"                    : ""}
+                    ${step.active ? "border-2 border-[#0D1F17] text-[#0D1F17]"  : ""}
+                    ${!step.done && !step.active ? "border border-[#D8D4CF] text-[#CCC]" : ""}`}>
                     {step.done ? <Check size={9} strokeWidth={3} /> : i + 1}
                   </div>
-                  <span
-                    className={`text-[11px] font-body hidden sm:inline
-                      ${step.active ? "text-[#080808] font-semibold" : step.done ? "text-[#203A2B]" : "text-[#bbb]"}
-                    `}
-                  >
+                  <span className={`text-[11px] font-body hidden sm:inline
+                    ${step.active ? "text-[#111] font-semibold" : step.done ? "text-[#203A2B]" : "text-[#CCC]"}`}>
                     {step.label}
                   </span>
                 </div>
@@ -469,13 +458,13 @@ export default function CheckoutPage() {
 
             {/* ── Contact Details ─────────────────────────────────────── */}
             <form id="checkout-form" onSubmit={handleSubmit(onSubmit)}>
-              <div className="bg-white border border-[#E9E7E2]">
-                <div className="px-5 py-4 border-b border-[#E9E7E2] flex items-center gap-2">
+              <div className="bg-white border border-[#ECEAE5] rounded-2xl overflow-hidden">
+                <div className="px-5 py-4 border-b border-[#F0EDE8] flex items-center gap-2">
                   <User size={14} className="text-[#789185]" strokeWidth={2} />
                   <h2 className="font-heading text-base font-semibold text-[#080808]">Contact Details</h2>
                 </div>
 
-                <div className="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-b-2xl">
                   {/* Name */}
                   <div className="sm:col-span-2 sm:grid sm:grid-cols-2 sm:gap-4">
                     <div>
@@ -486,8 +475,8 @@ export default function CheckoutPage() {
                         <input
                           id="checkout-name"
                           {...register("customerName")}
-                          className={`w-full border px-4 py-3 text-sm font-body focus:outline-none transition-colors bg-white
-                            ${errors.customerName ? "border-[#F12F43] bg-[#FFF8F8]" : "border-[#E9E7E2] focus:border-[#789185]"}`}
+                          className={`w-full border px-4 py-3 text-sm font-body focus:outline-none transition-colors bg-white rounded-xl
+                            ${errors.customerName ? "border-[#F12F43] bg-[#FFF8F8]" : "border-[#E8E4DF] focus:border-[#203A2B]"}`}
                           placeholder="Your full name"
                         />
                       </div>
@@ -509,7 +498,7 @@ export default function CheckoutPage() {
                           id="checkout-phone"
                           {...register("phone")}
                           type="tel"
-                          className="w-full border border-[#E9E7E2] pl-9 pr-4 py-3 text-sm font-body focus:outline-none focus:border-[#789185] bg-white transition-colors"
+                          className="w-full border border-[#E8E4DF] pl-9 pr-4 py-3 text-sm font-body focus:outline-none focus:border-[#203A2B] bg-white transition-colors rounded-xl"
                           placeholder="+91 XXXXX XXXXX"
                         />
                       </div>
@@ -527,8 +516,8 @@ export default function CheckoutPage() {
                         id="checkout-email"
                         {...register("customerEmail")}
                         type="email"
-                        className={`w-full border pl-9 pr-4 py-3 text-sm font-body focus:outline-none transition-colors bg-white
-                          ${errors.customerEmail ? "border-[#F12F43] bg-[#FFF8F8]" : "border-[#E9E7E2] focus:border-[#789185]"}`}
+                        className={`w-full border pl-9 pr-4 py-3 text-sm font-body focus:outline-none transition-colors bg-white rounded-xl
+                          ${errors.customerEmail ? "border-[#F12F43] bg-[#FFF8F8]" : "border-[#E8E4DF] focus:border-[#203A2B]"}`}
                         placeholder="your@email.com"
                       />
                     </div>
@@ -561,7 +550,7 @@ export default function CheckoutPage() {
             />
 
             {/* ── Policies ──────────────────────────────────────────────── */}
-            <div className="bg-white border border-[#E9E7E2] px-5 py-4">
+            <div className="bg-white border border-[#ECEAE5] rounded-2xl px-5 py-4">
               <label className="flex items-start gap-3 cursor-pointer group">
                 <div className="relative mt-0.5 shrink-0">
                   <input
@@ -593,9 +582,9 @@ export default function CheckoutPage() {
 
             {/* ── Error Banner ──────────────────────────────────────────── */}
             {error && (
-              <div className="border border-[#F12F43] bg-[#FFF5F5] px-4 py-3 flex items-start gap-2.5">
-                <X size={14} className="text-[#F12F43] mt-0.5 shrink-0" />
-                <p className="text-sm font-body text-[#F12F43]">{error}</p>
+              <div className="border border-red-200 bg-red-50 rounded-2xl px-4 py-3 flex items-start gap-2.5">
+                <X size={14} className="text-red-500 mt-0.5 shrink-0" />
+                <p className="text-sm font-body text-red-600">{error}</p>
               </div>
             )}
 
@@ -604,7 +593,7 @@ export default function CheckoutPage() {
               type="submit"
               form="checkout-form"
               disabled={loading}
-              className="w-full bg-[#FFC928] text-[#080808] font-body text-[11px] font-bold uppercase tracking-[0.15em] px-8 py-4 hover:bg-[#F2B916] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5"
+              className="w-full bg-[#FFC928] text-[#0D1F17] font-body text-[11.5px] font-bold uppercase tracking-[0.15em] px-8 py-4 rounded-2xl hover:bg-[#FFD54F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5"
             >
               {loading ? (
                 <>
@@ -629,8 +618,8 @@ export default function CheckoutPage() {
           <div className="flex flex-col gap-4 lg:sticky lg:top-24">
 
             {/* Summary Card */}
-            <div className="bg-white border border-[#E9E7E2]">
-              <div className="px-5 py-4 border-b border-[#E9E7E2] flex items-center justify-between">
+            <div className="bg-white border border-[#ECEAE5] rounded-2xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-[#F0EDE8] flex items-center justify-between">
                 <h2 className="font-heading text-base font-semibold text-[#080808]">Order Summary</h2>
                 <span className="text-[11px] font-body text-[#aaa]">
                   {items.length} {items.length === 1 ? "item" : "items"}
@@ -705,7 +694,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Trust signals */}
-            <div className="border border-[#E9E7E2] bg-[#FFFCF7] divide-y divide-[#F0EEE9]">
+            <div className="border border-[#ECEAE5] bg-white rounded-2xl overflow-hidden divide-y divide-[#F0EDE8]">
               <div className="flex items-start gap-3 px-4 py-3">
                 <Zap size={14} className="text-[#C6A66B] mt-0.5 shrink-0" strokeWidth={2} />
                 <div>

@@ -61,6 +61,20 @@ export interface AppUser {
   photoURL?: string | null;
   createdAt: string;
   updatedAt: string;
+  referralCode?: string;
+  referredBy?: string | null;  // referral code of the person who referred them
+  referralCount?: number;      // how many people signed up using this user's code
+}
+
+// ─── Referral Reward ─────────────────────────────────────────────────────────
+export interface ReferralReward {
+  id: string;
+  referrerId: string;       // uid of the person who referred
+  referredUserId: string;   // uid of the new user
+  referredEmail: string;
+  couponId: string;         // coupon created as reward
+  couponCode: string;
+  createdAt: string;
 }
 
 // ─── Cart ────────────────────────────────────────────────────────────────────
