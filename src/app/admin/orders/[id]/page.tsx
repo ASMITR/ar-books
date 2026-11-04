@@ -48,7 +48,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                 { label: "Email", value: order.customerEmail },
                 { label: "Payment Status", value: order.paymentStatus, badge: true },
                 { label: "Fulfillment", value: order.fulfillmentStatus, badge: true },
-                { label: "Total", value: formatINR(order.totalPaise) },
+                { label: "Total", value: formatINR(order.totalRupees) },
                 { label: "Date", value: formatDate(order.createdAt) },
               ].map(({ label, value, badge }) => (
                 <div key={label} className="bg-white px-5 py-4">
@@ -76,7 +76,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                     <p className="font-heading text-sm font-semibold text-[#0a0a0a] truncate">{item.title}</p>
                     <p className="text-xs font-body text-[#aaa] mt-0.5">ID: {item.bookId}</p>
                   </div>
-                  <p className="font-semibold text-[#0a0a0a] shrink-0 text-sm">{formatINR(item.pricePaise)}</p>
+                  <p className="font-semibold text-[#0a0a0a] shrink-0 text-sm">{formatINR(item.priceRupees)}</p>
                 </div>
               ))}
             </div>

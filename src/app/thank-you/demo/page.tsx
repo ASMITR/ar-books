@@ -25,8 +25,8 @@ const MOCK = {
   taxPaise:      0,
   couponCode:    "WELCOME20",
   items: [
-    { bookId: "b1", title: "The Art of Deep Work",                pricePaise: 79900, coverImageUrl: undefined },
-    { bookId: "b2", title: "Systems Thinking for Entrepreneurs",  pricePaise: 69900, coverImageUrl: undefined },
+    { bookId: "b1", title: "The Art of Deep Work",                priceRupees: 79900, coverImageUrl: undefined },
+    { bookId: "b2", title: "Systems Thinking for Entrepreneurs",  priceRupees: 69900, coverImageUrl: undefined },
   ],
 };
 
@@ -171,7 +171,7 @@ export default function ThankYouDemoPage() {
                 key={item.bookId}
                 title={item.title}
                 coverImageUrl={item.coverImageUrl}
-                pricePaise={item.pricePaise}
+                priceRupees={item.priceRupees}
                 downloadUrl="#"
                 index={i}
               />

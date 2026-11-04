@@ -19,7 +19,7 @@ export function AddToCartButton({ book }: { book: Book }) {
 
   const payload = {
     bookId: book.id, title: book.title, author: book.author,
-    coverImageUrl: book.coverImageUrl, pricePaise: book.pricePaise, slug: book.slug,
+    coverImageUrl: book.coverImageUrl, priceRupees: book.priceRupees, slug: book.slug,
   };
 
   const handleBuyNow     = () => { if (!requireAuth()) return; if (!inCart) addItem(payload); router.push("/checkout"); };
@@ -49,7 +49,7 @@ export function AddToCartButton({ book }: { book: Book }) {
         <div className="w-7 h-7 rounded-full bg-[#FFC928]/15 flex items-center justify-center shrink-0">
           <Zap size={14} className="text-[#FFC928]" strokeWidth={2.5} fill="currentColor" />
         </div>
-        <span>Buy Now — {formatINR(book.pricePaise)}</span>
+        <span>Buy Now — {formatINR(book.priceRupees)}</span>
       </button>
 
       {/* ── CART STATE ───────────────────────────────────────────────────── */}
@@ -66,7 +66,7 @@ export function AddToCartButton({ book }: { book: Book }) {
             </span>
             {quantity > 1 && (
               <span className="font-body text-[12px] font-bold text-emerald-700 tabular-nums">
-                {formatINR(book.pricePaise * quantity)}
+                {formatINR(book.priceRupees * quantity)}
               </span>
             )}
           </div>

@@ -182,8 +182,8 @@ function EligibilityBadge({ offer, dark }: { offer: Offer; dark: boolean }) {
       : "border-[#E6DFD5] bg-[#F5EFE6] text-[#777970]"}`;
   if (offer.customerEligibility === "new_customers")
     return <span className={cls}><BookOpen size={8} strokeWidth={2} /> New customers</span>;
-  if (offer.minCartValuePaise)
-    return <span className={cls}><ShoppingCart size={8} strokeWidth={2} /> Min {formatINR(offer.minCartValuePaise)}</span>;
+  if (offer.minCartValueRupees)
+    return <span className={cls}><ShoppingCart size={8} strokeWidth={2} /> Min {formatINR(offer.minCartValueRupees)}</span>;
   if (offer.applicableBookIds?.length)
     return <span className={cls}><Layers size={8} strokeWidth={2} /> Selected books</span>;
   return <span className={cls}><Sparkles size={8} strokeWidth={2} /> All books</span>;
@@ -486,11 +486,11 @@ function HeroBanner({ offer }: { offer: Offer }) {
             </div>
           )}
 
-          {offer.minCartValuePaise && (
+          {offer.minCartValueRupees && (
             <div className="flex items-center gap-2 border-t border-[#2E5040] pt-4">
               <ShoppingCart size={11} className="text-[#A8B5A0] shrink-0" strokeWidth={1.8} />
               <span className="font-body text-[11px] text-[#A8B5A0]">
-                Min. cart: <strong className="text-[#FFFCF7]">{formatINR(offer.minCartValuePaise)}</strong>
+                Min. cart: <strong className="text-[#FFFCF7]">{formatINR(offer.minCartValueRupees)}</strong>
               </span>
             </div>
           )}

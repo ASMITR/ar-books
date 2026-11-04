@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdmin } from "@/lib/firebase/auth-server";
 import { z } from "zod";
@@ -19,11 +19,11 @@ const offerSchema = z.object({
 
   discountType: z.enum(["percent", "flat"]),
   discountValue: z.number().positive(),
-  maxDiscountPaise: z.number().int().positive().optional(),
+  maxDiscountRupees: z.number().positive().optional(),
   buyX: z.number().int().positive().optional(),
   getY: z.number().int().positive().optional(),
 
-  minCartValuePaise: z.number().int().nonnegative().optional(),
+  minCartValueRupees: z.number().nonnegative().optional(),
   minItemCount: z.number().int().positive().optional(),
   applicableBookIds: z.array(z.string()).optional(),
   applicableCategoryIds: z.array(z.string()).optional(),
@@ -78,15 +78,14 @@ export async function POST(req: NextRequest) {
 
     const now = new Date().toISOString();
     const ref = adminDb.collection("offers").doc();
-    await ref.set({
-      ...parsed.data,
-      usageCount: 0,
-      createdAt: now,
-      updatedAt: now,
-      createdBy: user.uid,
-    });
+    const data = Object.fromEntries(
+      Object.entries({ ...parsed.data, usageCount: 0, createdAt: now, updatedAt: now, createdBy: user.uid })
+        .filter(([, v]) => v !== undefined)
+    );
+    await ref.set(data);
 
-    revalidateTag("offers", { expire: 0 });
+    revalidateTag("offers", "route");
+    revalidatePath("/");
     return NextResponse.json({ success: true, data: { id: ref.id } }, { status: 201 });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {

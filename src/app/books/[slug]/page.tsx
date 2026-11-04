@@ -43,10 +43,10 @@ export default async function BookPage({ params }: Props) {
   if (!book) notFound();
 
   const bookCategories = allCategories.filter((c) => book.categoryIds.includes(c.id));
-  const discount = book.originalPricePaise
-    ? Math.round((1 - book.pricePaise / book.originalPricePaise) * 100)
+  const discount = book.originalPriceRupees
+    ? Math.round((1 - book.priceRupees / book.originalPriceRupees) * 100)
     : null;
-  const savings = book.originalPricePaise ? book.originalPricePaise - book.pricePaise : 0;
+  const savings = book.originalPriceRupees ? book.originalPriceRupees - book.priceRupees : 0;
   const relatedBooks = featuredBooks.filter((b) => b.id !== book.id).slice(0, 4);
   const readTime = book.pageCount ? `${Math.round(book.pageCount * 2.5)} min` : null;
 
@@ -120,11 +120,11 @@ export default async function BookPage({ params }: Props) {
                 <div className="px-5 pt-5 pb-4">
                   <div className="flex items-end gap-3 flex-wrap">
                     <span className="font-heading text-[38px] font-bold text-[#111] leading-none">
-                      {formatINR(book.pricePaise)}
+                      {formatINR(book.priceRupees)}
                     </span>
-                    {book.originalPricePaise && (
+                    {book.originalPriceRupees && (
                       <span className="font-body text-[16px] text-[#C4BFB9] line-through leading-none mb-1">
-                        {formatINR(book.originalPricePaise)}
+                        {formatINR(book.originalPriceRupees)}
                       </span>
                     )}
                   </div>

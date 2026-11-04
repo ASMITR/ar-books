@@ -8,7 +8,7 @@ import { formatINR } from "@/lib/currency";
 interface DownloadCardProps {
   title: string;
   coverImageUrl?: string;
-  pricePaise: number;
+  priceRupees: number;
   downloadUrl: string;
   /** Stagger entrance animation by index */
   index?: number;
@@ -17,7 +17,7 @@ interface DownloadCardProps {
 export function DownloadCard({
   title,
   coverImageUrl,
-  pricePaise,
+  priceRupees,
   downloadUrl,
   index = 0,
 }: DownloadCardProps) {
@@ -84,7 +84,7 @@ export function DownloadCard({
                 PDF
               </span>
               <span className="text-[10px] font-body font-bold text-[#203A2B] tabular-nums">
-                {formatINR(pricePaise)}
+                {formatINR(priceRupees)}
               </span>
             </div>
           </div>

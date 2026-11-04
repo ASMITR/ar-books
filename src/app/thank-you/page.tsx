@@ -192,15 +192,15 @@ export default async function ThankYouPage({ searchParams }: Props) {
             <div>
               <p className="text-[9px] font-body font-bold uppercase tracking-[0.18em] text-[#A8B5A0] mb-1.5">Total Paid</p>
               <p className="font-heading text-[20px] font-bold text-[#203A2B] tabular-nums leading-none">
-                {formatINR(order.totalPaise)}
+                {formatINR(order.totalRupees)}
               </p>
             </div>
           </div>
 
           {/* Discount / tax row */}
-          {(order.discountPaise > 0 || order.taxPaise > 0) && (
+          {(order.discountRupees > 0 || order.taxRupees > 0) && (
             <div className="px-6 pb-5 border-t border-[#EDE9E0] pt-4 flex flex-col gap-2.5">
-              {order.discountPaise > 0 && (
+              {order.discountRupees > 0 && (
                 <div className="flex items-center justify-between text-[12px] font-body">
                   <div className="flex items-center gap-2">
                     <Tag size={11} className="text-[#16a34a]" strokeWidth={2} />
@@ -209,13 +209,13 @@ export default async function ThankYouPage({ searchParams }: Props) {
                     </span>
                     <span className="text-emerald-700">discount applied</span>
                   </div>
-                  <span className="text-emerald-700 font-semibold tabular-nums">−{formatINR(order.discountPaise)}</span>
+                  <span className="text-emerald-700 font-semibold tabular-nums">−{formatINR(order.discountRupees)}</span>
                 </div>
               )}
-              {order.taxPaise > 0 && (
+              {order.taxRupees > 0 && (
                 <div className="flex items-center justify-between text-[12px] font-body text-[#777970]">
                   <span>Tax included</span>
-                  <span className="tabular-nums">{formatINR(order.taxPaise)}</span>
+                  <span className="tabular-nums">{formatINR(order.taxRupees)}</span>
                 </div>
               )}
             </div>
@@ -244,7 +244,7 @@ export default async function ThankYouPage({ searchParams }: Props) {
                 key={item.bookId}
                 title={item.title}
                 coverImageUrl={item.coverImageUrl}
-                pricePaise={item.pricePaise}
+                priceRupees={item.priceRupees}
                 downloadUrl={`/api/downloads/secure?bookId=${item.bookId}`}
                 index={i}
               />

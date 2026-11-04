@@ -19,7 +19,7 @@ export async function sendOrderConfirmation(order: Order): Promise<void> {
       (i) => `
         <tr>
           <td style="padding: 12px 0; border-bottom: 1px solid #E9E7E2; color: #080808; font-size: 14px;">${i.title}</td>
-          <td style="padding: 12px 0; border-bottom: 1px solid #E9E7E2; color: #080808; font-size: 14px; text-align: right; font-weight: 600;">${formatINR(i.pricePaise)}</td>
+          <td style="padding: 12px 0; border-bottom: 1px solid #E9E7E2; color: #080808; font-size: 14px; text-align: right; font-weight: 600;">${formatINR(i.priceRupees)}</td>
         </tr>`
     )
     .join("");
@@ -28,6 +28,7 @@ export async function sendOrderConfirmation(order: Order): Promise<void> {
     from: FROM,
     to: order.customerEmail,
     subject: `Order Confirmed — ${order.orderNumber}`,
+    text: `Hi ${order.customerName}, your order ${order.orderNumber} is confirmed. Total: ${formatINR(order.totalRupees)}. Download your books at ${process.env.NEXT_PUBLIC_BASE_URL ?? "https://arbooks.in"}/account/library`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #FAF9F6;">
 
@@ -54,7 +55,7 @@ export async function sendOrderConfirmation(order: Order): Promise<void> {
               ${itemsList}
               <tr>
                 <td style="padding: 14px 0 0; font-size: 14px; font-weight: 700; color: #080808;">Total</td>
-                <td style="padding: 14px 0 0; font-size: 16px; font-weight: 700; color: #080808; text-align: right;">${formatINR(order.totalPaise)}</td>
+                <td style="padding: 14px 0 0; font-size: 16px; font-weight: 700; color: #080808; text-align: right;">${formatINR(order.totalRupees)}</td>
               </tr>
             </table>
           </div>
@@ -96,6 +97,7 @@ export async function sendEmailVerificationLink(
     from: FROM,
     to: email,
     subject: "Verify your AR Books email address",
+    text: `Hi ${name}, verify your AR Books email by visiting: ${verificationLink} — This link expires in 24 hours.`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #FAF9F6;">
 
@@ -160,7 +162,8 @@ export async function sendWelcomeEmail(
   await getResend().emails.send({
     from: FROM,
     to: email,
-    subject: "Welcome to AR Books 🎉",
+    subject: "Welcome to AR Books — Your account is ready",
+    text: `Welcome to AR Books, ${name}! Your account is ready. Browse books at ${process.env.NEXT_PUBLIC_BASE_URL ?? "https://arbooks.in"}/books`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #FAF9F6;">
 
@@ -284,6 +287,7 @@ export async function sendPaymentFailureEmail(
     from: FROM,
     to: email,
     subject: `Payment Failed — Order ${orderNumber}`,
+    text: `Hi ${name}, your payment for order ${orderNumber} could not be processed. Please try again at ${process.env.NEXT_PUBLIC_BASE_URL ?? "https://arbooks.in"}/cart`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #FAF9F6;">
 

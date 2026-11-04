@@ -20,7 +20,7 @@ const schema = z.object({
   code: z.string().min(1),
   bookIds: z.array(z.string()).min(1),
   categoryIds: z.array(z.string()).default([]),
-  subtotalPaise: z.number().int().positive(),
+  subtotalRupees: z.number().positive(),
 });
 
 export async function POST(req: NextRequest) {
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 });
     }
 
-    const { code, bookIds, categoryIds, subtotalPaise } = parsed.data;
+    const { code, bookIds, categoryIds, subtotalRupees } = parsed.data;
     const upperCode = code.toUpperCase().trim().replace(/[^A-Z0-9\-]/g, "");
     if (!upperCode) {
       return NextResponse.json({ success: false, error: "Invalid coupon code" }, { status: 422 });
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     if (!couponSnap.empty) {
       const coupon = { id: couponSnap.docs[0].id, ...couponSnap.docs[0].data() } as Coupon;
-      const result = validateCoupon(coupon, subtotalPaise);
+      const result = validateCoupon(coupon, subtotalRupees);
       if (!result.valid) {
         return NextResponse.json({ success: false, error: result.error }, { status: 422 });
       }
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
           type: "coupon",
           couponId: coupon.id,
           code: upperCode,
-          discountPaise: result.discountPaise,
+          discountRupees: result.discountRupees,
           title: `Coupon: ${upperCode}`,
           discountType: coupon.discountType,
           discountValue: coupon.discountValue,
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
       }
 
       const result = validateOffer(offer, {
-        subtotalPaise,
+        subtotalRupees,
         bookIds: safeBookIds,
         categoryIds: safeCategoryIds,
         isFirstOrder,
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
           type: "offer",
           offerId: offer.id,
           code: upperCode,
-          discountPaise: result.discountPaise,
+          discountRupees: result.discountRupees,
           title: offer.title,
           discountType: offer.discountType,
           discountValue: offer.discountValue,

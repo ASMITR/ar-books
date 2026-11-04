@@ -176,9 +176,9 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                     <p className="font-body text-[11px] text-[#A8B5A0] mt-0.5">{book.author}</p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="font-body text-[13px] font-bold text-[#203A2B]">{formatINR(book.pricePaise)}</p>
-                    {book.originalPricePaise && (
-                      <p className="font-body text-[10px] text-[#A8B5A0] line-through">{formatINR(book.originalPricePaise)}</p>
+                    <p className="font-body text-[13px] font-bold text-[#203A2B]">{formatINR(book.priceRupees)}</p>
+                    {book.originalPriceRupees && (
+                      <p className="font-body text-[10px] text-[#A8B5A0] line-through">{formatINR(book.originalPriceRupees)}</p>
                     )}
                   </div>
                   <ArrowRight size={13} className="shrink-0 text-[#A8B5A0] group-hover:text-[#203A2B] transition-colors" />

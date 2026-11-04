@@ -102,7 +102,7 @@ export default function AdminBooksPage() {
                       <p className="font-semibold text-[#080808] text-[14px]">{book.title}</p>
                       {book.subtitle && <p className="text-[12.5px] text-[#aaa] mt-0.5">{book.subtitle}</p>}
                     </td>
-                    <td className="px-4 py-4 font-semibold text-[#080808] text-[14px]">{formatINR(book.pricePaise)}</td>
+                    <td className="px-4 py-4 font-semibold text-[#080808] text-[14px]">{formatINR(book.priceRupees)}</td>
                     <td className="px-4 py-4">
                       <span className={`inline-flex items-center px-3 py-1 text-[11px] rounded-full font-semibold ring-1 ${
                         book.published

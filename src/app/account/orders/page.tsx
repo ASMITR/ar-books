@@ -100,7 +100,7 @@ export default async function OrdersPage({ searchParams }: Props) {
                     <p className="text-[11px] font-body text-[#B8B3AB] mt-1">{formatDate(order.createdAt)}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="font-heading text-[16px] sm:text-[18px] font-bold text-[#203A2B] tabular-nums">{formatINR(order.totalPaise)}</span>
+                    <span className="font-heading text-[16px] sm:text-[18px] font-bold text-[#203A2B] tabular-nums">{formatINR(order.totalRupees)}</span>
                     <ArrowRight size={13} className="text-[#D0CCC6] group-hover:text-[#203A2B] transition-colors" />
                   </div>
                 </div>

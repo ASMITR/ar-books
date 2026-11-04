@@ -30,14 +30,14 @@ declare global {
 
 // ─── Coupon / Offer Panel ─────────────────────────────────────────────────────
 interface CouponPanelProps {
-  cartItems: { bookId: string; pricePaise: number }[];
-  subtotalPaise: number;
+  cartItems: { bookId: string; priceRupees: number }[];
+  subtotalRupees: number;
   appliedDiscount: AppliedDiscount | null;
   onApply: (discount: AppliedDiscount, code: string) => void;
   onRemove: () => void;
 }
 
-function CouponPanel({ cartItems, subtotalPaise, appliedDiscount, onApply, onRemove }: CouponPanelProps) {
+function CouponPanel({ cartItems, subtotalRupees, appliedDiscount, onApply, onRemove }: CouponPanelProps) {
   const [code, setCode]               = useState("");
   const [validating, setValidating]   = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
@@ -78,7 +78,7 @@ function CouponPanel({ cartItems, subtotalPaise, appliedDiscount, onApply, onRem
           code: trimmed,
           bookIds: cartItems.map((i) => i.bookId),
           categoryIds: [],
-          subtotalPaise,
+          subtotalRupees,
         }),
       });
       const json = await res.json();
@@ -94,7 +94,7 @@ function CouponPanel({ cartItems, subtotalPaise, appliedDiscount, onApply, onRem
           couponCode:    json.data.code,
           discountType:  json.data.discountType,
           discountValue: json.data.discountValue,
-          discountPaise: json.data.discountPaise,
+          discountRupees: json.data.discountRupees,
           title:         json.data.title,
           offerType:     json.data.type === "coupon" ? "coupon" : json.data.offerType ?? "percent",
         },
@@ -140,7 +140,7 @@ function CouponPanel({ cartItems, subtotalPaise, appliedDiscount, onApply, onRem
                   ) : appliedDiscount.title} applied
                 </p>
                 <p className="text-xs font-body text-emerald-600 mt-0.5">
-                  You save {formatINR(appliedDiscount.discountPaise)}
+                  You save {formatINR(appliedDiscount.discountRupees)}
                 </p>
               </div>
             </div>
@@ -213,9 +213,9 @@ function CouponPanel({ cartItems, subtotalPaise, appliedDiscount, onApply, onRem
                     <div className="min-w-0 flex-1">
                       <p className="text-[12px] font-body font-semibold text-[#242824] truncate">{offer.title}</p>
                       <p className="text-[11px] font-body text-[#777970] mt-0.5 line-clamp-2">{offer.description}</p>
-                      {offer.minCartValuePaise && (
+                      {offer.minCartValueRupees && (
                         <p className="text-[10px] text-[#A8B5A0] mt-0.5">
-                          Min. order: {formatINR(offer.minCartValuePaise)}
+                          Min. order: {formatINR(offer.minCartValueRupees)}
                         </p>
                       )}
                     </div>
@@ -241,7 +241,7 @@ function CouponPanel({ cartItems, subtotalPaise, appliedDiscount, onApply, onRem
 
 // ─── Checkout Page ────────────────────────────────────────────────────────────
 export default function CheckoutPage() {
-  const { items, totalPaise, clearCart } = useCart();
+  const { items, totalRupees, clearCart } = useCart();
   const { user }  = useAuth();
   const router    = useRouter();
   const [loading, setLoading] = useState(false);
@@ -267,11 +267,11 @@ export default function CheckoutPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items.length]);
 
-  const discountPaise     = appliedDiscount?.discountPaise ?? 0;
-  const postDiscountPaise = Math.max(totalPaise - discountPaise, 0);
+  const discountRupees     = appliedDiscount?.discountRupees ?? 0;
+  const postDiscountRupees = Math.max(totalRupees - discountRupees, 0);
   // Estimated tax shown in the UI summary (server is authoritative at payment time)
-  const estimatedTaxPaise = taxPercent > 0 ? Math.round(postDiscountPaise * taxPercent / 100) : 0;
-  const finalTotalPaise   = Math.max(postDiscountPaise + estimatedTaxPaise, 100);
+  const estimatedTaxRupees = taxPercent > 0 ? Math.round(postDiscountRupees * taxPercent / 100 * 100) / 100 : 0;
+  const finalTotalRupees   = Math.max(postDiscountRupees + estimatedTaxRupees, 1);
 
   const {
     register,
@@ -537,7 +537,7 @@ export default function CheckoutPage() {
             {/* ── Coupon Panel ──────────────────────────────────────────── */}
             <CouponPanel
               cartItems={items}
-              subtotalPaise={totalPaise}
+              subtotalRupees={totalRupees}
               appliedDiscount={appliedDiscount}
               onApply={(discount, code) => {
                 setAppliedDiscount(discount);
@@ -602,7 +602,7 @@ export default function CheckoutPage() {
                 </>
               ) : (
                 <>
-                  Pay {formatINR(finalTotalPaise)}
+                  Pay {formatINR(finalTotalRupees)}
                   <ArrowRight size={13} />
                 </>
               )}
@@ -647,7 +647,7 @@ export default function CheckoutPage() {
                         )}
                       </p>
                       <p className="text-[13px] font-body font-semibold text-[#080808] tabular-nums mt-1">
-                        {formatINR(item.pricePaise * item.quantity)}
+                        {formatINR(item.priceRupees * item.quantity)}
                       </p>
                     </div>
                   </div>
@@ -658,10 +658,10 @@ export default function CheckoutPage() {
               <div className="px-5 py-4 flex flex-col gap-2">
                 <div className="flex justify-between text-sm font-body text-[#777777]">
                   <span>Subtotal</span>
-                  <span className="tabular-nums">{formatINR(totalPaise)}</span>
+                  <span className="tabular-nums">{formatINR(totalRupees)}</span>
                 </div>
 
-                {discountPaise > 0 && appliedDiscount && (
+                {discountRupees > 0 && appliedDiscount && (
                   <div className="flex justify-between text-sm font-body text-emerald-700">
                     <span className="flex items-center gap-1.5">
                       <Tag size={11} />
@@ -669,25 +669,25 @@ export default function CheckoutPage() {
                         ? <span className="font-mono text-xs tracking-wide">{appliedDiscount.couponCode}</span>
                         : appliedDiscount.title}
                     </span>
-                    <span className="tabular-nums">−{formatINR(discountPaise)}</span>
+                    <span className="tabular-nums">−{formatINR(discountRupees)}</span>
                   </div>
                 )}
 
-                {estimatedTaxPaise > 0 && (
+                {estimatedTaxRupees > 0 && (
                   <div className="flex justify-between text-sm font-body text-[#777777]">
                     <span>Tax ({taxPercent}%)</span>
-                    <span className="tabular-nums">+{formatINR(estimatedTaxPaise)}</span>
+                    <span className="tabular-nums">+{formatINR(estimatedTaxRupees)}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between font-body font-bold text-[#080808] text-base border-t border-[#E9E7E2] pt-3 mt-1">
                   <span>Total</span>
-                  <span className="tabular-nums">{formatINR(finalTotalPaise)}</span>
+                  <span className="tabular-nums">{formatINR(finalTotalRupees)}</span>
                 </div>
 
-                {estimatedTaxPaise > 0 && (
+                {estimatedTaxRupees > 0 && (
                   <p className="text-[10px] font-body text-[#A8B5A0] -mt-1">
-                    Incl. {formatINR(estimatedTaxPaise)} tax ({taxPercent}%)
+                    Incl. {formatINR(estimatedTaxRupees)} tax ({taxPercent}%)
                   </p>
                 )}
               </div>

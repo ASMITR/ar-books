@@ -78,7 +78,7 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
                     <td className="px-5 py-3.5 font-semibold text-[#080808] text-xs">{order.orderNumber}</td>
                     <td className="px-4 py-3.5 text-[#666] max-w-[180px] truncate text-xs">{order.customerEmail}</td>
                     <td className="px-4 py-3.5 text-[#aaa] whitespace-nowrap text-xs">{formatDate(order.createdAt)}</td>
-                    <td className="px-4 py-3.5 font-semibold text-[#080808] text-xs">{formatINR(order.totalPaise)}</td>
+                    <td className="px-4 py-3.5 font-semibold text-[#080808] text-xs">{formatINR(order.totalRupees)}</td>
                     <td className="px-4 py-3.5">
                       <span className={`inline-flex items-center px-2.5 py-1 text-[11px] rounded-full font-semibold ${statusStyles[order.paymentStatus] ?? "bg-gray-100 text-gray-600"}`}>
                         {order.paymentStatus}

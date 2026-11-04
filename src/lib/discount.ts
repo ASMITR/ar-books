@@ -1,6 +1,6 @@
 /**
  * Server-side discount calculation utilities.
- * All amounts are in paise (integer). Never mutate order totals client-side.
+ * All amounts are in rupees. Never mutate order totals client-side.
  */
 
 import type { Offer, Coupon, AppliedDiscount } from "@/types";
@@ -8,12 +8,12 @@ import type { Offer, Coupon, AppliedDiscount } from "@/types";
 // ─── Coupon validation ────────────────────────────────────────────────────────
 
 export type CouponValidationResult =
-  | { valid: true; discountPaise: number; coupon: Coupon }
+  | { valid: true; discountRupees: number; coupon: Coupon }
   | { valid: false; error: string };
 
 export function validateCoupon(
   coupon: Coupon,
-  subtotalPaise: number
+  subtotalRupees: number
 ): CouponValidationResult {
   if (!coupon.enabled) {
     return { valid: false, error: "This coupon is no longer active." };
@@ -27,31 +27,30 @@ export function validateCoupon(
     return { valid: false, error: "This coupon has reached its usage limit." };
   }
 
-  const discountPaise = calcCouponDiscount(coupon, subtotalPaise);
-  return { valid: true, discountPaise, coupon };
+  const discountRupees = calcCouponDiscount(coupon, subtotalRupees);
+  return { valid: true, discountRupees, coupon };
 }
 
-export function calcCouponDiscount(coupon: Coupon, subtotalPaise: number): number {
+export function calcCouponDiscount(coupon: Coupon, subtotalRupees: number): number {
   let discount: number;
   if (coupon.discountType === "percent") {
-    discount = Math.floor((subtotalPaise * coupon.discountValue) / 100);
+    discount = Math.floor((subtotalRupees * coupon.discountValue) / 100);
   } else {
-    // discountValue is stored as rupees in the existing schema
-    discount = coupon.discountValue * 100;
+    discount = coupon.discountValue;
   }
-  return Math.min(discount, subtotalPaise);
+  return Math.min(discount, subtotalRupees);
 }
 
 // ─── Offer validation ─────────────────────────────────────────────────────────
 
 export type OfferValidationResult =
-  | { valid: true; discountPaise: number; offer: Offer }
+  | { valid: true; discountRupees: number; offer: Offer }
   | { valid: false; error: string };
 
 export function validateOffer(
   offer: Offer,
   opts: {
-    subtotalPaise: number;
+    subtotalRupees: number;
     bookIds: string[];
     categoryIds: string[];
     isFirstOrder: boolean;
@@ -62,12 +61,10 @@ export function validateOffer(
 ): OfferValidationResult {
   const now = new Date();
 
-  // Status check
   if (offer.status !== "active") {
     return { valid: false, error: "This offer is not currently active." };
   }
 
-  // Date range
   if (new Date(offer.startAt) > now) {
     return { valid: false, error: "This offer has not started yet." };
   }
@@ -75,76 +72,51 @@ export function validateOffer(
     return { valid: false, error: "This offer has expired." };
   }
 
-  // Coupon code match (if offer requires one)
   if (offer.couponCode) {
     if (!opts.couponCode || opts.couponCode.toUpperCase() !== offer.couponCode.toUpperCase()) {
       return { valid: false, error: "Coupon code does not match this offer." };
     }
   }
 
-  // Global usage limit
   if (offer.usageLimitTotal != null && offer.usageCount >= offer.usageLimitTotal) {
     return { valid: false, error: "This offer has reached its usage limit." };
   }
 
-  // Per-customer usage limit
   if (offer.usageLimitPerCustomer != null && opts.perCustomerUsage >= offer.usageLimitPerCustomer) {
     return { valid: false, error: "You have already used this offer the maximum number of times." };
   }
 
-  // Customer eligibility
   if (offer.customerEligibility === "new_customers" && !opts.isFirstOrder) {
-    return {
-      valid: false,
-      error: "This offer is only available to first-time customers.",
-    };
+    return { valid: false, error: "This offer is only available to first-time customers." };
   }
   if (offer.customerEligibility === "existing_customers" && opts.isFirstOrder) {
+    return { valid: false, error: "This offer is only available to existing customers." };
+  }
+
+  if (offer.minCartValueRupees != null && opts.subtotalRupees < offer.minCartValueRupees) {
     return {
       valid: false,
-      error: "This offer is only available to existing customers.",
+      error: `Minimum order value of ₹${offer.minCartValueRupees} required.`,
     };
   }
 
-  // Minimum cart value
-  if (offer.minCartValuePaise != null && opts.subtotalPaise < offer.minCartValuePaise) {
-    return {
-      valid: false,
-      error: `Minimum order value of ₹${Math.ceil(offer.minCartValuePaise / 100)} required.`,
-    };
-  }
-
-  // Applicable books / categories
-  const hasBookRestriction =
-    offer.applicableBookIds && offer.applicableBookIds.length > 0;
-  const hasCatRestriction =
-    offer.applicableCategoryIds && offer.applicableCategoryIds.length > 0;
+  const hasBookRestriction = offer.applicableBookIds && offer.applicableBookIds.length > 0;
+  const hasCatRestriction  = offer.applicableCategoryIds && offer.applicableCategoryIds.length > 0;
 
   if (hasBookRestriction) {
-    const eligible = opts.bookIds.some((id) =>
-      offer.applicableBookIds!.includes(id)
-    );
+    const eligible = opts.bookIds.some((id) => offer.applicableBookIds!.includes(id));
     if (!eligible) {
-      return {
-        valid: false,
-        error: "This offer does not apply to the selected books.",
-      };
+      return { valid: false, error: "This offer does not apply to the selected books." };
     }
   }
 
   if (hasCatRestriction && !hasBookRestriction) {
-    const eligible = opts.categoryIds.some((cid) =>
-      offer.applicableCategoryIds!.includes(cid)
-    );
+    const eligible = opts.categoryIds.some((cid) => offer.applicableCategoryIds!.includes(cid));
     if (!eligible) {
-      return {
-        valid: false,
-        error: "This offer does not apply to books in your selected categories.",
-      };
+      return { valid: false, error: "This offer does not apply to books in your selected categories." };
     }
   }
 
-  // Minimum item count
   if (offer.minItemCount != null && opts.bookIds.length < offer.minItemCount) {
     return {
       valid: false,
@@ -152,46 +124,45 @@ export function validateOffer(
     };
   }
 
-  const discountPaise = calcOfferDiscount(offer, opts.subtotalPaise);
-  return { valid: true, discountPaise, offer };
+  const discountRupees = calcOfferDiscount(offer, opts.subtotalRupees);
+  return { valid: true, discountRupees, offer };
 }
 
-export function calcOfferDiscount(offer: Offer, subtotalPaise: number): number {
+export function calcOfferDiscount(offer: Offer, subtotalRupees: number): number {
   let discount: number;
 
   if (offer.discountType === "percent") {
-    discount = Math.floor((subtotalPaise * offer.discountValue) / 100);
-    if (offer.maxDiscountPaise != null) {
-      discount = Math.min(discount, offer.maxDiscountPaise);
+    discount = Math.floor((subtotalRupees * offer.discountValue) / 100);
+    if (offer.maxDiscountRupees != null) {
+      discount = Math.min(discount, offer.maxDiscountRupees);
     }
   } else {
-    // flat: discountValue is in rupees
-    discount = offer.discountValue * 100;
+    discount = offer.discountValue;
   }
 
-  return Math.min(discount, subtotalPaise);
+  return Math.min(discount, subtotalRupees);
 }
 
 // ─── Build AppliedDiscount snapshot ──────────────────────────────────────────
 
-export function buildCouponSnapshot(coupon: Coupon, discountPaise: number): AppliedDiscount {
+export function buildCouponSnapshot(coupon: Coupon, discountRupees: number): AppliedDiscount {
   return {
     couponCode: coupon.code,
     discountType: coupon.discountType,
     discountValue: coupon.discountValue,
-    discountPaise,
+    discountRupees,
     title: `Coupon: ${coupon.code}`,
     offerType: "coupon",
   };
 }
 
-export function buildOfferSnapshot(offer: Offer, discountPaise: number): AppliedDiscount {
+export function buildOfferSnapshot(offer: Offer, discountRupees: number): AppliedDiscount {
   return {
     offerId: offer.id,
     couponCode: offer.couponCode,
     discountType: offer.discountType,
     discountValue: offer.discountValue,
-    discountPaise,
+    discountRupees,
     title: offer.title,
     offerType: offer.offerType,
   };

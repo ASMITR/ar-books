@@ -1,7 +1,4 @@
-export function paiseToRupees(paise: number): string {
-  return (paise / 100).toFixed(2);
-}
-
-export function formatINR(paise: number): string {
-  return `₹${(paise / 100).toLocaleString("en-IN", { minimumFractionDigits: 0 })}`;
+export function formatINR(rupees: number): string {
+  if (rupees == null || isNaN(rupees)) return "₹0";
+  return `₹${rupees.toLocaleString("en-IN", { minimumFractionDigits: 0 })}`;
 }

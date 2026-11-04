@@ -14,10 +14,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { SearchModal } from "@/components/shared/SearchModal";
 
 const navLinks = [
+  { label: "Home",       href: "/"           },
   { label: "Books",      href: "/books"      },
   { label: "Categories", href: "/categories" },
   { label: "Membership", href: "/membership" },
-  { label: "Offers",     href: "/#offers"    },
+  { label: "Offers",     href: "/#offers", noActive: true },
   { label: "Blog",       href: "/articles"   },
 ];
 
@@ -110,7 +111,7 @@ export function SiteHeader() {
             {/* Desktop nav */}
             <nav className="hidden lg:flex items-center gap-0.5" aria-label="Main navigation">
               {navLinks.map((l) => {
-                const active = isActive(l.href);
+                const active = !l.noActive && isActive(l.href);
                 return (
                   <Link key={l.label} href={l.href}
                     className={`relative px-3.5 py-2 font-body text-[13px] font-medium transition-colors duration-150

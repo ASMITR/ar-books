@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -8,9 +9,20 @@ import { useCart } from "@/hooks/useCart";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { formatINR } from "@/lib/currency";
 
-function QuantityStepper({ quantity, onDecrease, onIncrease, onRemove }: {
-  quantity: number; onDecrease: () => void; onIncrease: () => void; onRemove: () => void;
+function QuantityStepper({ quantity, onDecrease, onIncrease, onRemove, onSet }: {
+  quantity: number; onDecrease: () => void; onIncrease: () => void; onRemove: () => void; onSet: (n: number) => void;
 }) {
+  const [draft, setDraft] = useState(String(quantity));
+
+  useEffect(() => { setDraft(String(quantity)); }, [quantity]);
+
+  function commit(val: string) {
+    const n = parseInt(val, 10);
+    if (!isNaN(n) && n >= 1) onSet(n);
+    else if (n === 0 || val === "") onRemove();
+    else setDraft(String(quantity));
+  }
+
   return (
     <div className="flex items-center border border-[#E8E4DF] rounded-xl overflow-hidden">
       <button onClick={quantity === 1 ? onRemove : onDecrease}
@@ -19,7 +31,14 @@ function QuantityStepper({ quantity, onDecrease, onIncrease, onRemove }: {
           ${quantity === 1 ? "text-[#CCC] hover:text-red-500 hover:bg-red-50" : "text-[#666] hover:text-[#203A2B] hover:bg-[#F5F2EE]"}`}>
         {quantity === 1 ? <Trash2 size={11} /> : <Minus size={11} />}
       </button>
-      <span className="w-8 text-center font-body text-[13px] font-semibold text-[#111] tabular-nums select-none">{quantity}</span>
+      <input
+        type="number" min={1} value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={(e) => commit(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && commit(draft)}
+        className="w-10 text-center font-body text-[13px] font-semibold text-[#111] tabular-nums bg-transparent border-none outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        aria-label="Quantity"
+      />
       <button onClick={onIncrease} aria-label="Increase quantity"
         className="w-8 h-8 flex items-center justify-center text-[#666] hover:text-[#203A2B] hover:bg-[#F5F2EE] transition-colors">
         <Plus size={11} />
@@ -29,7 +48,7 @@ function QuantityStepper({ quantity, onDecrease, onIncrease, onRemove }: {
 }
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, totalPaise, count } = useCart();
+  const { items, removeItem, updateQuantity, totalRupees, count } = useCart();
   const requireAuth = useRequireAuth();
   const router = useRouter();
 
@@ -97,7 +116,7 @@ export default function CartPage() {
                       )}
                     </Link>
                     <div className="flex flex-1 flex-col justify-between min-w-0 py-0.5">
-                      <div className="pr-2">
+                      <div>
                         <Link href={`/books/${item.slug}`}
                           className="font-heading text-base sm:text-[17px] font-bold text-[#111] hover:text-[#203A2B] transition-colors line-clamp-2 leading-snug">
                           {item.title}
@@ -108,17 +127,27 @@ export default function CartPage() {
                         </span>
                       </div>
                       <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#F0EDE8] gap-3 flex-wrap">
-                        <QuantityStepper
-                          quantity={item.quantity}
-                          onDecrease={() => updateQuantity(item.bookId, item.quantity - 1)}
-                          onIncrease={() => updateQuantity(item.bookId, item.quantity + 1)}
-                          onRemove={() => removeItem(item.bookId)}
-                        />
+                        <div className="flex items-center gap-2">
+                          <QuantityStepper
+                            quantity={item.quantity}
+                            onDecrease={() => updateQuantity(item.bookId, item.quantity - 1)}
+                            onIncrease={() => updateQuantity(item.bookId, item.quantity + 1)}
+                            onRemove={() => removeItem(item.bookId)}
+                            onSet={(n) => updateQuantity(item.bookId, n)}
+                          />
+                          <button
+                            onClick={() => removeItem(item.bookId)}
+                            aria-label="Remove item"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:border-red-300 hover:text-red-600 font-body text-[11px] font-semibold transition-all"
+                          >
+                            <Trash2 size={11} /> Remove
+                          </button>
+                        </div>
                         <div className="flex flex-col items-end gap-0.5">
                           {item.quantity > 1 && (
-                            <span className="text-[10px] font-body text-[#B8B3AB] tabular-nums">{formatINR(item.pricePaise)} × {item.quantity}</span>
+                            <span className="text-[10px] font-body text-[#B8B3AB] tabular-nums">{formatINR(item.priceRupees)} × {item.quantity}</span>
                           )}
-                          <span className="font-heading text-base font-bold text-[#111] tabular-nums">{formatINR(item.pricePaise * item.quantity)}</span>
+                          <span className="font-heading text-base font-bold text-[#111] tabular-nums">{formatINR(item.priceRupees * item.quantity)}</span>
                         </div>
                       </div>
                     </div>
@@ -144,14 +173,14 @@ export default function CartPage() {
                         {item.title}
                         {item.quantity > 1 && <span className="ml-1 text-[#B8B3AB] text-[11px]">×{item.quantity}</span>}
                       </span>
-                      <span className="text-[#111] shrink-0 font-medium tabular-nums">{formatINR(item.pricePaise * item.quantity)}</span>
+                      <span className="text-[#111] shrink-0 font-medium tabular-nums">{formatINR(item.priceRupees * item.quantity)}</span>
                     </div>
                   ))}
                 </div>
                 <div className="px-5 pt-3 pb-5 border-t border-[#F0EDE8]">
                   <div className="flex justify-between items-baseline mb-5">
                     <span className="font-body text-sm text-[#888]">Subtotal ({count} {count === 1 ? "item" : "items"})</span>
-                    <span className="font-heading text-xl font-bold text-[#111] tabular-nums">{formatINR(totalPaise)}</span>
+                    <span className="font-heading text-xl font-bold text-[#111] tabular-nums">{formatINR(totalRupees)}</span>
                   </div>
                   <button onClick={handleCheckout}
                     className="w-full bg-[#0D1F17] text-white font-body text-[11.5px] font-bold uppercase tracking-[0.15em] px-6 py-3.5 rounded-xl hover:bg-[#203A2B] transition-colors flex items-center justify-center gap-2.5">

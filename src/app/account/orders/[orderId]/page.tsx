@@ -27,7 +27,7 @@ export default async function OrderDetailPage({ params }: Props) {
 
   const s           = STATUS[order.paymentStatus];
   const isPaid      = order.paymentStatus === "paid";
-  const hasDiscount = order.discountPaise > 0;
+  const hasDiscount = order.discountRupees > 0;
 
   return (
     <div className="flex flex-col gap-5">
@@ -92,7 +92,7 @@ export default async function OrderDetailPage({ params }: Props) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-heading text-[14px] sm:text-[15px] font-bold text-[#111] line-clamp-2 leading-snug">{item.title}</p>
-                <p className="font-body text-[12px] sm:text-[13px] font-bold text-[#203A2B] mt-1 tabular-nums">{formatINR(item.pricePaise)}</p>
+                <p className="font-body text-[12px] sm:text-[13px] font-bold text-[#203A2B] mt-1 tabular-nums">{formatINR(item.priceRupees)}</p>
               </div>
               {isPaid && (
                 <a href={`/api/downloads/secure?bookId=${item.bookId}`}
@@ -109,7 +109,7 @@ export default async function OrderDetailPage({ params }: Props) {
         <div className="border-t border-black/[0.05] px-4 sm:px-5 py-4 flex flex-col gap-2">
           <div className="flex justify-between text-[13px] font-body text-[#888]">
             <span>Subtotal</span>
-            <span className="tabular-nums">{formatINR(order.subtotalPaise)}</span>
+            <span className="tabular-nums">{formatINR(order.subtotalRupees)}</span>
           </div>
           {hasDiscount && (
             <div className="flex justify-between text-[13px] font-body text-emerald-700">
@@ -119,18 +119,18 @@ export default async function OrderDetailPage({ params }: Props) {
                   ? <span className="font-mono text-xs">{order.appliedDiscount.couponCode}</span>
                   : "Discount"}
               </span>
-              <span className="tabular-nums">−{formatINR(order.discountPaise)}</span>
+              <span className="tabular-nums">−{formatINR(order.discountRupees)}</span>
             </div>
           )}
-          {order.taxPaise > 0 && (
+          {order.taxRupees > 0 && (
             <div className="flex justify-between text-[13px] font-body text-[#888]">
               <span>Tax</span>
-              <span className="tabular-nums">{formatINR(order.taxPaise)}</span>
+              <span className="tabular-nums">{formatINR(order.taxRupees)}</span>
             </div>
           )}
           <div className="flex justify-between font-heading font-bold text-[#111] text-[15px] border-t border-black/[0.05] pt-3 mt-1">
             <span>Total Paid</span>
-            <span className="text-[#203A2B] tabular-nums">{formatINR(order.totalPaise)}</span>
+            <span className="text-[#203A2B] tabular-nums">{formatINR(order.totalRupees)}</span>
           </div>
         </div>
       </div>

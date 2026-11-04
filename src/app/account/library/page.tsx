@@ -73,8 +73,8 @@ export default async function LibraryPage() {
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     <span className="text-[9px] font-body font-bold uppercase tracking-wider bg-[#F2EFE9] text-[#555] px-2 py-0.5 rounded-full">PDF</span>
                     <span className="text-[10px] font-body text-[#B8B3AB]">{formatDate(ent.createdAt)}</span>
-                    {book.pricePaise > 0 && (
-                      <span className="text-[11px] font-body font-bold text-[#203A2B] tabular-nums">{formatINR(book.pricePaise)}</span>
+                    {book.priceRupees > 0 && (
+                      <span className="text-[11px] font-body font-bold text-[#203A2B] tabular-nums">{formatINR(book.priceRupees)}</span>
                     )}
                   </div>
                 </div>

@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
           customerId: order.customerId,
           customerEmail: order.customerEmail,
           orderId,
-          discountPaise: order.discountPaise,
+          discountRupees: order.discountRupees,
           redeemedAt: now,
         });
       }

@@ -74,10 +74,10 @@ function emptyForm(): Partial<Offer> {
     priority: 0,
     discountType: "percent",
     discountValue: 10,
-    maxDiscountPaise: undefined,
+    maxDiscountRupees: undefined,
     buyX: undefined,
     getY: undefined,
-    minCartValuePaise: undefined,
+    minCartValueRupees: undefined,
     minItemCount: undefined,
     applicableBookIds: [],
     applicableCategoryIds: [],
@@ -173,8 +173,8 @@ export default function AdminOffersPage() {
         couponCode:       form.couponCode?.toUpperCase().trim() || undefined,
         startAt:          form.startAt ? new Date(form.startAt).toISOString() : undefined,
         endAt:            form.endAt   ? new Date(form.endAt).toISOString()   : null,
-        maxDiscountPaise: form.maxDiscountPaise ? Number(form.maxDiscountPaise) : undefined,
-        minCartValuePaise: form.minCartValuePaise ? Number(form.minCartValuePaise) : undefined,
+        maxDiscountRupees: form.maxDiscountRupees ? Number(form.maxDiscountRupees) : undefined,
+        minCartValueRupees: form.minCartValueRupees ? Number(form.minCartValueRupees) : undefined,
       };
 
       const url    = editingId ? `/api/admin/offers/${editingId}` : "/api/admin/offers";
@@ -329,7 +329,7 @@ export default function AdminOffersPage() {
                     <td className="px-4 py-3.5 font-semibold text-[#203A2B]">
                       {offer.discountType === "percent"
                         ? `${offer.discountValue}%`
-                        : formatINR(offer.discountValue * 100)}
+                        : formatINR(offer.discountValue)}
                     </td>
                     <td className="px-4 py-3.5">
                       {offer.couponCode ? (
@@ -571,8 +571,8 @@ export default function AdminOffersPage() {
               <label className={labelCls}>Max Discount (₹, optional)</label>
               <input
                 type="number" min="0"
-                value={form.maxDiscountPaise ? form.maxDiscountPaise / 100 : ""}
-                onChange={(e) => set("maxDiscountPaise", e.target.value ? Math.round(parseFloat(e.target.value) * 100) : undefined)}
+                value={form.maxDiscountRupees ?? ""}
+                onChange={(e) => set("maxDiscountRupees", e.target.value ? parseFloat(e.target.value) : undefined)}
                 placeholder="Cap in rupees"
                 className={inputCls}
               />
@@ -608,8 +608,8 @@ export default function AdminOffersPage() {
               <label className={labelCls}>Min Cart Value (₹)</label>
               <input
                 type="number" min="0"
-                value={form.minCartValuePaise ? form.minCartValuePaise / 100 : ""}
-                onChange={(e) => set("minCartValuePaise", e.target.value ? Math.round(parseFloat(e.target.value) * 100) : undefined)}
+                value={form.minCartValueRupees ?? ""}
+                onChange={(e) => set("minCartValueRupees", e.target.value ? parseFloat(e.target.value) : undefined)}
                 placeholder="e.g. 499"
                 className={inputCls}
               />

@@ -22,7 +22,7 @@ export function MobileCartBar({ book }: { book: Book }) {
     title: book.title,
     author: book.author,
     coverImageUrl: book.coverImageUrl,
-    pricePaise: book.pricePaise,
+    priceRupees: book.priceRupees,
     slug: book.slug,
   };
 
@@ -50,7 +50,7 @@ export function MobileCartBar({ book }: { book: Book }) {
           {book.title}
         </p>
         <p className="font-heading text-[20px] font-bold text-[#203A2B] leading-tight">
-          {formatINR(inCart && quantity > 1 ? book.pricePaise * quantity : book.pricePaise)}
+          {formatINR(inCart && quantity > 1 ? book.priceRupees * quantity : book.priceRupees)}
         </p>
       </div>
 

@@ -16,7 +16,7 @@ export default async function AccountDashboardPage() {
   ]);
 
   const paidOrders = orders.filter((o) => o.paymentStatus === "paid");
-  const totalSpent = paidOrders.reduce((s, o) => s + o.totalPaise, 0);
+  const totalSpent = paidOrders.reduce((s, o) => s + o.totalRupees, 0);
   const recentOrders = paidOrders.slice(0, 5);
   const firstName = (user!.displayName ?? user!.email ?? "Reader").split(" ")[0];
 
@@ -97,7 +97,7 @@ export default async function AccountDashboardPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2.5 shrink-0">
-                  <span className="font-heading text-[15px] font-bold text-[#203A2B] tabular-nums">{formatINR(order.totalPaise)}</span>
+                  <span className="font-heading text-[15px] font-bold text-[#203A2B] tabular-nums">{formatINR(order.totalRupees)}</span>
                   <ArrowRight size={12} className="text-[#D0CCC6] group-hover:text-[#203A2B] transition-colors" />
                 </div>
               </Link>

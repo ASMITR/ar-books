@@ -43,8 +43,8 @@ export default async function AdminDashboardPage() {
   const paidOrders      = orders.filter((o) => o.paymentStatus === "paid");
   const pendingOrders   = orders.filter((o) => o.paymentStatus === "pending");
   const refundedOrders  = orders.filter((o) => o.paymentStatus === "refunded");
-  const netSales        = paidOrders.reduce((s, o) => s + o.totalPaise, 0);
-  const refundTotal     = refundedOrders.reduce((s, o) => s + o.totalPaise, 0);
+  const netSales        = paidOrders.reduce((s, o) => s + o.totalRupees, 0);
+  const refundTotal     = refundedOrders.reduce((s, o) => s + o.totalRupees, 0);
   const recentOrders    = orders.slice(0, 8);
 
   const now = new Date();
@@ -147,7 +147,7 @@ export default async function AdminDashboardPage() {
                           </td>
                           <td className="px-4 py-3.5 text-[#777] max-w-[140px] truncate text-[12.5px]">{order.customerEmail}</td>
                           <td className="px-4 py-3.5 text-[#aaa] whitespace-nowrap text-[12.5px]">{formatDate(order.createdAt)}</td>
-                          <td className="px-4 py-3.5 font-semibold text-[#0a0a0a] text-[12.5px]">{formatINR(order.totalPaise)}</td>
+                          <td className="px-4 py-3.5 font-semibold text-[#0a0a0a] text-[12.5px]">{formatINR(order.totalRupees)}</td>
                           <td className="px-4 py-3.5">
                             {s ? (
                               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10.5px] rounded-full font-semibold ${s.cls}`}>

@@ -190,8 +190,8 @@ export function BookForm({ book, categories, onSuccess }: Props) {
           slug: book.slug,
           subtitle: book.subtitle ?? "",
           description: book.description,
-          pricePaise: book.pricePaise,
-          originalPricePaise: book.originalPricePaise,
+          priceRupees: book.priceRupees,
+          originalPriceRupees: book.originalPriceRupees,
           categoryIds: book.categoryIds,
           pageCount: book.pageCount,
           language: book.language,
@@ -362,25 +362,27 @@ export function BookForm({ book, categories, onSuccess }: Props) {
       <SectionCard title="Pricing">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Price (paise) *</label>
+            <label className={labelCls}>Price (₹) *</label>
             <input
-              {...register("pricePaise", { valueAsNumber: true })}
+              {...register("priceRupees", { valueAsNumber: true })}
               type="number"
-              placeholder="49900 = ₹499"
+              step="0.01"
+              placeholder="e.g. 499"
               className={inputCls}
             />
-            {errors.pricePaise && (
+            {errors.priceRupees && (
               <p className="text-[13px] text-red-500 mt-1.5 flex items-center gap-1.5">
-                <AlertCircle size={13} />{errors.pricePaise.message}
+                <AlertCircle size={13} />{errors.priceRupees.message}
               </p>
             )}
           </div>
           <div>
-            <label className={labelCls}>Original Price (paise)</label>
+            <label className={labelCls}>Original Price (₹)</label>
             <input
-              {...register("originalPricePaise", { valueAsNumber: true })}
+              {...register("originalPriceRupees", { valueAsNumber: true })}
               type="number"
-              placeholder="Optional MRP"
+              step="0.01"
+              placeholder="Optional MRP in ₹"
               className={inputCls}
             />
           </div>

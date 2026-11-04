@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Payments" };
 export default async function AdminPaymentsPage() {
   const snap = await adminDb.collection("orders").where("paymentStatus", "==", "paid").orderBy("paidAt", "desc").get();
   const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
-  const totalRevenue = orders.reduce((s, o) => s + o.totalPaise, 0);
+  const totalRevenue = orders.reduce((s, o) => s + o.totalRupees, 0);
 
   const stats = [
     { label: "Total Revenue", value: formatINR(totalRevenue), icon: DollarSign, accent: "#080808", bg: "#FFC928" },
@@ -58,7 +58,7 @@ export default async function AdminPaymentsPage() {
                       <td className="px-5 py-3.5 font-semibold text-[#080808] text-xs">{order.orderNumber}</td>
                       <td className="px-4 py-3.5 text-[#666] max-w-[160px] truncate text-xs">{order.customerEmail}</td>
                       <td className="px-4 py-3.5 text-[#aaa] font-mono text-xs">{order.razorpayPaymentId ?? "—"}</td>
-                      <td className="px-4 py-3.5 font-semibold text-[#080808] text-xs">{formatINR(order.totalPaise)}</td>
+                      <td className="px-4 py-3.5 font-semibold text-[#080808] text-xs">{formatINR(order.totalRupees)}</td>
                       <td className="px-4 py-3.5 text-[#aaa] whitespace-nowrap text-xs">{order.paidAt ? formatDate(order.paidAt) : "—"}</td>
                     </tr>
                   ))}

@@ -43,8 +43,8 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
   let books = allBooks.filter((b) => b.categoryIds.includes(category.id));
 
-  if (sort === "price-asc")  books = [...books].sort((a, b) => a.pricePaise - b.pricePaise);
-  if (sort === "price-desc") books = [...books].sort((a, b) => b.pricePaise - a.pricePaise);
+  if (sort === "price-asc")  books = [...books].sort((a, b) => a.priceRupees - b.priceRupees);
+  if (sort === "price-desc") books = [...books].sort((a, b) => b.priceRupees - a.priceRupees);
 
   return (
     <div className="bg-[#F5EFE6] min-h-screen">

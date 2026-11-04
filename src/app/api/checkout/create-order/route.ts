@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     );
 
     const orderItems: OrderItem[] = [];
-    let subtotalPaise = 0;
+    let subtotalRupees = 0;
     const bookIds: string[] = [];
     const categoryIds: string[] = [];
 
@@ -68,16 +68,16 @@ export async function POST(req: NextRequest) {
       orderItems.push({
         bookId: doc.id,
         title: data.title,
-        pricePaise: data.pricePaise,
+        priceRupees: data.priceRupees,
         coverImageUrl: data.coverImageUrl ?? null,
       });
-      subtotalPaise += data.pricePaise;
+      subtotalRupees += data.priceRupees;
       bookIds.push(doc.id);
       if (Array.isArray(data.categoryIds)) categoryIds.push(...data.categoryIds);
     }
 
     // ── 2. Server-side coupon / offer validation ───────────────────────────────
-    let discountPaise = 0;
+    let discountRupees = 0;
     let appliedDiscount: AppliedDiscount | null = null;
     let resolvedCouponId: string | null = null;
     let resolvedOfferId: string | null = null;
@@ -97,12 +97,12 @@ export async function POST(req: NextRequest) {
 
       if (!couponSnap.empty) {
         const coupon = { id: couponSnap.docs[0].id, ...couponSnap.docs[0].data() } as Coupon;
-        const result = validateCoupon(coupon, subtotalPaise);
+        const result = validateCoupon(coupon, subtotalRupees);
         if (!result.valid) {
           return NextResponse.json({ success: false, error: result.error }, { status: 422 });
         }
-        discountPaise = result.discountPaise;
-        appliedDiscount = buildCouponSnapshot(coupon, discountPaise);
+        discountRupees = result.discountRupees;
+        appliedDiscount = buildCouponSnapshot(coupon, discountRupees);
         resolvedCouponId = coupon.id;
       } else {
         // Check Offers collection — single-field query, no composite index needed
@@ -155,7 +155,7 @@ export async function POST(req: NextRequest) {
           }
 
           const result = validateOffer(offer, {
-            subtotalPaise,
+            subtotalRupees,
             bookIds,
             categoryIds,
             isFirstOrder,
@@ -167,8 +167,8 @@ export async function POST(req: NextRequest) {
           if (!result.valid) {
             return NextResponse.json({ success: false, error: result.error }, { status: 422 });
           }
-          discountPaise = result.discountPaise;
-          appliedDiscount = buildOfferSnapshot(offer, discountPaise);
+          discountRupees = result.discountRupees;
+          appliedDiscount = buildOfferSnapshot(offer, discountRupees);
           resolvedOfferId = offer.id;
         } else {
           return NextResponse.json(
@@ -187,9 +187,10 @@ export async function POST(req: NextRequest) {
 
     // ── 4. Calculate final total ───────────────────────────────────────────────
     // Tax is applied on the post-discount amount (common GST practice).
-    const postDiscountPaise = Math.max(subtotalPaise - discountPaise, 0);
-    const taxPaise          = Math.round(postDiscountPaise * taxPercent / 100);
-    const totalPaise        = Math.max(postDiscountPaise + taxPaise, 100); // Razorpay min ₹1
+    const postDiscountRupees = Math.max(subtotalRupees - discountRupees, 0);
+    const taxRupees          = Math.round(postDiscountRupees * taxPercent / 100 * 100) / 100;
+    const totalRupees        = Math.max(postDiscountRupees + taxRupees, 1); // Razorpay min ₹1
+    const totalPaise         = Math.round(totalRupees * 100); // only for Razorpay
     if (!Number.isSafeInteger(totalPaise)) {
       return NextResponse.json(
         { success: false, error: "Order total calculation error" },
@@ -216,10 +217,10 @@ export async function POST(req: NextRequest) {
       customerName,
       phone: phone ?? null,
       items: orderItems,
-      subtotalPaise,
-      discountPaise,
-      taxPaise,
-      totalPaise,
+      subtotalRupees,
+      discountRupees,
+      taxRupees,
+      totalRupees,
       currency: "INR",
       paymentStatus: "pending",
       fulfillmentStatus: "pending",
@@ -242,8 +243,8 @@ export async function POST(req: NextRequest) {
         amount: totalPaise,
         currency: "INR",
         keyId,
-        discountPaise,
-        taxPaise,
+        discountRupees,
+        taxRupees,
         taxPercent,
         appliedDiscount,
       },

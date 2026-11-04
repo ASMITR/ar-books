@@ -16,8 +16,8 @@ export interface Book {
   subtitle?: string;
   author: string;
   description: string;
-  pricePaise: number;
-  originalPricePaise?: number;
+  priceRupees: number;
+  originalPriceRupees?: number;
   currency: string;
   categoryIds: string[];
   coverImageUrl?: string;
@@ -83,7 +83,7 @@ export interface CartItem {
   title: string;
   author: string;
   coverImageUrl?: string;
-  pricePaise: number;
+  priceRupees: number;
   slug: string;
   quantity: number;
 }
@@ -95,7 +95,7 @@ export type FulfillmentStatus = "pending" | "fulfilled" | "refunded";
 export interface OrderItem {
   bookId: string;
   title: string;
-  pricePaise: number;
+  priceRupees: number;
   coverImageUrl?: string;
 }
 
@@ -107,10 +107,10 @@ export interface Order {
   customerName: string;
   phone?: string | null;
   items: OrderItem[];
-  subtotalPaise: number;
-  discountPaise: number;
-  taxPaise: number;
-  totalPaise: number;
+  subtotalRupees: number;
+  discountRupees: number;
+  taxRupees: number;
+  totalRupees: number;
   currency: string;
   paymentStatus: PaymentStatus;
   fulfillmentStatus: FulfillmentStatus;
@@ -187,12 +187,12 @@ export interface Offer {
   // Discount config
   discountType: "percent" | "flat";
   discountValue: number;  // percent: 0-100, flat: rupees
-  maxDiscountPaise?: number; // cap for percent discounts
+  maxDiscountRupees?: number; // cap for percent discounts
   buyX?: number;          // for buy_x_get_y / bundle
   getY?: number;
 
   // Eligibility
-  minCartValuePaise?: number;
+  minCartValueRupees?: number;
   minItemCount?: number;
   applicableBookIds?: string[];   // empty = all books
   applicableCategoryIds?: string[];
@@ -224,7 +224,7 @@ export interface AppliedDiscount {
   couponCode?: string;
   discountType: "percent" | "flat";
   discountValue: number;
-  discountPaise: number;
+  discountRupees: number;
   title: string;
   offerType: OfferType | "coupon";
 }
@@ -237,7 +237,7 @@ export interface OfferRedemption {
   customerId: string;
   customerEmail: string;
   orderId: string;
-  discountPaise: number;
+  discountRupees: number;
   redeemedAt: string;
 }
 

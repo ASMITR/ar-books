@@ -10,4 +10,4 @@ export const razorpay = new Razorpay({
 });
 
 export { verifyPaymentSignature, verifyWebhookSignature } from "./utils";
-export { paiseToRupees, formatINR } from "@/lib/currency";
+export { formatINR } from "@/lib/currency";

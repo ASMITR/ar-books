@@ -81,8 +81,8 @@ function BookResults({ params, allBooks, categories }: { params: FilterParams; a
     const q = params.q.toLowerCase();
     books = books.filter((b) => b.title.toLowerCase().includes(q) || b.description.toLowerCase().includes(q));
   }
-  if (params.sort === "price-asc")  books = [...books].sort((a, b) => a.pricePaise - b.pricePaise);
-  if (params.sort === "price-desc") books = [...books].sort((a, b) => b.pricePaise - a.pricePaise);
+  if (params.sort === "price-asc")  books = [...books].sort((a, b) => a.priceRupees - b.priceRupees);
+  if (params.sort === "price-desc") books = [...books].sort((a, b) => b.priceRupees - a.priceRupees);
 
   return (
     <>

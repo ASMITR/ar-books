@@ -22,7 +22,7 @@ export function BookCard({ book }: BookCardProps) {
 
   const payload = {
     bookId: book.id, title: book.title, author: book.author,
-    coverImageUrl: book.coverImageUrl, pricePaise: book.pricePaise, slug: book.slug,
+    coverImageUrl: book.coverImageUrl, priceRupees: book.priceRupees, slug: book.slug,
   };
 
   const handleAddToCart = (e: React.MouseEvent) => { e.preventDefault(); if (!requireAuth()) return; addItem(payload); };
@@ -30,7 +30,7 @@ export function BookCard({ book }: BookCardProps) {
   const handleDecrease  = (e: React.MouseEvent) => { e.preventDefault(); quantity <= 1 ? removeItem(book.id) : updateQuantity(book.id, quantity - 1); };
   const handleIncrease  = (e: React.MouseEvent) => { e.preventDefault(); updateQuantity(book.id, quantity + 1); };
 
-  const discount     = book.originalPricePaise ? Math.round((1 - book.pricePaise / book.originalPricePaise) * 100) : null;
+  const discount     = book.originalPriceRupees ? Math.round((1 - book.priceRupees / book.originalPriceRupees) * 100) : null;
   const isNew        = Date.now() - new Date(book.createdAt).getTime() < 30 * 24 * 60 * 60 * 1000;
   const isFeatured   = book.featured;
 
@@ -118,11 +118,11 @@ export function BookCard({ book }: BookCardProps) {
           {/* Price */}
           <div className="flex items-baseline gap-1.5 flex-wrap">
             <span className="font-heading text-[15px] font-bold text-[#0D1F17] leading-none">
-              {formatINR(book.pricePaise)}
+              {formatINR(book.priceRupees)}
             </span>
-            {book.originalPricePaise && (
+            {book.originalPriceRupees && (
               <span className="font-body text-[10px] text-[#C4BFB9] line-through leading-none">
-                {formatINR(book.originalPricePaise)}
+                {formatINR(book.originalPriceRupees)}
               </span>
             )}
           </div>
@@ -276,11 +276,11 @@ export function BookCard({ book }: BookCardProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-baseline gap-1.5">
               <span className="font-heading text-[18px] font-bold text-[#0D1F17] leading-none">
-                {formatINR(book.pricePaise)}
+                {formatINR(book.priceRupees)}
               </span>
-              {book.originalPricePaise && (
+              {book.originalPriceRupees && (
                 <span className="font-body text-[11px] text-[#C4BFB9] line-through leading-none">
-                  {formatINR(book.originalPricePaise)}
+                  {formatINR(book.originalPriceRupees)}
                 </span>
               )}
             </div>
