@@ -1,7 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase/admin";
+import { rateLimit } from "@/lib/ratelimit";
+
+function sanitizeLog(value: string): string {
+  return value.replace(/[\r\n]/g, "_");
+}
+
+function errMsg(e: unknown): string {
+  return sanitizeLog(e instanceof Error ? e.message : String(e));
+}
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  const { allowed, retryAfterMs } = rateLimit(ip, { limit: 10, windowMs: 60_000 });
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } }
+    );
+  }
+
   try {
     const { idToken } = await req.json();
     if (!idToken) return NextResponse.json({ error: "Missing token" }, { status: 400 });
@@ -33,7 +51,7 @@ export async function POST(req: NextRequest) {
           },
           { merge: true }
         )
-        .catch((e) => console.error("[auth/login] user doc upsert failed:", e));
+        .catch((e) => console.error("[auth/login] user doc upsert failed:", errMsg(e)));
 
       // Set createdAt only if doc is new (merge won't overwrite existing fields,
       // but set() with merge does overwrite — so we do a conditional set via update fallback)
@@ -57,7 +75,7 @@ export async function POST(req: NextRequest) {
     });
     return res;
   } catch (err) {
-    console.error("[auth/login]", err);
+    console.error("[auth/login]", errMsg(err));
     return NextResponse.json({ error: "Authentication failed" }, { status: 401 });
   }
 }

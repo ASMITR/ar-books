@@ -4,15 +4,18 @@ import { verifyWebhookSignature } from "@/lib/razorpay";
 import { sendOrderConfirmation } from "@/lib/email";
 import type { Order } from "@/types";
 
+function sanitizeLog(value: string): string {
+  return value.replace(/[\r\n\x1b\x08]/g, "_");
+}
+function errMsg(e: unknown): string {
+  return sanitizeLog(e instanceof Error ? e.message : String(e));
+}
+
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
   const signature = req.headers.get("x-razorpay-signature") ?? "";
 
   if (!verifyWebhookSignature(rawBody, signature)) {
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-    if (!secret || secret === "bypass") {
-      return NextResponse.json({ received: true, note: "webhook not configured" });
-    }
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
@@ -29,6 +32,13 @@ export async function POST(req: NextRequest) {
 
   const { id: razorpayPaymentId, order_id: razorpayOrderId } = event.payload.payment.entity;
 
+  if (
+    typeof razorpayPaymentId !== "string" || !/^[a-zA-Z0-9_-]{1,128}$/.test(razorpayPaymentId) ||
+    typeof razorpayOrderId !== "string"   || !/^[a-zA-Z0-9_-]{1,128}$/.test(razorpayOrderId)
+  ) {
+    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  }
+
   try {
     // Find internal order by razorpayOrderId
     const snap = await adminDb
@@ -38,7 +48,7 @@ export async function POST(req: NextRequest) {
       .get();
 
     if (snap.empty) {
-      console.warn("[webhook] No order found for razorpayOrderId:", razorpayOrderId);
+      console.warn("[webhook] No order found for razorpayOrderId:", sanitizeLog(razorpayOrderId));
       return NextResponse.json({ received: true });
     }
 
@@ -88,12 +98,12 @@ export async function POST(req: NextRequest) {
       const updatedDoc = await orderRef.get();
       await sendOrderConfirmation({ id: orderId, ...updatedDoc.data() } as Order);
     } catch (e) {
-      console.error("[webhook] email error:", e);
+      console.error("[webhook] email error:", errMsg(e));
     }
 
     return NextResponse.json({ received: true });
   } catch (err) {
-    console.error("[webhook]", err);
+    console.error("[webhook]", errMsg(err));
     return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }
 }

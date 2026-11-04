@@ -43,16 +43,19 @@ const components: Components = {
   ),
 
   // ── Links ─────────────────────────────────────────────────────────────────
-  a: ({ href, children }) => (
-    <a
-      href={href}
-      target={href?.startsWith("http") ? "_blank" : undefined}
-      rel={href?.startsWith("http") ? "noopener noreferrer" : undefined}
-      className="text-[#203A2B] underline underline-offset-2 decoration-[#C6A66B]/60 hover:text-[#315B55] hover:decoration-[#C6A66B] transition-colors font-medium"
-    >
-      {children}
-    </a>
-  ),
+  a: ({ href, children }) => {
+    const safeHref = href && /^https?:\/\//i.test(href) ? href : undefined;
+    return (
+      <a
+        href={safeHref}
+        target={safeHref ? "_blank" : undefined}
+        rel={safeHref ? "noopener noreferrer" : undefined}
+        className="text-[#203A2B] underline underline-offset-2 decoration-[#C6A66B]/60 hover:text-[#315B55] hover:decoration-[#C6A66B] transition-colors font-medium"
+      >
+        {children}
+      </a>
+    );
+  },
 
   // ── Blockquote ────────────────────────────────────────────────────────────
   blockquote: ({ children }) => (
@@ -119,14 +122,18 @@ const components: Components = {
   pre: ({ children }) => <div className="my-6">{children}</div>,
 
   // ── Images ────────────────────────────────────────────────────────────────
-  img: ({ src, alt }) => (
+  img: ({ src, alt }) => {
+    const safeSrc = src && /^https?:\/\//i.test(src) ? src : undefined;
+    if (!safeSrc) return null;
     // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt={alt ?? ""}
-      className="w-full rounded-sm border border-[#E6DFD5] my-6 shadow-sm"
-    />
-  ),
+    return (
+      <img
+        src={safeSrc}
+        alt={alt ?? ""}
+        className="w-full rounded-sm border border-[#E6DFD5] my-6 shadow-sm"
+      />
+    );
+  },
 
   // ── Tables (GFM) ─────────────────────────────────────────────────────────
   table: ({ children }) => (

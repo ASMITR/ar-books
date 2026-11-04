@@ -292,6 +292,7 @@ export default function LoginPage() {
                   />
                   <button type="button" onClick={() => setShowPw((v) => !v)} disabled={isLocked}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aaa] hover:text-[#555] transition-colors disabled:opacity-40"
+                    // amazonq-ignore-next-line
                     aria-label={showPw ? "Hide password" : "Show password"}>
                     {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>

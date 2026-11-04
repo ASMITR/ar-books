@@ -16,11 +16,15 @@ import { requireAuthenticatedUser } from "@/lib/firebase/auth-server";
 import { checkMembershipBookAccess, getActiveMembershipForCustomer } from "@/lib/firebase/subscriptions";
 import cloudinary from "@/lib/cloudinary";
 
+function sanitizeLog(value: string): string {
+  return value.replace(/[\r\n]/g, "_");
+}
+
 export async function GET(req: NextRequest) {
   try {
     const user   = await requireAuthenticatedUser();
     const bookId = req.nextUrl.searchParams.get("bookId");
-    if (!bookId) {
+    if (!bookId || !/^[a-zA-Z0-9_-]{1,128}$/.test(bookId)) {
       return NextResponse.json({ error: "Missing bookId" }, { status: 400 });
     }
 
@@ -63,7 +67,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Book not found" }, { status: 404 });
     }
     const { privatePdfPath, title } = bookDoc.data()!;
-    if (!privatePdfPath) {
+    if (typeof privatePdfPath !== "string" || !privatePdfPath) {
       return NextResponse.json({ error: "PDF not available" }, { status: 404 });
     }
 
@@ -81,28 +85,38 @@ export async function GET(req: NextRequest) {
     if (accessSource === "membership") {
       const membership = await getActiveMembershipForCustomer(user.uid);
       if (membership) {
+        const safeBookTitle = (typeof title === "string" ? title : "")
+          .replace(/[^a-zA-Z0-9 _\-.,!?']/g, "").trim().slice(0, 200) || "unknown";
+        const safePeriodStart = typeof membership.subscription.currentPeriodStart === "string"
+          ? membership.subscription.currentPeriodStart : null;
+        const safePeriodEnd = typeof membership.subscription.currentPeriodEnd === "string"
+          ? membership.subscription.currentPeriodEnd : null;
         await adminDb.collection("membershipDownloads").add({
           subscriptionId: membership.subscription.id,
           customerId:     user.uid,
           bookId,
-          bookTitle:      title as string,
+          bookTitle:      safeBookTitle,
           downloadedAt:   new Date().toISOString(),
-          periodStart:    membership.subscription.currentPeriodStart,
-          periodEnd:      membership.subscription.currentPeriodEnd,
+          periodStart:    safePeriodStart,
+          periodEnd:      safePeriodEnd,
         });
       }
     } else {
+      const rawOrderId = purchaseEntSnap.docs[0]?.data()?.orderId;
+      const safeOrderId = typeof rawOrderId === "string" && /^[a-zA-Z0-9_-]{1,128}$/.test(rawOrderId)
+        ? rawOrderId
+        : null;
       await adminDb.collection("downloadLogs").add({
         customerId: user.uid,
         productId:  bookId,
-        orderId:    purchaseEntSnap.docs[0]?.data()?.orderId ?? null,
+        orderId:    safeOrderId,
         timestamp:  new Date().toISOString(),
         outcome:    "success",
       });
     }
 
-    const safeTitle = (title as string ?? "book")
-      .replace(/[^a-zA-Z0-9 _-]/g, "").trim().replace(/\s+/g, "_").slice(0, 60);
+    const safeTitle = (typeof title === "string" ? title : "")
+      .replace(/[^a-zA-Z0-9 _-]/g, "").trim().replace(/\s+/g, "_").slice(0, 60) || "book";
 
     return new NextResponse(pdfBuffer, {
       status: 200,

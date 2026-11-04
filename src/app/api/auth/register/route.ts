@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase/admin";
 import { sendWelcomeEmail } from "@/lib/email";
+import { rateLimit } from "@/lib/ratelimit";
+
+function sanitizeLog(value: string): string {
+  return value.replace(/[\r\n]/g, "_");
+}
+
+function errMsg(e: unknown): string {
+  return sanitizeLog(e instanceof Error ? e.message : String(e));
+}
 
 /**
  * POST /api/auth/register
@@ -14,6 +23,15 @@ import { sendWelcomeEmail } from "@/lib/email";
  * Body: { idToken: string }
  */
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  const { allowed, retryAfterMs } = rateLimit(ip, { limit: 5, windowMs: 60_000 });
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } }
+    );
+  }
+
   try {
     const { idToken } = await req.json();
     if (!idToken || typeof idToken !== "string") {
@@ -59,12 +77,12 @@ export async function POST(req: NextRequest) {
 
     // Non-fatal — don't block the registration flow
     sendWelcomeEmail(email, name).catch((e) =>
-      console.error("[auth/register] welcome email failed:", e)
+      console.error("[auth/register] welcome email failed:", errMsg(e))
     );
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[auth/register]", err);
+    console.error("[auth/register]", errMsg(err));
     return NextResponse.json({ error: "Registration post-processing failed" }, { status: 500 });
   }
 }

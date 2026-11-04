@@ -16,7 +16,7 @@ export function verifyPaymentSignature(params: {
 
 export function verifyWebhookSignature(body: string, signature: string): boolean {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-  if (!secret || secret === "bypass") return false;
+  if (!secret) return false;
   const expected = crypto
     .createHmac("sha256", secret)
     .update(body)
@@ -25,6 +25,8 @@ export function verifyWebhookSignature(body: string, signature: string): boolean
 }
 
 function timingSafeHexEqual(expected: string, actual: string): boolean {
-  if (!/^[\da-f]{64}$/i.test(actual)) return false;
-  return crypto.timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(actual, "hex"));
+  const a = Buffer.from(expected, "hex");
+  const valid = /^[\da-f]{64}$/i.test(actual);
+  const b = valid ? Buffer.from(actual, "hex") : Buffer.alloc(32);
+  return crypto.timingSafeEqual(a, b) && valid;
 }

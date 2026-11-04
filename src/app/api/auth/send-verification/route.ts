@@ -41,7 +41,8 @@ export async function POST() {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[auth/send-verification]", err);
+    const safeErr = (err instanceof Error ? err.message : String(err)).replace(/[\r\n]/g, " ");
+    console.error("[auth/send-verification]", safeErr);
     return NextResponse.json({ error: "Failed to send verification email" }, { status: 500 });
   }
 }

@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { adminDb } from "@/lib/firebase/admin";
 import { FieldValue } from "firebase-admin/firestore";
 import { verifyPaymentSignature } from "@/lib/razorpay";
 import { sendOrderConfirmation } from "@/lib/email";
 import { z } from "zod";
 import type { Order } from "@/types";
+
+function sanitizeLog(value: string): string {
+  return value.replace(/[\r\n]/g, "_");
+}
+function errMsg(e: unknown): string {
+  return sanitizeLog(e instanceof Error ? e.message : String(e));
+}
 
 const schema = z.object({
   orderId: z.string().min(1),
@@ -49,7 +57,11 @@ export async function POST(req: NextRequest) {
       // Idempotency — already processed
       if (order.paymentStatus === "paid") return;
 
-      if (order.razorpayOrderId !== razorpayOrderId) throw new Error("Order ID mismatch");
+      const storedId = Buffer.from(String(order.razorpayOrderId ?? ""));
+      const suppliedId = Buffer.from(razorpayOrderId);
+      const idsMatch = storedId.length === suppliedId.length &&
+        timingSafeEqual(storedId, suppliedId);
+      if (!idsMatch) throw new Error("Order ID mismatch");
 
       const now = new Date().toISOString();
 
@@ -118,12 +130,12 @@ export async function POST(req: NextRequest) {
       const orderDoc = await orderRef.get();
       await sendOrderConfirmation({ id: orderId, ...orderDoc.data() } as Order);
     } catch (emailErr) {
-      console.error("[verify-payment] email error:", emailErr);
+      console.error("[verify-payment] email error:", errMsg(emailErr));
     }
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[verify-payment]", err);
+    console.error("[verify-payment]", errMsg(err));
     return NextResponse.json({ success: false, error: "Verification failed" }, { status: 500 });
   }
 }

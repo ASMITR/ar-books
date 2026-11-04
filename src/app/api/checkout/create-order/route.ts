@@ -83,7 +83,10 @@ export async function POST(req: NextRequest) {
     let resolvedOfferId: string | null = null;
 
     if (couponCode) {
-      const upperCode = couponCode.toUpperCase().trim();
+      const upperCode = couponCode.toUpperCase().trim().replace(/[^A-Z0-9\-]/g, "");
+      if (!upperCode) {
+        return NextResponse.json({ success: false, error: "Invalid coupon code" }, { status: 422 });
+      }
 
       // Check legacy Coupons collection first
       const couponSnap = await adminDb
@@ -125,11 +128,13 @@ export async function POST(req: NextRequest) {
           let isFirstOrder = false;
           if (offer.customerEligibility === "new_customers") {
             if (customerId === "guest") {
-              isFirstOrder = true; // relaxed for guest; best-effort
-            } else {
-              const pastOrders = await getOrdersByCustomer(customerId);
-              isFirstOrder = pastOrders.filter((o) => o.paymentStatus === "paid").length === 0;
+              return NextResponse.json(
+                { success: false, error: "Sign in to use this coupon" },
+                { status: 422 }
+              );
             }
+            const pastOrders = await getOrdersByCustomer(customerId);
+            isFirstOrder = pastOrders.filter((o) => o.paymentStatus === "paid").length === 0;
           } else {
             // For "all" or "existing_customers" types
             if (customerId !== "guest") {

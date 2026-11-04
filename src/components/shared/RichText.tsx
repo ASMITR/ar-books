@@ -135,6 +135,21 @@ const components: Components = {
     );
   },
 
+  // Links — allowlist http/https only to block javascript: and data: URIs
+  a({ href, children }) {
+    const safeHref = href && /^https?:\/\//i.test(href) ? href : undefined;
+    return (
+      <a
+        href={safeHref}
+        target={safeHref ? "_blank" : undefined}
+        rel={safeHref ? "noopener noreferrer" : undefined}
+        className="text-[#203A2B] underline underline-offset-2 hover:text-[#315B55] transition-colors"
+      >
+        {children}
+      </a>
+    );
+  },
+
   // Inline code
   code({ children }) {
     return (

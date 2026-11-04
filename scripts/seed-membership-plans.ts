@@ -133,6 +133,10 @@ const plans = [
   },
 ];
 
+function sanitizeLog(value: string): string {
+  return value.replace(/[\r\n]/g, "_");
+}
+
 async function seed() {
   console.log("Seeding membership plans...");
   for (const plan of plans) {
@@ -144,4 +148,4 @@ async function seed() {
   process.exit(0);
 }
 
-seed().catch((e) => { console.error(e); process.exit(1); });
+seed().catch((e) => { console.error("Seed failed:", sanitizeLog(e instanceof Error ? e.message : String(e))); process.exit(1); });

@@ -31,9 +31,14 @@ if (!getApps().length) {
 const db = getFirestore();
 const BATCH_LIMIT = 500;
 
+function sanitizeLog(value: string): string {
+  return value.replace(/[\r\n]/g, "_");
+}
+
 async function deleteCollection(name: string) {
+  const safeName = sanitizeLog(name);
   const snap = await db.collection(name).get();
-  if (snap.empty) { console.log(`  ${name}: already empty`); return; }
+  if (snap.empty) { console.log(`  ${safeName}: already empty`); return; }
   let deleted = 0;
   for (let i = 0; i < snap.docs.length; i += BATCH_LIMIT) {
     const batch = db.batch();
@@ -41,13 +46,13 @@ async function deleteCollection(name: string) {
     await batch.commit();
     deleted += Math.min(BATCH_LIMIT, snap.docs.length - i);
   }
-  console.log(`  ✓ ${name}: ${deleted} doc${deleted !== 1 ? "s" : ""} deleted`);
+  console.log(`  ✓ ${safeName}: ${deleted} doc${deleted !== 1 ? "s" : ""} deleted`);
 }
 
 async function deleteDemoUsers() {
   const snap = await db.collection("users").get();
   const demoDocs = snap.docs.filter((d) => {
-    const email: string = d.data().email ?? "";
+    const email: string = sanitizeLog(d.data().email ?? "");
     return email.endsWith("@example.com");
   });
   if (demoDocs.length === 0) { console.log("  users: no demo docs found"); return; }
@@ -56,7 +61,8 @@ async function deleteDemoUsers() {
     demoDocs.slice(i, i + BATCH_LIMIT).forEach((d) => batch.delete(d.ref));
     await batch.commit();
   }
-  console.log(`  ✓ users: ${demoDocs.length} demo doc${demoDocs.length !== 1 ? "s" : ""} deleted`);
+  const count = demoDocs.length;
+  console.log(`  ✓ users: ${count} demo doc${count !== 1 ? "s" : ""} deleted`);
 }
 
 async function clear() {
@@ -89,6 +95,7 @@ async function clear() {
 }
 
 clear().catch((err) => {
-  console.error("Clear failed:", err);
+  const message = sanitizeLog(err instanceof Error ? err.message : String(err));
+  console.error("Clear failed:", message);
   process.exit(1);
 });

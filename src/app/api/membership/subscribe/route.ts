@@ -54,17 +54,23 @@ export async function POST(req: NextRequest) {
     if (!razorpayPlanId) {
       // Create plan on Razorpay (one-time, then stored)
       // Razorpay plan interval: monthly = 1 month
+      if (typeof plan.pricePaise !== "number" || !Number.isInteger(plan.pricePaise) || plan.pricePaise <= 0) {
+        return NextResponse.json({ success: false, error: "Plan configuration error" }, { status: 500 });
+      }
+      const planName = String(plan.name ?? "").slice(0, 100);
+      const planDescription = String(plan.description ?? "").slice(0, 255);
+
       const rzpPlan = await (razorpay as unknown as {
         plans: { create: (data: unknown) => Promise<{ id: string }> }
       }).plans.create({
         period: "monthly",
         interval: 1,
         item: {
-          name: `AR Books ${plan.name} Membership`,
+          name: `AR Books ${planName} Membership`,
           amount: plan.pricePaise,
           unit_amount: plan.pricePaise,
           currency: "INR",
-          description: plan.description,
+          description: planDescription,
         },
         notes: {
           internal_plan_id: planId,

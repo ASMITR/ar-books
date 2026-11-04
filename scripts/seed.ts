@@ -470,7 +470,11 @@ function formatINR(paise: number) {
   return `₹${(paise / 100).toLocaleString("en-IN")}`;
 }
 
+function sanitizeLog(value: string): string {
+  return value.replace(/[\r\n]/g, "_");
+}
+
 seed().catch((err) => {
-  console.error("Seed failed:", err);
+  console.error("Seed failed:", sanitizeLog(err instanceof Error ? err.message : String(err)));
   process.exit(1);
 });

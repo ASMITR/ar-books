@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import cloudinary from "@/lib/cloudinary";
 
+function sanitizeLog(value: string): string {
+  return value.replace(/[\r\n]/g, "_");
+}
+
 export async function GET(req: NextRequest) {
   try {
     const bookId = req.nextUrl.searchParams.get("bookId");
-    if (!bookId) {
+    if (!bookId || !/^[a-zA-Z0-9_-]{1,128}$/.test(bookId)) {
       return NextResponse.json({ error: "Missing bookId" }, { status: 400 });
     }
 
@@ -36,7 +40,8 @@ export async function GET(req: NextRequest) {
 
     const upstream = await fetch(directUrl);
     if (!upstream.ok) {
-      console.error("[preview] Cloudinary fetch failed", upstream.status, directUrl);
+      const safeUrl = new URL(directUrl).origin;
+      console.error("[preview] Cloudinary fetch failed", upstream.status, safeUrl);
       return NextResponse.json({ error: "Preview unavailable" }, { status: 502 });
     }
 
@@ -58,7 +63,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (err) {
-    console.error("[downloads/preview]", err);
+    console.error("[downloads/preview]", sanitizeLog(err instanceof Error ? err.message : String(err)));
     return NextResponse.json({ error: "Preview unavailable" }, { status: 500 });
   }
 }

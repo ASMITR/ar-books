@@ -3,6 +3,7 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdmin } from "@/lib/firebase/auth-server";
 import cloudinary from "@/lib/cloudinary";
+import { bookSchema } from "@/lib/validations";
 
 interface Params { params: Promise<{ id: string }> }
 
@@ -26,12 +27,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     await requireAdmin();
     const { id } = await params;
     const body = await req.json();
+    const parsed = bookSchema.partial().safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid fields" }, { status: 400 });
+    }
 
     // Fetch the slug before updating so we can revalidate the exact page path.
     const existing = await adminDb.collection("books").doc(id).get();
     const slug = existing.exists ? (existing.data()?.slug as string | undefined) : undefined;
 
-    await adminDb.collection("books").doc(id).update({ ...body, updatedAt: new Date().toISOString() });
+    await adminDb.collection("books").doc(id).update({ ...parsed.data, updatedAt: new Date().toISOString() });
 
     revalidateTag("books", { expire: 0 });
     // Also revalidate the specific book page so the render cache is busted

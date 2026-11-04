@@ -27,6 +27,10 @@ if (!getApps().length) {
 const adminAuth = getAuth();
 const db = getFirestore();
 
+function sanitizeLog(value: string): string {
+  return value.replace(/[\r\n]/g, "_");
+}
+
 async function provisionAdmin(email: string) {
   const user = await adminAuth.getUserByEmail(email);
   await adminAuth.setCustomUserClaims(user.uid, { admin: true });
@@ -34,7 +38,9 @@ async function provisionAdmin(email: string) {
     { role: "admin", email, updatedAt: new Date().toISOString() },
     { merge: true }
   );
-  console.log(`✅ Admin claim granted to ${email} (uid: ${user.uid})`);
+  const safeEmail = sanitizeLog(email);
+  const safeUid = sanitizeLog(user.uid);
+  console.log(`✅ Admin claim granted to ${safeEmail} (uid: ${safeUid})`);
   console.log("The user must sign out and sign back in for the claim to take effect.");
 }
 
@@ -45,6 +51,6 @@ if (!email) {
 }
 
 provisionAdmin(email).catch((err) => {
-  console.error("Failed:", err.message);
+  console.error("Failed:", sanitizeLog(err instanceof Error ? err.message : String(err)));
   process.exit(1);
 });

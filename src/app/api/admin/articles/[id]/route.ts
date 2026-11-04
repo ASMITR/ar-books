@@ -3,6 +3,17 @@ import { revalidateTag } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdmin } from "@/lib/firebase/auth-server";
 import cloudinary from "@/lib/cloudinary";
+import { z } from "zod";
+
+const articlePatchSchema = z.object({
+  title: z.string().min(1).optional(),
+  slug: z.string().min(1).optional(),
+  excerpt: z.string().optional(),
+  content: z.string().optional(),
+  coverImageUrl: z.string().url().nullable().optional(),
+  published: z.boolean().optional(),
+  publishedAt: z.string().nullable().optional(),
+});
 
 interface Params { params: Promise<{ id: string }> }
 
@@ -11,7 +22,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     await requireAdmin();
     const { id } = await params;
     const body = await req.json();
-    await adminDb.collection("articles").doc(id).update({ ...body, updatedAt: new Date().toISOString() });
+    const parsed = articlePatchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid fields" }, { status: 400 });
+    }
+    await adminDb.collection("articles").doc(id).update({ ...parsed.data, updatedAt: new Date().toISOString() });
     revalidateTag("articles", { expire: 0 });
     return NextResponse.json({ success: true });
   } catch (err: unknown) {

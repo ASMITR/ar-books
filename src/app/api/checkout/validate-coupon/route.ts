@@ -36,7 +36,12 @@ export async function POST(req: NextRequest) {
     }
 
     const { code, bookIds, categoryIds, subtotalPaise } = parsed.data;
-    const upperCode = code.toUpperCase().trim();
+    const upperCode = code.toUpperCase().trim().replace(/[^A-Z0-9\-]/g, "");
+    if (!upperCode) {
+      return NextResponse.json({ success: false, error: "Invalid coupon code" }, { status: 422 });
+    }
+    const safeBookIds = bookIds.map((id) => id.replace(/[^a-zA-Z0-9_\-]/g, "")).filter(Boolean);
+    const safeCategoryIds = categoryIds.map((id) => id.replace(/[^a-zA-Z0-9_\-]/g, "")).filter(Boolean);
 
     const sessionUser = await getSessionUser();
     const customerId = sessionUser?.uid ?? "guest";
@@ -92,13 +97,14 @@ export async function POST(req: NextRequest) {
       let isFirstOrder = false;
       if (offer.customerEligibility === "new_customers") {
         if (customerId === "guest") {
-          // For guests, we allow it — will be verified again at payment
-          isFirstOrder = true;
-        } else {
-          const pastOrders = await getOrdersByCustomer(customerId);
-          const paidOrders = pastOrders.filter((o) => o.paymentStatus === "paid");
-          isFirstOrder = paidOrders.length === 0;
+          return NextResponse.json(
+            { success: false, error: "Sign in to use this coupon" },
+            { status: 422 }
+          );
         }
+        const pastOrders = await getOrdersByCustomer(customerId);
+        const paidOrders = pastOrders.filter((o) => o.paymentStatus === "paid");
+        isFirstOrder = paidOrders.length === 0;
       }
 
       // Per-customer usage
@@ -114,8 +120,8 @@ export async function POST(req: NextRequest) {
 
       const result = validateOffer(offer, {
         subtotalPaise,
-        bookIds,
-        categoryIds,
+        bookIds: safeBookIds,
+        categoryIds: safeCategoryIds,
         isFirstOrder,
         customerId,
         perCustomerUsage,
@@ -146,7 +152,8 @@ export async function POST(req: NextRequest) {
       { status: 422 }
     );
   } catch (err) {
-    console.error("[validate-coupon]", err);
+    const safeErr = String(err instanceof Error ? err.message : err).replace(/[\r\n]/g, " ");
+    console.error("[validate-coupon]", safeErr);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

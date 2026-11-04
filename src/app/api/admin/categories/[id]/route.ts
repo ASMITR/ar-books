@@ -3,6 +3,7 @@ import { revalidateTag } from "next/cache";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireAdmin } from "@/lib/firebase/auth-server";
 import { FieldValue } from "firebase-admin/firestore";
+import { categorySchema } from "@/lib/validations";
 
 interface Params { params: Promise<{ id: string }> }
 
@@ -11,7 +12,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     await requireAdmin();
     const { id } = await params;
     const body = await req.json();
-    await adminDb.collection("categories").doc(id).update({ ...body, updatedAt: new Date().toISOString() });
+    const parsed = categorySchema.partial().safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid fields" }, { status: 400 });
+    }
+    await adminDb.collection("categories").doc(id).update({ ...parsed.data, updatedAt: new Date().toISOString() });
     revalidateTag("categories", { expire: 0 });
     return NextResponse.json({ success: true });
   } catch (err: unknown) {

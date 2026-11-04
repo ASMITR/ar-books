@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminDb } from "@/lib/firebase/admin";
+import { rateLimit } from "@/lib/ratelimit";
 
 const subscriptionSchema = z.object({
   email: z.string().trim().email().max(254),
@@ -9,7 +10,16 @@ const subscriptionSchema = z.object({
   source: z.enum(["homepage", "footer"]),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  const { allowed, retryAfterMs } = rateLimit(ip, { limit: 5, windowMs: 60_000 });
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } }
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();
