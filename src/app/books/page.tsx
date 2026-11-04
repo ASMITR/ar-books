@@ -90,7 +90,7 @@ function BookResults({ params, allBooks, categories }: { params: FilterParams; a
         {books.length} book{books.length !== 1 ? "s" : ""} found
       </p>
       {books.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-5">
           {books.map((book) => <BookCard key={book.id} book={book} />)}
         </div>
       ) : (

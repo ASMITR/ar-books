@@ -87,8 +87,8 @@ export function BookCarousel({
               {books.map((book) => (
                 <div
                   key={book.id}
-                  // Card widths: show ~2.2 on mobile, 3 on sm, 4 on md, 5 on lg, 6 on xl
-                  className="shrink-0 w-[46vw] sm:w-[30vw] md:w-[23vw] lg:w-[18vw] xl:w-[15.5%] max-w-[240px]"
+                  // Card widths: full-width on mobile (horizontal card), then narrower columns
+                  className="shrink-0 w-[88vw] sm:w-[44vw] md:w-[30vw] lg:w-[18vw] xl:w-[15.5%] max-w-[240px]"
                 >
                   <BookCard book={book} />
                 </div>
