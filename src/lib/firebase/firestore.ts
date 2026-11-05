@@ -37,21 +37,22 @@ export const getFeaturedBooks = unstable_cache(
   { revalidate: CATALOGUE_TTL, tags: ["books"] }
 );
 
-export const getBookBySlug = unstable_cache(
-  async (slug: string): Promise<Book | null> => {
-    const snap = await adminDb
-      .collection("books")
-      .where("slug", "==", slug)
-      .where("published", "==", true)
-      .limit(1)
-      .get();
-    if (snap.empty) return null;
-    const doc = snap.docs[0];
-    return { id: doc.id, ...doc.data() } as Book;
-  },
-  ["book-by-slug"],
-  { revalidate: CATALOGUE_TTL, tags: ["books"] }
-);
+export const getBookBySlug = (slug: string) =>
+  unstable_cache(
+    async (): Promise<Book | null> => {
+      const snap = await adminDb
+        .collection("books")
+        .where("slug", "==", slug)
+        .where("published", "==", true)
+        .limit(1)
+        .get();
+      if (snap.empty) return null;
+      const doc = snap.docs[0];
+      return { id: doc.id, ...doc.data() } as Book;
+    },
+    [`book-by-slug-${slug}`],
+    { revalidate: CATALOGUE_TTL, tags: ["books"] }
+  )();
 
 export async function getBookById(id: string): Promise<Book | null> {
   const doc = await adminDb.collection("books").doc(id).get();
@@ -91,20 +92,21 @@ export const getAllCategories = unstable_cache(
   { revalidate: CATALOGUE_TTL, tags: ["categories"] }
 );
 
-export const getCategoryBySlug = unstable_cache(
-  async (slug: string): Promise<Category | null> => {
-    const snap = await adminDb
-      .collection("categories")
-      .where("slug", "==", slug)
-      .limit(1)
-      .get();
-    if (snap.empty) return null;
-    const doc = snap.docs[0];
-    return { id: doc.id, ...doc.data() } as Category;
-  },
-  ["category-by-slug"],
-  { revalidate: CATALOGUE_TTL, tags: ["categories"] }
-);
+export const getCategoryBySlug = (slug: string) =>
+  unstable_cache(
+    async (): Promise<Category | null> => {
+      const snap = await adminDb
+        .collection("categories")
+        .where("slug", "==", slug)
+        .limit(1)
+        .get();
+      if (snap.empty) return null;
+      const doc = snap.docs[0];
+      return { id: doc.id, ...doc.data() } as Category;
+    },
+    [`category-by-slug-${slug}`],
+    { revalidate: CATALOGUE_TTL, tags: ["categories"] }
+  )();
 
 // ─── Orders ──────────────────────────────────────────────────────────────────
 export async function getOrderById(id: string): Promise<Order | null> {
@@ -164,20 +166,21 @@ export const getPublishedArticles = unstable_cache(
   { revalidate: CATALOGUE_TTL, tags: ["articles"] }
 );
 
-export const getArticleBySlug = unstable_cache(
-  async (slug: string): Promise<Article | null> => {
-    const snap = await adminDb
-      .collection("articles")
-      .where("slug", "==", slug)
-      .where("published", "==", true)
-      .limit(1)
-      .get();
-    if (snap.empty) return null;
-    return { id: snap.docs[0].id, ...snap.docs[0].data() } as Article;
-  },
-  ["article-by-slug"],
-  { revalidate: CATALOGUE_TTL, tags: ["articles"] }
-);
+export const getArticleBySlug = (slug: string) =>
+  unstable_cache(
+    async (): Promise<Article | null> => {
+      const snap = await adminDb
+        .collection("articles")
+        .where("slug", "==", slug)
+        .where("published", "==", true)
+        .limit(1)
+        .get();
+      if (snap.empty) return null;
+      return { id: snap.docs[0].id, ...snap.docs[0].data() } as Article;
+    },
+    [`article-by-slug-${slug}`],
+    { revalidate: CATALOGUE_TTL, tags: ["articles"] }
+  )();
 
 export async function getAdjacentArticles(
   currentId: string
@@ -282,19 +285,20 @@ export const getVisibleSeries = unstable_cache(
   { revalidate: CATALOGUE_TTL, tags: ["series"] }
 );
 
-export const getSeriesBySlug = unstable_cache(
-  async (slug: string): Promise<Series | null> => {
-    const snap = await adminDb
-      .collection("series")
-      .where("slug", "==", slug)
-      .limit(1)
-      .get();
-    if (snap.empty) return null;
-    return { id: snap.docs[0].id, ...snap.docs[0].data() } as Series;
-  },
-  ["series-by-slug"],
-  { revalidate: CATALOGUE_TTL, tags: ["series"] }
-);
+export const getSeriesBySlug = (slug: string) =>
+  unstable_cache(
+    async (): Promise<Series | null> => {
+      const snap = await adminDb
+        .collection("series")
+        .where("slug", "==", slug)
+        .limit(1)
+        .get();
+      if (snap.empty) return null;
+      return { id: snap.docs[0].id, ...snap.docs[0].data() } as Series;
+    },
+    [`series-by-slug-${slug}`],
+    { revalidate: CATALOGUE_TTL, tags: ["series"] }
+  )();
 
 export async function getSeriesById(id: string): Promise<Series | null> {
   const doc = await adminDb.collection("series").doc(id).get();
@@ -302,19 +306,20 @@ export async function getSeriesById(id: string): Promise<Series | null> {
   return { id: doc.id, ...doc.data() } as Series;
 }
 
-export const getBooksBySeries = unstable_cache(
-  async (seriesId: string): Promise<Book[]> => {
-    const snap = await adminDb
-      .collection("books")
-      .where("seriesId", "==", seriesId)
-      .where("published", "==", true)
-      .get();
-    const books = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Book));
-    return books.sort((a, b) => (a.seriesOrder ?? 0) - (b.seriesOrder ?? 0));
-  },
-  ["books-by-series"],
-  { revalidate: CATALOGUE_TTL, tags: ["books", "series"] }
-);
+export const getBooksBySeries = (seriesId: string) =>
+  unstable_cache(
+    async (): Promise<Book[]> => {
+      const snap = await adminDb
+        .collection("books")
+        .where("seriesId", "==", seriesId)
+        .where("published", "==", true)
+        .get();
+      const books = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Book));
+      return books.sort((a, b) => (a.seriesOrder ?? 0) - (b.seriesOrder ?? 0));
+    },
+    [`books-by-series-${seriesId}`],
+    { revalidate: CATALOGUE_TTL, tags: ["books", "series"] }
+  )();
 
 // ─── Referrals ──────────────────────────────────────────────────────────────────────────────
 export async function getUserByReferralCode(code: string) {
