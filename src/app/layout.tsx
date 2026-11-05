@@ -22,7 +22,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(
+    process.env.NODE_ENV === "production"
+      ? (process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.asmitrajaramkarbooks.store")
+      : (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000")
+  ),
   title: {
     default: "Asmit Rajaramkar — Author & eBook Store",
     template: "%s | Asmit Rajaramkar",
@@ -53,6 +57,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${cormorant.variable} ${inter.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+      </head>
       <body className="min-h-screen flex flex-col bg-[#FAF9F6] antialiased">
         <AuthProvider>
           <CartProvider>
@@ -63,9 +72,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* ── Google Analytics 4 ─────────────────────────────────────────── */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
-        <Script id="ga4-init" strategy="afterInteractive">
+        <Script id="ga4-init" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}

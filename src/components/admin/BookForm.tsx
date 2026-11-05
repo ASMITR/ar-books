@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { bookSchema, type BookInput } from "@/lib/validations";
-import type { Book, Category } from "@/types";
+import type { Book, Category, Series } from "@/types";
 import { AlertCircle, CheckCircle2, Upload, X, FileText, ImageIcon } from "lucide-react";
 import { AdminButton } from "@/components/admin/AdminButton";
 
@@ -152,6 +152,7 @@ function FileInput({
 interface Props {
   book?: Book;
   categories: Category[];
+  series: Series[];
   onSuccess?: () => void;
 }
 
@@ -159,7 +160,7 @@ interface Props {
 type UploadStatus = "idle" | "uploading" | "done" | "error";
 
 // ─── Main form ────────────────────────────────────────────────────────────────
-export function BookForm({ book, categories, onSuccess }: Props) {
+export function BookForm({ book, categories, series, onSuccess }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -193,6 +194,8 @@ export function BookForm({ book, categories, onSuccess }: Props) {
           priceRupees: book.priceRupees,
           originalPriceRupees: book.originalPriceRupees,
           categoryIds: book.categoryIds,
+          seriesId: book.seriesId ?? null,
+          seriesOrder: book.seriesOrder ?? null,
           pageCount: book.pageCount,
           language: book.language,
           published: book.published,
@@ -200,7 +203,7 @@ export function BookForm({ book, categories, onSuccess }: Props) {
           seoTitle: book.seoTitle ?? "",
           seoDescription: book.seoDescription ?? "",
         }
-      : { language: "English", published: false, featured: false, categoryIds: [] },
+      : { language: "English", published: false, featured: false, categoryIds: [], seriesId: null, seriesOrder: null },
   });
 
   const title = watch("title");
@@ -388,6 +391,32 @@ export function BookForm({ book, categories, onSuccess }: Props) {
           </div>
         </div>
       </SectionCard>
+
+      {/* ── Series ── */}
+      {series.length > 0 && (
+        <SectionCard title="Series">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>Series</label>
+              <select {...register("seriesId")} className={inputCls + " cursor-pointer"}>
+                <option value="">— None —</option>
+                {series.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Book # in Series</label>
+              <input
+                {...register("seriesOrder", { valueAsNumber: true })}
+                type="number"
+                placeholder="e.g. 1"
+                className={inputCls}
+              />
+            </div>
+          </div>
+        </SectionCard>
+      )}
 
       {/* ── Categories & Details ── */}
       <SectionCard title="Categories & Details">

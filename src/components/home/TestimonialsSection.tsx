@@ -84,7 +84,7 @@ export function TestimonialsSection() {
         <div className="absolute inset-y-0 right-0 w-20 sm:w-32 bg-gradient-to-l from-[#FFFCF7] to-transparent z-10 pointer-events-none" />
 
         <div
-          className="flex gap-3 w-max"
+          className="flex gap-3 w-max marquee-track"
           style={{ animation: "tmScroll 32s linear infinite" }}
         >
           {TRACK.map((t, idx) => (
@@ -125,12 +125,6 @@ export function TestimonialsSection() {
         </div>
       </div>
 
-      <style>{`
-        @keyframes tmScroll {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-33.333%); }
-        }
-      `}</style>
     </section>
   );
 }

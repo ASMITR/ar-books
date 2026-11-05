@@ -8,6 +8,21 @@
   to { opacity: var(--tw-exit-opacity, 1); transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0)); }
 }
 
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes tmScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-33.333%); }
+}
+
+@keyframes searchPopIn {
+  from { opacity: 0; transform: scale(0.95) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 @layer utilities {
   .animate-in { animation-name: enter; animation-duration: var(--tw-duration, 150ms); --tw-enter-opacity: initial; --tw-enter-scale: initial; --tw-enter-rotate: initial; --tw-enter-translate-x: initial; --tw-enter-translate-y: initial; }
   .animate-out { animation-name: exit; animation-duration: var(--tw-duration, 150ms); --tw-exit-opacity: initial; --tw-exit-scale: initial; --tw-exit-rotate: initial; --tw-exit-translate-x: initial; --tw-exit-translate-y: initial; }
@@ -162,9 +177,39 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
-  /* Skip rendering work for off-screen sections — major paint speedup */
+  /* Skip rendering work for off-screen sections */
   .cv-auto {
     content-visibility: auto;
     contain-intrinsic-size: auto 600px;
+  }
+  /* Compositor layer hints */
+  .marquee-track {
+    will-change: transform;
+  }
+  /* Rotating word animation */
+  .rotating-word {
+    color: #8B5E3C;
+    display: inline-block;
+    will-change: opacity, transform;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.32s ease, transform 0.32s ease;
+  }
+  .rotating-word--hidden {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  /* Hero entrance animation */
+  .hero-fade-up {
+    animation: heroFadeUp 0.6s ease both;
+  }
+}
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

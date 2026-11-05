@@ -9,6 +9,19 @@ export type {
   MembershipCoupon,
   ActiveMembership,
 } from "./subscription";
+// ─── Series ──────────────────────────────────────────────────────────────────
+export interface Series {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  coverImageUrl?: string;
+  sortOrder: number;
+  visible: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Book {
   id: string;
   title: string;
@@ -20,6 +33,8 @@ export interface Book {
   originalPriceRupees?: number;
   currency: string;
   categoryIds: string[];
+  seriesId?: string | null;
+  seriesOrder?: number | null;
   coverImageUrl?: string;
   coverImagePath?: string;
   privatePdfPath?: string;

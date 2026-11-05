@@ -39,6 +39,8 @@ export async function POST(req: NextRequest) {
       privatePdfUrl: body.privatePdfUrl ?? null,
       previewPdfPath: body.previewPdfPath ?? null,
       previewPdfUrl: body.previewPdfUrl ?? null,
+      seriesId: parsed.data.seriesId ?? null,
+      seriesOrder: parsed.data.seriesOrder ?? null,
       whatYouLearn: body.whatYouLearn ?? [],
       targetAudience: body.targetAudience ?? null,
       tableOfContents: body.tableOfContents ?? [],

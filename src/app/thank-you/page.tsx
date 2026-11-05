@@ -12,6 +12,7 @@ import type { Order } from "@/types";
 import type { Metadata } from "next";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { DownloadCard } from "@/components/shared/DownloadCard";
+import { AutoDownloader } from "@/components/shared/AutoDownloader";
 
 export const metadata: Metadata = { title: "Thank You for Your Purchase — AR Books" };
 
@@ -221,6 +222,9 @@ export default async function ThankYouPage({ searchParams }: Props) {
             </div>
           )}
         </div>
+
+        {/* ── Auto-download all purchased books ───────────────────────── */}
+        <AutoDownloader bookIds={order.items.map((item) => item.bookId)} />
 
         {/* ── Downloads ────────────────────────────────────────────────── */}
         <div className="bg-[#FFFCF7] border border-[#E6DFD5] overflow-hidden">

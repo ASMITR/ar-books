@@ -4,7 +4,7 @@ import { formatINR } from "@/lib/currency";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import type { Metadata } from "next";
-import type { Order, Book } from "@/types";
+import type { Order } from "@/types";
 import {
   BookOpen, ShoppingBag, Users, TrendingUp,
   Clock, RefreshCw, DollarSign, BookMarked,
@@ -13,6 +13,7 @@ import {
 import { AdminButton } from "@/components/admin/AdminButton";
 import { ClearCacheButton } from "@/components/admin/ClearCacheButton";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Admin Dashboard" };
 
 const statusStyles: Record<string, { cls: string; dot: string }> = {
@@ -29,39 +30,44 @@ const quickActions = [
 ];
 
 export default async function AdminDashboardPage() {
-  const [booksSnap, ordersSnap, customersSnap] = await Promise.all([
-    adminDb.collection("books").get(),
-    adminDb.collection("orders").orderBy("createdAt", "desc").get(),
-    adminDb.collection("users").get(),
+  const [
+    publishedSnap, draftSnap,
+    paidSnap, pendingSnap, refundedSnap,
+    recentOrdersSnap, customersSnap,
+  ] = await Promise.all([
+    adminDb.collection("books").where("published", "==", true).select().get(),
+    adminDb.collection("books").where("published", "==", false).select().get(),
+    adminDb.collection("orders").where("paymentStatus", "==", "paid").select("totalRupees").get(),
+    adminDb.collection("orders").where("paymentStatus", "==", "pending").select().get(),
+    adminDb.collection("orders").where("paymentStatus", "==", "refunded").select("totalRupees").get(),
+    adminDb.collection("orders").orderBy("createdAt", "desc").limit(8).get(),
+    adminDb.collection("users").select().get(),
   ]);
 
-  const books  = booksSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Book));
-  const orders = ordersSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
-
-  const publishedBooks  = books.filter((b) => b.published).length;
-  const draftBooks      = books.filter((b) => !b.published).length;
-  const paidOrders      = orders.filter((o) => o.paymentStatus === "paid");
-  const pendingOrders   = orders.filter((o) => o.paymentStatus === "pending");
-  const refundedOrders  = orders.filter((o) => o.paymentStatus === "refunded");
-  const netSales        = paidOrders.reduce((s, o) => s + o.totalRupees, 0);
-  const refundTotal     = refundedOrders.reduce((s, o) => s + o.totalRupees, 0);
-  const recentOrders    = orders.slice(0, 8);
+  const publishedBooks = publishedSnap.size;
+  const draftBooks     = draftSnap.size;
+  const paidOrders     = paidSnap.docs.map((d) => d.data() as Pick<Order, "totalRupees">);
+  const refundedOrders = refundedSnap.docs.map((d) => d.data() as Pick<Order, "totalRupees">);
+  const netSales       = paidOrders.reduce((s, o) => s + o.totalRupees, 0);
+  const refundTotal    = refundedOrders.reduce((s, o) => s + o.totalRupees, 0);
+  const recentOrders   = recentOrdersSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
+  const totalOrders    = paidSnap.size + pendingSnap.size + refundedSnap.size;
 
   const now = new Date();
   const greeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 17 ? "Good afternoon" : "Good evening";
 
   const primaryStats = [
-    { label: "Net Revenue",     value: formatINR(netSales - refundTotal), icon: DollarSign, accent: "#0a0a0a",  bg: "#FFC928" },
-    { label: "Verified Sales",  value: paidOrders.length,                 icon: TrendingUp, accent: "#16a34a",  bg: "#16a34a" },
-    { label: "Customers",       value: customersSnap.size,                icon: Users,      accent: "#6366f1",  bg: "#6366f1" },
-    { label: "Total Orders",    value: orders.length,                     icon: ShoppingBag,accent: "#789185",  bg: "#789185" },
+    { label: "Net Revenue",    value: formatINR(netSales - refundTotal), icon: DollarSign, accent: "#0a0a0a",  bg: "#FFC928" },
+    { label: "Verified Sales", value: paidSnap.size,                     icon: TrendingUp, accent: "#16a34a",  bg: "#16a34a" },
+    { label: "Customers",      value: customersSnap.size,                icon: Users,      accent: "#6366f1",  bg: "#6366f1" },
+    { label: "Total Orders",   value: totalOrders,                       icon: ShoppingBag,accent: "#789185",  bg: "#789185" },
   ];
 
   const secondaryStats = [
-    { label: "Published",  value: publishedBooks,       icon: BookOpen,   accent: "#203A2B", bg: "#203A2B" },
-    { label: "Drafts",     value: draftBooks,           icon: BookMarked, accent: "#94a3b8", bg: "#94a3b8" },
-    { label: "Pending",    value: pendingOrders.length, icon: Clock,      accent: "#d97706", bg: "#d97706" },
-    { label: "Refunds",    value: refundedOrders.length,icon: RefreshCw,  accent: "#dc2626", bg: "#dc2626" },
+    { label: "Published", value: publishedBooks,    icon: BookOpen,   accent: "#203A2B", bg: "#203A2B" },
+    { label: "Drafts",    value: draftBooks,        icon: BookMarked, accent: "#94a3b8", bg: "#94a3b8" },
+    { label: "Pending",   value: pendingSnap.size,  icon: Clock,      accent: "#d97706", bg: "#d97706" },
+    { label: "Refunds",   value: refundedSnap.size, icon: RefreshCw,  accent: "#dc2626", bg: "#dc2626" },
   ];
 
   return (
@@ -196,10 +202,10 @@ export default async function AdminDashboardPage() {
               <p className="text-[10.5px] font-body font-semibold text-[#b5b0a9] uppercase tracking-[0.09em] mb-4">Catalog Summary</p>
               <div className="flex flex-col gap-3">
                 {[
-                  { label: "Published books",  value: publishedBooks       },
-                  { label: "Draft books",       value: draftBooks           },
-                  { label: "Total customers",   value: customersSnap.size   },
-                  { label: "Total orders",      value: orders.length        },
+                  { label: "Published books", value: publishedBooks     },
+                  { label: "Draft books",      value: draftBooks         },
+                  { label: "Total customers",  value: customersSnap.size },
+                  { label: "Total orders",     value: totalOrders        },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex justify-between items-center">
                     <span className="text-[12.5px] font-body text-[#999]">{label}</span>

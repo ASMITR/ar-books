@@ -6,36 +6,24 @@ import {
   updatePassword, reauthenticateWithCredential, reauthenticateWithPopup,
   EmailAuthProvider, GoogleAuthProvider, deleteUser,
 } from "firebase/auth";
-import { Eye, EyeOff, Trash2, Shield, CheckCircle2, XCircle, Lock, X, Check, Loader2 } from "lucide-react";
+import {
+  Eye, EyeOff, Trash2, Shield, CheckCircle2, XCircle,
+  Lock, X, Check, Loader2, ShieldCheck,
+} from "lucide-react";
+import PasswordRules from "@/components/auth/PasswordRules";
 
 const inputCls = "w-full bg-[#F5F2EE] border border-black/[0.08] px-4 py-3 text-[13.5px] font-body text-[#111] placeholder:text-[#C0BBB3] focus:outline-none focus:border-[#203A2B] focus:bg-white focus:ring-2 focus:ring-[#203A2B]/8 transition-all rounded-xl";
-
-function SectionCard({ icon: Icon, iconBg = "bg-[#F2EFE9]", iconColor = "text-[#203A2B]", title, children }: {
-  icon: React.ElementType; iconBg?: string; iconColor?: string; title: string; children: React.ReactNode;
-}) {
-  return (
-    <div className="bg-white border border-black/[0.06] rounded-2xl overflow-hidden w-full max-w-lg">
-      <div className="px-5 sm:px-6 py-4 border-b border-black/[0.05] flex items-center gap-2.5">
-        <div className={`w-7 h-7 ${iconBg} rounded-lg flex items-center justify-center shrink-0`}>
-          <Icon size={13} className={iconColor} strokeWidth={2} />
-        </div>
-        <h2 className="font-heading text-[15px] font-semibold text-[#111]">{title}</h2>
-      </div>
-      <div className="px-5 sm:px-6 py-5">{children}</div>
-    </div>
-  );
-}
 
 export default function SecurityPage() {
   const { user } = useAuth();
 
-  const [currentPw, setCurrentPw]   = useState("");
-  const [newPw, setNewPw]           = useState("");
-  const [showPw, setShowPw]         = useState(false);
-  const [pwSuccess, setPwSuccess]   = useState(false);
-  const [pwError, setPwError]       = useState<string | null>(null);
-  const [pwLoading, setPwLoading]   = useState(false);
-  const [verifyMsg, setVerifyMsg]   = useState<string | null>(null);
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw]         = useState("");
+  const [showPw, setShowPw]       = useState(false);
+  const [pwSuccess, setPwSuccess] = useState(false);
+  const [pwError, setPwError]     = useState<string | null>(null);
+  const [pwLoading, setPwLoading] = useState(false);
+  const [verifyMsg, setVerifyMsg] = useState<string | null>(null);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword]   = useState("");
@@ -106,18 +94,29 @@ export default function SecurityPage() {
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
 
-      {/* Header */}
-      <div>
-        <p className="text-[10px] font-body uppercase tracking-[0.28em] text-[#B8B3AB] mb-1.5">Account</p>
-        <h1 className="font-heading text-[28px] sm:text-[32px] font-bold text-[#111] leading-none">Security</h1>
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-[#0D1F17] rounded-2xl flex items-center justify-center shrink-0">
+          <ShieldCheck size={16} className="text-[#FFC928]" strokeWidth={2} />
+        </div>
+        <div>
+          <p className="text-[10px] font-body uppercase tracking-[0.25em] text-[#B8B3AB] leading-none mb-1">Account</p>
+          <h1 className="font-heading text-[26px] sm:text-[30px] font-bold text-[#111] leading-none">Security</h1>
+        </div>
       </div>
 
-      {/* Email verification */}
-      <SectionCard icon={Shield} title="Email Verification">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-3">
+      {/* ── Email verification ──────────────────────────────────────────── */}
+      <div className="bg-white border border-black/[0.06] rounded-3xl overflow-hidden">
+        <div className="px-5 sm:px-6 py-4 border-b border-black/[0.05] flex items-center gap-2.5">
+          <div className="w-7 h-7 bg-[#F2EFE9] rounded-xl flex items-center justify-center shrink-0">
+            <Shield size={13} className="text-[#203A2B]" strokeWidth={2} />
+          </div>
+          <h2 className="font-heading text-[14px] font-semibold text-[#111]">Email Verification</h2>
+        </div>
+        <div className="px-5 sm:px-6 py-5 flex flex-col gap-4">
+          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#FAFAF8] border border-black/[0.05]">
             {user?.emailVerified ? (
               <>
                 <CheckCircle2 size={18} className="text-emerald-500 shrink-0" strokeWidth={2} />
@@ -128,7 +127,7 @@ export default function SecurityPage() {
               </>
             ) : (
               <>
-                <XCircle size={18} className="text-red-500 shrink-0" strokeWidth={2} />
+                <XCircle size={18} className="text-amber-500 shrink-0" strokeWidth={2} />
                 <div>
                   <p className="text-[13px] font-body font-semibold text-[#111]">Email not verified</p>
                   <p className="text-[11px] font-body text-[#B8B3AB]">Please verify your email address.</p>
@@ -148,11 +147,17 @@ export default function SecurityPage() {
             </p>
           )}
         </div>
-      </SectionCard>
+      </div>
 
-      {/* Change password */}
-      <SectionCard icon={Lock} title="Change Password">
-        <form onSubmit={handleChangePassword} className="flex flex-col gap-4">
+      {/* ── Change password ─────────────────────────────────────────────── */}
+      <div className="bg-white border border-black/[0.06] rounded-3xl overflow-hidden">
+        <div className="px-5 sm:px-6 py-4 border-b border-black/[0.05] flex items-center gap-2.5">
+          <div className="w-7 h-7 bg-[#F2EFE9] rounded-xl flex items-center justify-center shrink-0">
+            <Lock size={13} className="text-[#203A2B]" strokeWidth={2} />
+          </div>
+          <h2 className="font-heading text-[14px] font-semibold text-[#111]">Change Password</h2>
+        </div>
+        <form onSubmit={handleChangePassword} className="px-5 sm:px-6 py-5 flex flex-col gap-4 max-w-lg">
           <div className="flex flex-col gap-1.5">
             <label className="text-[10.5px] font-body font-bold uppercase tracking-[0.12em] text-[#999]">Current Password</label>
             <input type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)}
@@ -168,6 +173,7 @@ export default function SecurityPage() {
                 {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
+            <PasswordRules value={newPw} />
           </div>
 
           {pwSuccess && (
@@ -189,12 +195,18 @@ export default function SecurityPage() {
             {pwLoading ? "Updating…" : "Update Password"}
           </button>
         </form>
-      </SectionCard>
+      </div>
 
-      {/* Delete account */}
-      <SectionCard icon={Trash2} iconBg="bg-red-50" iconColor="text-red-500" title="Delete Account">
-        <div className="flex flex-col gap-4">
-          <p className="text-[13px] font-body text-[#888] leading-relaxed">
+      {/* ── Danger zone ─────────────────────────────────────────────────── */}
+      <div className="bg-white border border-red-100 rounded-3xl overflow-hidden">
+        <div className="px-5 sm:px-6 py-4 border-b border-red-100/80 flex items-center gap-2.5">
+          <div className="w-7 h-7 bg-red-50 rounded-xl flex items-center justify-center shrink-0">
+            <Trash2 size={13} className="text-red-500" strokeWidth={2} />
+          </div>
+          <h2 className="font-heading text-[14px] font-semibold text-[#111]">Danger Zone</h2>
+        </div>
+        <div className="px-5 sm:px-6 py-5 flex flex-col gap-4">
+          <p className="text-[13px] font-body text-[#888] leading-relaxed max-w-lg">
             Permanently delete your account and all associated data — including orders, downloads, and your library.
             <strong className="text-red-500 font-semibold"> This cannot be undone.</strong>
           </p>
@@ -203,16 +215,16 @@ export default function SecurityPage() {
             <Trash2 size={13} /> Delete My Account
           </button>
         </div>
-      </SectionCard>
+      </div>
 
-      {/* Delete modal */}
+      {/* ── Delete modal ────────────────────────────────────────────────── */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-0 sm:px-4 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget) closeDeleteModal(); }}>
-          <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden">
+          <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-black/[0.05]">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 bg-red-50 rounded-lg flex items-center justify-center">
+                <div className="w-7 h-7 bg-red-50 rounded-xl flex items-center justify-center">
                   <Trash2 size={13} className="text-red-500" strokeWidth={2} />
                 </div>
                 <h3 className="font-heading text-[15px] font-bold text-[#111]">Delete Account</h3>

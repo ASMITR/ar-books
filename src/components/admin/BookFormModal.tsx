@@ -2,16 +2,17 @@
 
 import { AdminModal } from "./AdminModal";
 import { BookForm } from "./BookForm";
-import type { Book, Category } from "@/types";
+import type { Book, Category, Series } from "@/types";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   book?: Book;
   categories: Category[];
+  series: Series[];
 }
 
-export function BookFormModal({ open, onClose, book, categories }: Props) {
+export function BookFormModal({ open, onClose, book, categories, series }: Props) {
   return (
     <AdminModal
       open={open}
@@ -20,7 +21,7 @@ export function BookFormModal({ open, onClose, book, categories }: Props) {
       maxWidth="max-w-2xl"
     >
       <div className="p-6">
-        <BookForm book={book} categories={categories} onSuccess={onClose} />
+        <BookForm book={book} categories={categories} series={series} onSuccess={onClose} />
       </div>
     </AdminModal>
   );

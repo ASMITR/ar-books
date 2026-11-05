@@ -3,6 +3,7 @@ import {
   getPublishedBooks,
   getVisibleCategories,
   getPublishedArticles,
+  getVisibleSeries,
 } from "@/lib/firebase/firestore";
 
 const BASE_URL = "https://www.asmitrajaramkarbooks.store";
@@ -13,10 +14,11 @@ export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ── Fetch live data in parallel ────────────────────────────────────────────
-  const [books, categories, articles] = await Promise.all([
+  const [books, categories, articles, allSeries] = await Promise.all([
     getPublishedBooks(),
     getVisibleCategories(),
     getPublishedArticles(),
+    getVisibleSeries(),
   ]);
 
   // ── Static pages ───────────────────────────────────────────────────────────
@@ -38,6 +40,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/series`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
     },
     {
       url: `${BASE_URL}/categories`,
@@ -107,5 +115,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...bookPages, ...categoryPages, ...articlePages];
+  // ── Series pages ──────────────────────────────────────────────────────────────────────────────
+  const seriesPages: MetadataRoute.Sitemap = allSeries.map((s) => ({
+    url: `${BASE_URL}/series/${s.slug}`,
+    lastModified: new Date(s.updatedAt),
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...bookPages, ...categoryPages, ...articlePages, ...seriesPages];
 }

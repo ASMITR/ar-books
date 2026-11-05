@@ -14,6 +14,7 @@ import type { Book, Category } from "@/types";
 export default function AdminBooksPage() {
   const [books, setBooks] = useState<Book[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [series, setSeries] = useState<import("@/types").Series[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editBook, setEditBook] = useState<Book | undefined>();
   const [deleteTarget, setDeleteTarget] = useState<Book | null>(null);
@@ -21,14 +22,17 @@ export default function AdminBooksPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const fetchBooks = useCallback(async () => {
-    const [bRes, cRes] = await Promise.all([
+    const [bRes, cRes, sRes] = await Promise.all([
       fetch("/api/admin/books"),
       fetch("/api/admin/categories"),
+      fetch("/api/admin/series"),
     ]);
     const bJson = await bRes.json();
     const cJson = await cRes.json();
+    const sJson = await sRes.json();
     if (bJson.success) setBooks(bJson.data);
     if (cJson.success) setCategories(cJson.data);
+    if (sJson.success) setSeries(sJson.data);
   }, []);
 
   useEffect(() => { fetchBooks(); }, [fetchBooks]);
@@ -155,7 +159,7 @@ export default function AdminBooksPage() {
         )}
       </div>
 
-      <BookFormModal open={modalOpen} onClose={handleClose} book={editBook} categories={categories} />
+      <BookFormModal open={modalOpen} onClose={handleClose} book={editBook} categories={categories} series={series} />
 
       {/* Delete confirmation modal */}
       <AdminModal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delete Book">

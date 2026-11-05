@@ -19,8 +19,12 @@ const WORDS = ["Bold Thinkers", "Curious Souls", "Every Mind", "Your Growth", "N
 function RotatingWord() {
   const [idx,  setIdx]  = useState(0);
   const [show, setShow] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
+    if (!mounted) return;
     const id = setInterval(() => {
       setShow(false);
       setTimeout(() => {
@@ -29,18 +33,16 @@ function RotatingWord() {
       }, 320);
     }, 3000);
     return () => clearInterval(id);
-  }, []);
+  }, [mounted]);
+
+  // Render a static non-animated span on the server to avoid any hydration mismatch
+  if (!mounted) {
+    return <span className="italic" style={{ color: "#8B5E3C" }}>{WORDS[0]}</span>;
+  }
 
   return (
     <span
-      className="italic"
-      style={{
-        color:      "#8B5E3C",
-        display:    "inline-block",
-        opacity:    show ? 1 : 0,
-        transform:  show ? "translateY(0)" : "translateY(10px)",
-        transition: "opacity 0.32s ease, transform 0.32s ease",
-      }}
+      className={`italic rotating-word${!show ? " rotating-word--hidden" : ""}`}
     >
       {WORDS[idx]}
     </span>
@@ -158,12 +160,6 @@ function TrustBadge({ Icon, text }: { Icon: React.ElementType; text: string }) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export function HeroSection({ books, headline, subtext }: HeroSectionProps) {
 
-  // CSS-only fade-up: no JS state, no hydration delay, plays on page paint
-  const fadeUp = (delay = 0): React.CSSProperties => ({
-    animation:       "heroFadeUp 0.6s ease both",
-    animationDelay:  `${delay}s`,
-  });
-
   return (
     <section
       className="relative w-full overflow-hidden"
@@ -215,7 +211,7 @@ export function HeroSection({ books, headline, subtext }: HeroSectionProps) {
         <div className="flex-1 flex flex-col justify-center lg:pr-12 xl:pr-20 text-center lg:text-left order-2 lg:order-1">
 
           {/* Eyebrow */}
-          <div className="flex items-center justify-center lg:justify-start gap-3 mb-6" style={fadeUp(0)}>
+          <div className="flex items-center justify-center lg:justify-start gap-3 mb-6 hero-fade-up" style={{ animationDelay: "0s" }}>
             <span className="h-px w-7 bg-[#C6A66B]" />
             <span className="font-body text-[10px] font-bold uppercase tracking-[0.36em] text-[#8B5E3C]">
               AR Books &nbsp;·&nbsp; Official eBook Store
@@ -226,8 +222,8 @@ export function HeroSection({ books, headline, subtext }: HeroSectionProps) {
           {/* Headline */}
           <h1
             className="font-heading font-bold text-[#1a2419] tracking-tight leading-[1.06]
-              text-[42px] sm:text-[54px] lg:text-[56px] xl:text-[66px] mb-5"
-            style={fadeUp(0.08)}
+              text-[42px] sm:text-[54px] lg:text-[56px] xl:text-[66px] mb-5 hero-fade-up"
+            style={{ animationDelay: "0.08s" }}
           >
             {headline ?? (
               <>
@@ -241,8 +237,8 @@ export function HeroSection({ books, headline, subtext }: HeroSectionProps) {
 
           {/* Sparkle divider */}
           <div
-            className="flex items-center justify-center lg:justify-start gap-3 mb-6"
-            style={fadeUp(0.14)}
+            className="flex items-center justify-center lg:justify-start gap-3 mb-6 hero-fade-up"
+            style={{ animationDelay: "0.14s" }}
           >
             <span className="h-px w-14 bg-[#C6A66B]/40" />
             <Sparkles size={11} className="text-[#C6A66B]" />
@@ -252,8 +248,8 @@ export function HeroSection({ books, headline, subtext }: HeroSectionProps) {
           {/* Subtext */}
           <p
             className="font-body text-[#555f52] text-[14.5px] sm:text-[15.5px] leading-[1.85]
-              mb-9 max-w-[460px] mx-auto lg:mx-0"
-            style={fadeUp(0.19)}
+              mb-9 max-w-[460px] mx-auto lg:mx-0 hero-fade-up"
+            style={{ animationDelay: "0.19s" }}
           >
             {subtext ??
               "Handpicked titles across business, fiction, finance, and personal growth — written to inspire, inform, and stay with you long after the last page."}
@@ -261,8 +257,8 @@ export function HeroSection({ books, headline, subtext }: HeroSectionProps) {
 
           {/* CTAs */}
           <div
-            className="flex flex-wrap items-center justify-center lg:justify-start gap-4 mb-10"
-            style={fadeUp(0.26)}
+            className="flex flex-wrap items-center justify-center lg:justify-start gap-4 mb-10 hero-fade-up"
+            style={{ animationDelay: "0.26s" }}
           >
             {/* Primary — dark forest */}
             <Link
@@ -301,8 +297,8 @@ export function HeroSection({ books, headline, subtext }: HeroSectionProps) {
           {/* Trust badges */}
           <div
             className="flex flex-wrap items-center justify-center lg:justify-start gap-x-7 gap-y-3
-              pt-6 border-t border-[#203A2B]/10"
-            style={fadeUp(0.32)}
+              pt-6 border-t border-[#203A2B]/10 hero-fade-up"
+            style={{ animationDelay: "0.32s" }}
           >
             <TrustBadge Icon={BookOpen}    text="Handpicked titles" />
             <TrustBadge Icon={Download}    text="Instant download"  />
@@ -313,8 +309,8 @@ export function HeroSection({ books, headline, subtext }: HeroSectionProps) {
         {/* ══ RIGHT: books + stats ════════════════════════════════════ */}
         <div
           className="relative flex flex-col items-center justify-center
-            order-1 lg:order-2 lg:w-[46%] xl:w-[44%] shrink-0"
-          style={fadeUp(0.06)}
+            order-1 lg:order-2 lg:w-[46%] xl:w-[44%] shrink-0 hero-fade-up"
+          style={{ animationDelay: "0.06s" }}
         >
           {/* Subtle vertical rule */}
           <div
@@ -339,8 +335,8 @@ export function HeroSection({ books, headline, subtext }: HeroSectionProps) {
             {/* Stats */}
             <div
               className="flex items-center justify-center gap-8 sm:gap-10 mt-8 pt-6
-                border-t border-[#203A2B]/10"
-              style={fadeUp(0.38)}
+                border-t border-[#203A2B]/10 hero-fade-up"
+              style={{ animationDelay: "0.38s" }}
             >
               <StatItem value="10+"  label="eBooks"   />
               <span className="h-8 w-px bg-[#C6A66B]/30" />
@@ -351,8 +347,8 @@ export function HeroSection({ books, headline, subtext }: HeroSectionProps) {
 
             {/* Stars */}
             <div
-              className="flex items-center justify-center gap-2 mt-4"
-              style={fadeUp(0.44)}
+              className="flex items-center justify-center gap-2 mt-4 hero-fade-up"
+              style={{ animationDelay: "0.44s" }}
             >
               <div className="flex gap-0.5">
                 {[...Array(5)].map((_, i) => (
@@ -371,14 +367,6 @@ export function HeroSection({ books, headline, subtext }: HeroSectionProps) {
         className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none z-10"
         style={{ background: "linear-gradient(to bottom, transparent, #FAF9F6)" }}
       />
-
-      {/* CSS keyframes for entrance animations — no JS, plays on page paint */}
-      <style>{`
-        @keyframes heroFadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </section>
   );
 }

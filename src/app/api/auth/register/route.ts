@@ -23,7 +23,7 @@ function generateReferralCode(uid: string): string {
  *
  * Called immediately after a new Firebase account is created on the client.
  * - Verifies the ID token
- * - Confirms the account is brand-new (< 2 min old)
+ * - Confirms the account is brand-new (no existing Firestore user doc)
  * - Writes a user document to Firestore `users` collection
  * - Sends a welcome email via Resend
  *
@@ -48,11 +48,10 @@ export async function POST(req: NextRequest) {
     const decoded = await adminAuth.verifyIdToken(idToken);
     const userRecord = await adminAuth.getUser(decoded.uid);
 
-    const createdAt = new Date(userRecord.metadata.creationTime).getTime();
-    const ageMs = Date.now() - createdAt;
-    const TWO_MINUTES = 2 * 60 * 1000;
-
-    if (ageMs > TWO_MINUTES) {
+    // Treat as new registration only if no Firestore user doc exists yet.
+    // The age-based check fails for Google accounts created outside this app.
+    const existingDoc = await adminDb.collection("users").doc(decoded.uid).get();
+    if (existingDoc.exists) {
       return NextResponse.json({ skipped: true });
     }
 
@@ -70,7 +69,7 @@ export async function POST(req: NextRequest) {
     // Resolve referrer if a valid referral code was provided
     let referrerId: string | null = null;
     if (referralCode && typeof referralCode === "string") {
-      const referrer = await getUserByReferralCode(referralCode.trim());
+      const referrer = await getUserByReferralCode(referralCode.trim().toUpperCase());
       if (referrer && referrer.uid !== userRecord.uid) {
         referrerId = referrer.uid;
       }
@@ -104,7 +103,8 @@ export async function POST(req: NextRequest) {
 
       const batch = adminDb.batch();
 
-      // Create a 10% discount coupon for the referrer
+      // Create a 10% discount coupon for the referrer (expires in 90 days)
+      const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
       batch.set(couponRef, {
         code: rewardCode,
         discountType: "percent",
@@ -112,6 +112,7 @@ export async function POST(req: NextRequest) {
         usageLimit: 1,
         usageCount: 0,
         enabled: true,
+        expiresAt,
         createdAt: now,
       });
 

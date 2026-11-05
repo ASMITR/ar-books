@@ -18,17 +18,13 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   const [results, setResults]   = useState<Book[]>([]);
   const [loading, setLoading]   = useState(false);
   const [searched, setSearched] = useState(false);
-  const [mounted, setMounted]   = useState(false);
   const inputRef                = useRef<HTMLInputElement>(null);
   const debounceRef             = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Mount guard for portal (SSR safe)
-  useEffect(() => { setMounted(true); }, []);
 
   // Focus + body scroll lock
   useEffect(() => {
     if (open) {
-      setTimeout(() => inputRef.current?.focus(), 50);
+      requestAnimationFrame(() => inputRef.current?.focus());
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -71,7 +67,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
     }, 300);
   };
 
-  if (!mounted || !open) return null;
+  if (!open) return null;
 
   const modal = (
     <div className="fixed inset-0 z-[999] flex items-start justify-center px-4 pt-[12vh]">
@@ -207,13 +203,6 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
         </div>
       </div>
 
-      {/* Pop-in keyframe */}
-      <style>{`
-        @keyframes searchPopIn {
-          from { opacity: 0; transform: scale(0.95) translateY(-8px); }
-          to   { opacity: 1; transform: scale(1)    translateY(0);     }
-        }
-      `}</style>
     </div>
   );
 

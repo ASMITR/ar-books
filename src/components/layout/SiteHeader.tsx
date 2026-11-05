@@ -16,6 +16,7 @@ import { SearchModal } from "@/components/shared/SearchModal";
 const navLinks = [
   { label: "Home",       href: "/"           },
   { label: "Books",      href: "/books"      },
+  { label: "Series",     href: "/series"     },
   { label: "Categories", href: "/categories" },
   { label: "Membership", href: "/membership" },
   { label: "Offers",     href: "/#offers", noActive: true },
@@ -43,7 +44,12 @@ export function SiteHeader() {
 
   useEffect(() => {
     if (!user) { setRole(null); return; }
-    fetch("/api/auth/me").then(r => r.json()).then(d => setRole(d.role ?? null)).catch(() => setRole(null));
+    const controller = new AbortController();
+    fetch("/api/auth/me", { signal: controller.signal })
+      .then(r => r.json())
+      .then(d => setRole(d.role ?? null))
+      .catch(() => {});
+    return () => controller.abort();
   }, [user?.uid]);
 
   useEffect(() => { setMobileOpen(false); setAccountOpen(false); }, [pathname]);
@@ -105,7 +111,7 @@ export function SiteHeader() {
             {/* Logo */}
             <Link href="/" className="shrink-0 flex items-center">
               <Image src="/Horizontal_Logo.png" alt="Asmit Rajaramkar Books" width={150} height={38}
-                className="h-[26px] sm:h-[28px] w-auto" priority />
+                className="h-[26px] sm:h-[28px] w-auto" sizes="150px" priority />
             </Link>
 
             {/* Desktop nav */}

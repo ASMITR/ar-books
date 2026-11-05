@@ -10,6 +10,7 @@ import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleA
 import { auth } from "@/lib/firebase/client";
 import { registerSchema, type RegisterInput } from "@/lib/validations";
 import { Eye, EyeOff, ArrowRight, Gift } from "lucide-react";
+import PasswordRules from "@/components/auth/PasswordRules";
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -47,6 +48,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPw, setShowPw] = useState(false);
+  const [pwValue, setPwValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [refCode, setRefCode] = useState<string | null>(null);
@@ -62,8 +64,8 @@ export default function RegisterPage() {
     await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken }) });
   };
 
-  const sendWelcome = (idToken: string) => {
-    fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken, referralCode: refCode }) })
+  const sendWelcome = async (idToken: string, ref: string | null) => {
+    await fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken, referralCode: ref }) })
       .catch(() => {});
   };
 
@@ -75,7 +77,7 @@ export default function RegisterPage() {
       await sendEmailVerification(cred.user);
       const idToken = await getIdToken(cred.user);
       await createSession(idToken);
-      sendWelcome(idToken);
+      await sendWelcome(idToken, refCode);
       router.push("/account/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error && err.message.includes("email-already-in-use")
@@ -87,10 +89,11 @@ export default function RegisterPage() {
   const handleGoogle = async () => {
     setLoading(true); setError(null);
     try {
+      const ref = searchParams.get("ref")?.toUpperCase() ?? null;
       const cred = await signInWithPopup(auth, new GoogleAuthProvider());
       const idToken = await getIdToken(cred.user);
       await createSession(idToken);
-      sendWelcome(idToken);
+      await sendWelcome(idToken, ref);
       router.push("/account/dashboard");
     } catch { setError("Google sign-in failed. Please try again."); }
     finally { setLoading(false); }
@@ -193,7 +196,7 @@ export default function RegisterPage() {
               <div className="relative">
                 <input
                   id="register-password"
-                  {...register("password")}
+                  {...register("password", { onChange: (e) => setPwValue(e.target.value) })}
                   type={showPw ? "text" : "password"}
                   autoComplete="new-password"
                   placeholder="Min. 8 characters"
@@ -208,6 +211,7 @@ export default function RegisterPage() {
                   {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
+              <PasswordRules value={pwValue} />
             </Field>
 
             <label className="flex items-start gap-3 cursor-pointer mt-1">

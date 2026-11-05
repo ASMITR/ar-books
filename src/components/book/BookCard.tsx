@@ -31,7 +31,7 @@ export function BookCard({ book }: BookCardProps) {
   const handleIncrease  = (e: React.MouseEvent) => { e.preventDefault(); updateQuantity(book.id, quantity + 1); };
 
   const discount     = book.originalPriceRupees ? Math.round((1 - book.priceRupees / book.originalPriceRupees) * 100) : null;
-  const isNew        = Date.now() - new Date(book.createdAt).getTime() < 30 * 24 * 60 * 60 * 1000;
+  const isNew        = (Date.now() - new Date(book.createdAt).getTime()) < 30 * 24 * 60 * 60 * 1000;
   const isFeatured   = book.featured;
 
   return (

@@ -89,7 +89,7 @@ export function SiteFooter() {
             <div>
               <Link href="/" className="inline-block mb-3">
                 <Image src="/Horizontal_Logo.png" alt="Asmit Rajaramkar Books" width={140} height={36}
-                  className="h-7 w-auto brightness-0 invert opacity-80" />
+                  className="h-7 w-auto brightness-0 invert opacity-80" sizes="140px" />
               </Link>
               <p className="text-[12px] text-white/30 leading-relaxed max-w-[240px]">
                 Discover stories, explore ideas, and find inspiration on every page.
@@ -130,7 +130,7 @@ export function SiteFooter() {
             <div>
               <Link href="/" className="inline-block mb-5">
                 <Image src="/Horizontal_Logo.png" alt="Asmit Rajaramkar Books" width={150} height={38}
-                  className="h-8 w-auto brightness-0 invert opacity-80" />
+                  className="h-8 w-auto brightness-0 invert opacity-80" sizes="150px" />
               </Link>
               <p className="text-[10.5px] font-body font-bold uppercase tracking-[0.22em] text-[#C6A66B]/70 mb-3">Read. Learn. Imagine.</p>
               <p className="text-[12px] text-white/30 leading-[1.8] mb-6 max-w-[220px]">
