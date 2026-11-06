@@ -15,16 +15,19 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["firebase-admin", "jose", "jwks-rsa"],
 
   async headers() {
+    const isProd = process.env.NODE_ENV === "production";
     return [
       { source: "/(.*)", headers: securityHeaders },
-      {
-        source: "/_next/static/(.*)",
-        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
-      },
-      {
-        source: "/(.*)\\.(png|jpg|jpeg|webp|avif|svg|ico|woff2)",
-        headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
-      },
+      ...(isProd ? [
+        {
+          source: "/_next/static/(.*)",
+          headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+        },
+        {
+          source: "/(.*)\\.(png|jpg|jpeg|webp|avif|svg|ico|woff2)",
+          headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
+        },
+      ] : []),
     ];
   },
 

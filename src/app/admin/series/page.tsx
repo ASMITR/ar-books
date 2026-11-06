@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminButton } from "@/components/admin/AdminButton";
 import { AdminModal } from "@/components/admin/AdminModal";
-import { PlusCircle, Layers, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
+import { PlusCircle, Layers, Pencil, Trash2, Eye, EyeOff, ImagePlus, X } from "lucide-react";
 import type { Series } from "@/types";
 
 const inputCls =
@@ -18,9 +19,10 @@ interface FormState {
   description: string;
   sortOrder: number;
   visible: boolean;
+  coverImageUrl: string;
 }
 
-const defaultForm: FormState = { name: "", slug: "", description: "", sortOrder: 0, visible: true };
+const defaultForm: FormState = { name: "", slug: "", description: "", sortOrder: 0, visible: true, coverImageUrl: "" };
 
 function autoSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -35,6 +37,8 @@ export default function AdminSeriesPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchSeries = useCallback(async () => {
     const res = await fetch("/api/admin/series");
@@ -53,9 +57,27 @@ export default function AdminSeriesPage() {
 
   const openEdit = (s: Series) => {
     setEditTarget(s);
-    setForm({ name: s.name, slug: s.slug, description: s.description ?? "", sortOrder: s.sortOrder, visible: s.visible });
+    setForm({ name: s.name, slug: s.slug, description: s.description ?? "", sortOrder: s.sortOrder, visible: s.visible, coverImageUrl: s.coverImageUrl ?? "" });
     setError(null);
     setModalOpen(true);
+  };
+
+  const handleImageUpload = async (file: File) => {
+    setUploading(true);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("type", "cover");
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error ?? "Upload failed");
+      setForm((f) => ({ ...f, coverImageUrl: json.data.secureUrl }));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -67,7 +89,7 @@ export default function AdminSeriesPage() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, sortOrder: Number(form.sortOrder) }),
+        body: JSON.stringify({ ...form, sortOrder: Number(form.sortOrder), coverImageUrl: form.coverImageUrl || null }),
       });
       const json = await res.json();
       if (!json.success) throw new Error(json.error ?? "Failed to save");
@@ -163,6 +185,52 @@ export default function AdminSeriesPage() {
       {/* Add / Edit modal */}
       <AdminModal open={modalOpen} onClose={() => setModalOpen(false)} title={editTarget ? "Edit Series" : "New Series"}>
         <div className="p-6 flex flex-col gap-4">
+
+          {/* Banner image */}
+          <div>
+            <label className={labelCls}>Banner Image</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); e.target.value = ""; }}
+            />
+            {form.coverImageUrl ? (
+              <div className="relative w-full h-36 rounded-xl overflow-hidden border border-[#E8E6E1]">
+                <Image src={form.coverImageUrl} alt="Banner preview" fill className="object-cover" sizes="480px" />
+                <div className="absolute inset-0 bg-black/20" />
+                <button
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, coverImageUrl: "" }))}
+                  className="absolute top-2 right-2 w-7 h-7 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition-colors"
+                >
+                  <X size={13} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-2 right-2 inline-flex items-center gap-1.5 bg-black/60 hover:bg-black/80 text-white font-body text-[10px] font-bold uppercase tracking-[0.1em] px-2.5 py-1.5 rounded-lg transition-colors"
+                >
+                  <ImagePlus size={11} /> Replace
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-full h-28 border-2 border-dashed border-[#E8E6E1] rounded-xl flex flex-col items-center justify-center gap-2 text-[#bbb] hover:border-[#789185] hover:text-[#789185] hover:bg-[#F5F3F0] transition-all cursor-pointer disabled:opacity-50"
+              >
+                <ImagePlus size={20} strokeWidth={1.5} />
+                <span className="font-body text-[11px] font-semibold uppercase tracking-[0.1em]">
+                  {uploading ? "Uploading…" : "Upload Banner Image"}
+                </span>
+                <span className="font-body text-[10px] text-[#ccc]">JPG, PNG or WebP · max 5 MB</span>
+              </button>
+            )}
+          </div>
+
           <div>
             <label className={labelCls}>Name *</label>
             <input

@@ -90,7 +90,7 @@ function BookResults({ params, allBooks, categories }: { params: FilterParams; a
         {books.length} book{books.length !== 1 ? "s" : ""} found
       </p>
       {books.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {books.map((book) => <BookCard key={book.id} book={book} />)}
         </div>
       ) : (
@@ -121,9 +121,9 @@ export default async function BooksPage({ searchParams }: Props) {
         ]}
       />
 
-      <section className="py-10 lg:py-14">
+      <section className="py-12 lg:py-16">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white border border-[#ECEAE5] rounded-2xl px-5 py-4 mb-8 shadow-sm">
+          <div className="bg-white border border-[#ECEAE5] rounded-2xl px-5 py-4 mb-10 shadow-sm">
             <FilterBar params={params} categories={categories} />
           </div>
           <BookResults params={params} allBooks={allBooks} categories={categories} />

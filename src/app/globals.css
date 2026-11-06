@@ -186,23 +186,7 @@
   .marquee-track {
     will-change: transform;
   }
-  /* Rotating word animation */
-  .rotating-word {
-    color: #8B5E3C;
-    display: inline-block;
-    will-change: opacity, transform;
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 0.32s ease, transform 0.32s ease;
-  }
-  .rotating-word--hidden {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  /* Hero entrance animation */
-  .hero-fade-up {
-    animation: heroFadeUp 0.6s ease both;
-  }
+  /* heroFadeUp used via inline style only — never as a CSS class (avoids hydration mismatch) */
 }
 
 /* Respect user motion preferences */

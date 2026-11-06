@@ -88,7 +88,7 @@ export function BookCarousel({
                 <div
                   key={book.id}
                   // Card widths: full-width on mobile (horizontal card), then narrower columns
-                  className="shrink-0 w-[88vw] sm:w-[44vw] md:w-[30vw] lg:w-[18vw] xl:w-[15.5%] max-w-[240px]"
+                  className="shrink-0 w-[44vw] sm:w-[32vw] md:w-[26vw] lg:w-[19vw] xl:w-[16%] max-w-[200px]"
                 >
                   <BookCard book={book} />
                 </div>

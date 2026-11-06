@@ -42,7 +42,7 @@ async function SearchResults({ searchParams }: Props) {
           actionHref="/books"
         />
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {books.map((book) => <BookCard key={book.id} book={book} />)}
         </div>
       )}
@@ -94,7 +94,7 @@ export default async function SearchPage({ searchParams }: Props) {
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <Suspense
             fallback={
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6 mt-10">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-10">
                 {Array.from({ length: 5 }).map((_, i) => <BookCardSkeleton key={i} />)}
               </div>
             }

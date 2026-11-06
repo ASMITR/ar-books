@@ -150,7 +150,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
               actionHref="/books"
             />
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {books.map((book) => (
                 <BookCard key={book.id} book={book} />
               ))}
