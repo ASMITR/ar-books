@@ -11,13 +11,30 @@ import { AdminButton } from "@/components/admin/AdminButton";
 
 // ─── Upload helper ────────────────────────────────────────────────────────────
 async function uploadFile(file: File, type: "cover" | "pdf" | "preview") {
+  // 1. Get a signed upload params from the server
+  const sigRes = await fetch("/api/admin/upload-signature", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type }),
+  });
+  if (!sigRes.ok) throw new Error("Failed to get upload signature");
+  const { signature, timestamp, folder, resource_type, cloudName, apiKey } = await sigRes.json();
+
+  // 2. Upload directly to Cloudinary (bypasses Next.js body limit)
   const form = new FormData();
   form.append("file", file);
-  form.append("type", type);
-  const res = await fetch("/api/admin/upload", { method: "POST", body: form });
-  const json = await res.json();
-  if (!json.success) throw new Error(json.error ?? "Upload failed");
-  return json.data as { publicId: string; secureUrl: string };
+  form.append("api_key", apiKey);
+  form.append("timestamp", String(timestamp));
+  form.append("signature", signature);
+  form.append("folder", folder);
+
+  const uploadRes = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/${resource_type}/upload`,
+    { method: "POST", body: form }
+  );
+  const result = await uploadRes.json();
+  if (result.error) throw new Error(result.error.message ?? "Upload failed");
+  return { publicId: result.public_id as string, secureUrl: result.secure_url as string };
 }
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
@@ -99,7 +116,7 @@ function FileInput({
         </div>
       ) : hasExisting ? (
         <div className="mb-2.5">
-          {currentUrl ? (
+          {currentUrl && isImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={currentUrl}
@@ -109,7 +126,18 @@ function FileInput({
           ) : (
             <div className="flex items-center gap-2 bg-[#F7F6F3] border border-[#E8E6E1] rounded-lg px-3 py-2">
               <FileText size={13} className="text-[#aaa] shrink-0" />
-              <span className="text-[12px] font-body text-[#888] truncate">{currentPath}</span>
+              {currentUrl ? (
+                <a
+                  href={currentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[12px] font-body text-[#789185] hover:underline truncate"
+                >
+                  {currentPath ?? "View file ↗"}
+                </a>
+              ) : (
+                <span className="text-[12px] font-body text-[#888] truncate">{currentPath}</span>
+              )}
             </div>
           )}
         </div>
@@ -502,7 +530,8 @@ export function BookForm({ book, categories, series, onSuccess }: Props) {
               <FileInput
                 label="Private PDF"
                 accept="application/pdf"
-                currentPath={!pdfFile ? book?.privatePdfPath : undefined}
+                currentPath={!pdfFile ? book?.privatePdfPath?.split("/").pop() : undefined}
+                currentUrl={!pdfFile ? book?.privatePdfUrl : undefined}
                 selectedFile={pdfFile}
                 onChange={setPdfFile}
                 isUploading={uploadStatus.pdf === "uploading"}
