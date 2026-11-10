@@ -17,7 +17,10 @@ async function uploadFile(file: File, type: "cover" | "pdf" | "preview") {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ type }),
   });
-  if (!sigRes.ok) throw new Error("Failed to get upload signature");
+  if (!sigRes.ok) {
+    const text = await sigRes.text();
+    throw new Error(`Failed to get upload signature: ${text.slice(0, 120)}`);
+  }
   const { signature, timestamp, folder, resource_type, cloudName, apiKey } = await sigRes.json();
 
   // 2. Upload directly to Cloudinary (bypasses Next.js body limit)
@@ -33,7 +36,7 @@ async function uploadFile(file: File, type: "cover" | "pdf" | "preview") {
     { method: "POST", body: form }
   );
   const result = await uploadRes.json();
-  if (result.error) throw new Error(result.error.message ?? "Upload failed");
+  if (!uploadRes.ok || result.error) throw new Error(result.error?.message ?? `Cloudinary error ${uploadRes.status}`);
   return { publicId: result.public_id as string, secureUrl: result.secure_url as string };
 }
 
