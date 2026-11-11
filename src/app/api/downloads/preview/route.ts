@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Preview unavailable" }, { status: 404 });
     }
 
-    // Proxy preview PDF — never expose the Cloudinary URL
+    // Short-lived signed URL (1 hour) — redirect so browser downloads directly from Cloudinary
     const signedUrl = cloudinary.url(publicId, {
       resource_type: "raw",
       type: "upload",
@@ -45,18 +45,7 @@ export async function GET(req: NextRequest) {
       expires_at: Math.floor(Date.now() / 1000) + 3600,
     });
 
-    const upstream = await fetch(signedUrl);
-    if (!upstream.ok) {
-      return NextResponse.json({ error: "Preview unavailable" }, { status: 404 });
-    }
-
-    return new NextResponse(upstream.body, {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": "inline",
-        "Cache-Control": "no-store",
-      },
-    });
+    return NextResponse.redirect(signedUrl);
   } catch (err) {
     console.error("[downloads/preview]", err instanceof Error ? err.message : String(err));
     return NextResponse.json({ error: "Preview unavailable" }, { status: 500 });

@@ -9,7 +9,7 @@ export async function POST() {
     await requireAdmin();
 
     for (const tag of ALL_TAGS) {
-      revalidateTag(tag, { expire: 0 });
+      revalidateTag(tag, "default");
     }
 
     return NextResponse.json({

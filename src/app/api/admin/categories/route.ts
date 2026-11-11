@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     }
     const ref = adminDb.collection("categories").doc();
     await ref.set({ ...parsed.data, createdAt: new Date().toISOString() });
-    revalidateTag("categories", { expire: 0 });
+    revalidateTag("categories", "default");
     return NextResponse.json({ success: true, data: { id: ref.id } }, { status: 201 });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {

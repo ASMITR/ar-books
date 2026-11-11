@@ -40,7 +40,7 @@ export async function PATCH(req: NextRequest) {
       .collection("settings")
       .doc("store")
       .set({ ...parsed.data, updatedAt: new Date().toISOString() }, { merge: true });
-    revalidateTag("settings", { expire: 0 });
+    revalidateTag("settings", "default");
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {

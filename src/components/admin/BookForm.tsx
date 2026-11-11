@@ -21,7 +21,7 @@ async function uploadFile(file: File, type: "cover" | "pdf" | "preview") {
     const text = await sigRes.text();
     throw new Error(`Failed to get upload signature: ${text.slice(0, 120)}`);
   }
-  const { signature, timestamp, folder, resource_type, cloudName, apiKey } = await sigRes.json();
+  const { signature, timestamp, folder, use_filename, unique_filename, resource_type, cloudName, apiKey } = await sigRes.json();
 
   // 2. Upload directly to Cloudinary (bypasses Next.js body limit)
   const form = new FormData();
@@ -30,6 +30,8 @@ async function uploadFile(file: File, type: "cover" | "pdf" | "preview") {
   form.append("timestamp", String(timestamp));
   form.append("signature", signature);
   form.append("folder", folder);
+  if (use_filename) form.append("use_filename", "true");
+  if (unique_filename) form.append("unique_filename", "true");
 
   const uploadRes = await fetch(
     `https://api.cloudinary.com/v1_1/${cloudName}/${resource_type}/upload`,
@@ -533,7 +535,7 @@ export function BookForm({ book, categories, series, onSuccess }: Props) {
               <FileInput
                 label="Private PDF"
                 accept="application/pdf"
-                currentPath={!pdfFile ? book?.privatePdfPath?.split("/").pop() : undefined}
+                currentPath={!pdfFile ? book?.privatePdfPath : undefined}
                 currentUrl={!pdfFile ? book?.privatePdfUrl : undefined}
                 selectedFile={pdfFile}
                 onChange={setPdfFile}

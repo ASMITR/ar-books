@@ -3,9 +3,9 @@ import { requireAdmin } from "@/lib/firebase/auth-server";
 import cloudinary from "@/lib/cloudinary";
 
 const FOLDERS: Record<string, string> = {
-  cover: "ar-books/covers",
-  pdf: "ar-books/pdfs",
-  preview: "ar-books/pdfs",
+  cover: "AR_Books/covers",
+  pdf: "AR_Books/pdfs",
+  preview: "AR_Books/pdfs",
 };
 
 export async function POST(req: NextRequest) {
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const resource_type = type === "cover" ? "image" : "raw";
 
     const signature = cloudinary.utils.api_sign_request(
-      { timestamp, folder },
+      { timestamp, folder, use_filename: true, unique_filename: true },
       process.env.CLOUDINARY_API_SECRET!
     );
 
@@ -30,6 +30,8 @@ export async function POST(req: NextRequest) {
       signature,
       timestamp,
       folder,
+      use_filename: true,
+      unique_filename: true,
       resource_type,
       cloudName: process.env.CLOUDINARY_CLOUD_NAME,
       apiKey: process.env.CLOUDINARY_API_KEY,

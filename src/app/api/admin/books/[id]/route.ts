@@ -34,9 +34,32 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     // Fetch the slug before updating so we can revalidate the exact page path.
     const existing = await adminDb.collection("books").doc(id).get();
-    const slug = existing.exists ? (existing.data()?.slug as string | undefined) : undefined;
+    const existingData = existing.exists ? existing.data() : {};
+    const slug = existingData?.slug as string | undefined;
 
-    await adminDb.collection("books").doc(id).update({ ...parsed.data, updatedAt: new Date().toISOString() });
+    // Delete old Cloudinary assets when they are being replaced
+    const oldDeletions: Promise<unknown>[] = [];
+    if (body.coverImagePath && existingData?.coverImagePath && existingData.coverImagePath !== body.coverImagePath) {
+      oldDeletions.push(cloudinary.uploader.destroy(existingData.coverImagePath, { resource_type: "image" }).catch(() => null));
+    }
+    if (body.privatePdfPath && existingData?.privatePdfPath && existingData.privatePdfPath !== body.privatePdfPath) {
+      oldDeletions.push(cloudinary.uploader.destroy(existingData.privatePdfPath, { resource_type: "raw" }).catch(() => null));
+    }
+    if (body.previewPdfPath && existingData?.previewPdfPath && existingData.previewPdfPath !== body.previewPdfPath) {
+      oldDeletions.push(cloudinary.uploader.destroy(existingData.previewPdfPath, { resource_type: "raw" }).catch(() => null));
+    }
+    if (oldDeletions.length) await Promise.all(oldDeletions);
+
+    await adminDb.collection("books").doc(id).update({
+      ...parsed.data,
+      ...(body.coverImageUrl !== undefined && { coverImageUrl: body.coverImageUrl }),
+      ...(body.coverImagePath !== undefined && { coverImagePath: body.coverImagePath }),
+      ...(body.privatePdfPath !== undefined && { privatePdfPath: body.privatePdfPath }),
+      ...(body.privatePdfUrl !== undefined && { privatePdfUrl: body.privatePdfUrl }),
+      ...(body.previewPdfPath !== undefined && { previewPdfPath: body.previewPdfPath }),
+      ...(body.previewPdfUrl !== undefined && { previewPdfUrl: body.previewPdfUrl }),
+      updatedAt: new Date().toISOString(),
+    });
 
     revalidateTag("books", { expire: 0 });
     // Also revalidate the specific book page so the render cache is busted

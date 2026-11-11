@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Book not found" }, { status: 404 });
     }
 
-    const { privatePdfPath, privatePdfUrl, title } = bookDoc.data()!;
+    const { privatePdfPath, privatePdfUrl } = bookDoc.data()!;
 
     // Log the download
     const { orderId } = entSnap.docs[0].data();
@@ -51,12 +51,6 @@ export async function GET(req: NextRequest) {
       timestamp: new Date().toISOString(),
       outcome: "success",
     });
-
-    const safeTitle = (typeof title === "string" ? title : "")
-      .replace(/[^a-zA-Z0-9 _-]/g, "")
-      .trim()
-      .replace(/\s+/g, "_")
-      .slice(0, 60) || "book";
 
     // Resolve the Cloudinary public_id from path or URL
     let publicId: string | null = null;
@@ -72,7 +66,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "PDF not available" }, { status: 404 });
     }
 
-    // Generate a short-lived signed URL (1 hour)
+    // Short-lived signed URL (1 hour) — redirect so browser downloads directly from Cloudinary
     const signedUrl = cloudinary.url(publicId, {
       resource_type: "raw",
       type: "upload",
@@ -81,19 +75,7 @@ export async function GET(req: NextRequest) {
       expires_at: Math.floor(Date.now() / 1000) + 3600,
     });
 
-    // Proxy the PDF — never expose the Cloudinary URL to the client
-    const upstream = await fetch(signedUrl);
-    if (!upstream.ok) {
-      return NextResponse.json({ error: "PDF not available" }, { status: 404 });
-    }
-
-    return new NextResponse(upstream.body, {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${safeTitle}.pdf"`,
-        "Cache-Control": "no-store",
-      },
-    });
+    return NextResponse.redirect(signedUrl);
   } catch (err: unknown) {
     if (err instanceof Error && err.message === "UNAUTHENTICATED") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
