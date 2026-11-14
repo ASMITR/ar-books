@@ -84,13 +84,12 @@ export function BookCarousel({
               ref={scrollRef}
               className="flex gap-4 overflow-x-auto scrollbar-none pb-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0"
             >
-              {books.map((book) => (
+              {books.map((book, i) => (
                 <div
                   key={book.id}
-                  // Card widths: full-width on mobile (horizontal card), then narrower columns
                   className="shrink-0 w-[44vw] sm:w-[32vw] md:w-[26vw] lg:w-[19vw] xl:w-[16%] max-w-[200px]"
                 >
-                  <BookCard book={book} />
+                  <BookCard book={book} priority={i < 2} />
                 </div>
               ))}
             </div>

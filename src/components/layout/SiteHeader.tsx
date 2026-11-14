@@ -7,20 +7,21 @@ import { usePathname } from "next/navigation";
 import {
   ShoppingCart, Search, Menu, X, User, ChevronDown,
   BookOpen, Library, LogOut, LayoutDashboard, Tag,
-  ArrowRight, Package, Heart,
+  ArrowRight, Package, Heart, Home, Layers, Grid3x3,
+  Crown, Percent, FileText,
 } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { SearchModal } from "@/components/shared/SearchModal";
 
 const navLinks = [
-  { label: "Home",       href: "/"           },
-  { label: "Books",      href: "/books"      },
-  { label: "Series",     href: "/series"     },
-  { label: "Categories", href: "/categories" },
-  { label: "Membership", href: "/membership" },
-  { label: "Offers",     href: "/#offers", noActive: true },
-  { label: "Blog",       href: "/articles"   },
+  { label: "Home",       href: "/",          icon: Home     },
+  { label: "Books",      href: "/books",      icon: BookOpen },
+  { label: "Series",     href: "/series",     icon: Layers   },
+  { label: "Categories", href: "/categories", icon: Grid3x3  },
+  { label: "Membership", href: "/membership", icon: Crown    },
+  { label: "Offers",     href: "/#offers",    icon: Percent, noActive: true },
+  { label: "Blog",       href: "/articles",   icon: FileText },
 ];
 
 export function SiteHeader() {
@@ -32,8 +33,9 @@ export function SiteHeader() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [searchOpen,  setSearchOpen]  = useState(false);
   const [scrolled,    setScrolled]    = useState(false);
-  const [role,        setRole]        = useState<string | null>(null);
-  const headerRef  = useRef<HTMLElement>(null);
+  const [role,        setRole]        = useState<string | null>(() =>
+    typeof window !== "undefined" ? localStorage.getItem("ar_role") : null
+  );
   const accountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,11 +45,16 @@ export function SiteHeader() {
   }, []);
 
   useEffect(() => {
-    if (!user) { setRole(null); return; }
+    if (!user) { setRole(null); localStorage.removeItem("ar_role"); return; }
     const controller = new AbortController();
     fetch("/api/auth/me", { signal: controller.signal })
       .then(r => r.json())
-      .then(d => setRole(d.role ?? null))
+      .then(d => {
+        const r = d.role ?? null;
+        setRole(r);
+        if (r) localStorage.setItem("ar_role", r);
+        else localStorage.removeItem("ar_role");
+      })
       .catch(() => {});
     return () => controller.abort();
   }, [user?.uid]);
@@ -63,17 +70,15 @@ export function SiteHeader() {
     return () => document.removeEventListener("mousedown", fn);
   }, [accountOpen]);
 
+  // Lock body scroll when drawer open
   useEffect(() => {
-    if (!mobileOpen) return;
-    const fn = (e: MouseEvent) => {
-      if (headerRef.current && !headerRef.current.contains(e.target as Node)) setMobileOpen(false);
-    };
-    document.addEventListener("mousedown", fn);
-    return () => document.removeEventListener("mousedown", fn);
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setMobileOpen(false); setSearchOpen(false); }
       if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setSearchOpen(true); }
     };
     window.addEventListener("keydown", fn);
@@ -88,7 +93,6 @@ export function SiteHeader() {
   return (
     <>
       <header
-        ref={headerRef}
         className={`sticky top-0 z-50 bg-white transition-all duration-200
           ${scrolled ? "shadow-[0_1px_0_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.05)]" : "border-b border-[#ECEAE5]"}`}
       >
@@ -104,18 +108,67 @@ export function SiteHeader() {
           </div>
         </div>
 
-        {/* Main nav */}
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+        {/* ── Mobile / tablet top bar (< lg) ───────────────────────── */}
+        <div className="lg:hidden relative flex items-center justify-between h-[56px] px-3 sm:px-5">
+          {/* Left: hamburger */}
+          <button
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-[#555] hover:text-[#111] hover:bg-[#F2F0EC] transition-all"
+          >
+            <Menu size={20} strokeWidth={1.8} />
+          </button>
+
+          {/* Center: logo */}
+          <Link href="/" className="absolute left-1/2 -translate-x-1/2">
+            <Image src="/Horizontal_Logo.png" alt="AR Books" width={130} height={32}
+              className="h-[24px] w-auto" sizes="130px" priority />
+          </Link>
+
+          {/* Right: search + cart + avatar */}
+          <div className="flex items-center gap-0.5">
+            <button onClick={() => setSearchOpen(true)} aria-label="Search"
+              className="w-9 h-9 flex items-center justify-center rounded-xl text-[#555] hover:text-[#111] hover:bg-[#F2F0EC] transition-all">
+              <Search size={18} strokeWidth={1.8} />
+            </button>
+            <Link href="/cart"
+              aria-label={`Cart${count > 0 ? ` — ${count} item${count !== 1 ? "s" : ""}` : ""}`}
+              className="relative w-9 h-9 flex items-center justify-center rounded-xl text-[#555] hover:text-[#111] hover:bg-[#F2F0EC] transition-all">
+              <ShoppingCart size={18} strokeWidth={1.8} />
+              {count > 0 && (
+                <span className="absolute top-1 right-1 min-w-[15px] h-[15px] bg-[#0D1F17] text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                  {count > 9 ? "9+" : count}
+                </span>
+              )}
+            </Link>
+            {user ? (
+              <button onClick={() => setMobileOpen(true)} aria-label="Account"
+                className="w-9 h-9 flex items-center justify-center">
+                <div className="w-7 h-7 rounded-full bg-[#203A2B] flex items-center justify-center ring-2 ring-[#E8E4DF]">
+                  <span className="font-body text-[10px] font-bold text-[#FFC928] leading-none">{initials}</span>
+                </div>
+              </button>
+            ) : (
+              <Link href="/login"
+                className="ml-1 h-8 px-3.5 flex items-center rounded-lg bg-[#0D1F17] text-white font-body text-[11.5px] font-semibold hover:bg-[#203A2B] transition-colors">
+                Sign In
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* ── Desktop nav bar (lg+) ─────────────────────────────────── */}
+        <div className="hidden lg:block max-w-[1200px] mx-auto px-8">
           <div className="flex items-center justify-between h-[60px]">
 
             {/* Logo */}
             <Link href="/" className="shrink-0 flex items-center">
               <Image src="/Horizontal_Logo.png" alt="Asmit Rajaramkar Books" width={150} height={38}
-                className="h-[26px] sm:h-[28px] w-auto" sizes="150px" priority />
+                className="h-[28px] w-auto" sizes="150px" priority />
             </Link>
 
-            {/* Desktop nav */}
-            <nav className="hidden lg:flex items-center gap-0.5" aria-label="Main navigation">
+            {/* Nav links */}
+            <nav className="flex items-center gap-0.5" aria-label="Main navigation">
               {navLinks.map((l) => {
                 const active = !l.noActive && isActive(l.href);
                 return (
@@ -131,27 +184,17 @@ export function SiteHeader() {
 
             {/* Right actions */}
             <div className="flex items-center gap-0.5">
-
-              {/* Search pill — desktop */}
               <button onClick={() => setSearchOpen(true)} aria-label="Search books"
-                className="hidden sm:flex items-center gap-2 h-8 pl-3 pr-2.5 bg-[#F5F4F1] border border-[#E8E6E1] rounded-full hover:border-[#D0CEC9] hover:bg-[#EEECEA] transition-colors group">
+                className="flex items-center gap-2 h-8 pl-3 pr-2.5 bg-[#F5F4F1] border border-[#E8E6E1] rounded-full hover:border-[#D0CEC9] hover:bg-[#EEECEA] transition-colors group">
                 <Search size={13} strokeWidth={2} className="text-[#AAA] group-hover:text-[#666] transition-colors" />
                 <span className="font-body text-[11.5px] text-[#BBB] select-none">Search…</span>
               </button>
 
-              {/* Search icon — mobile */}
-              <button onClick={() => setSearchOpen(true)} aria-label="Search"
-                className="sm:hidden p-2 text-[#777] hover:text-[#111] transition-colors">
-                <Search size={18} strokeWidth={1.8} />
-              </button>
-
-              {/* Wishlist */}
               <Link href="/account/library" aria-label="Library"
                 className="p-2 text-[#777] hover:text-[#111] transition-colors">
                 <Heart size={17} strokeWidth={1.8} />
               </Link>
 
-              {/* Cart */}
               <Link href="/cart"
                 aria-label={`Cart${count > 0 ? ` — ${count} item${count !== 1 ? "s" : ""}` : ""}`}
                 className="relative p-2 text-[#777] hover:text-[#111] transition-colors">
@@ -163,10 +206,10 @@ export function SiteHeader() {
                 )}
               </Link>
 
-              <span className="hidden md:block w-px h-4 bg-[#E0DDD8] mx-1" />
+              <span className="w-px h-4 bg-[#E0DDD8] mx-1" />
 
-              {/* Account — desktop */}
-              <div className="relative hidden md:block" ref={accountRef}>
+              {/* Account dropdown */}
+              <div className="relative" ref={accountRef}>
                 <button onClick={() => setAccountOpen(v => !v)} aria-label="Account menu"
                   aria-expanded={accountOpen} aria-haspopup="true"
                   className={`flex items-center gap-1.5 h-8 pl-1 pr-2.5 rounded-full transition-all duration-150
@@ -248,110 +291,150 @@ export function SiteHeader() {
                   </div>
                 )}
               </div>
-
-              {/* Mobile menu toggle */}
-              <button className="lg:hidden p-2 text-[#777] hover:text-[#111] transition-colors"
-                onClick={() => setMobileOpen(v => !v)}
-                aria-label={mobileOpen ? "Close menu" : "Open menu"}>
-                {mobileOpen ? <X size={19} strokeWidth={1.8} /> : <Menu size={19} strokeWidth={1.8} />}
-              </button>
             </div>
           </div>
         </div>
+      </header>
 
-        {/* Mobile dropdown */}
-        {mobileOpen && (
-          <div className="lg:hidden absolute left-0 right-0 top-full bg-white border-b border-[#ECEAE5]
-            shadow-[0_8px_24px_rgba(0,0,0,0.07)] z-40
-            animate-in fade-in slide-in-from-top-2 duration-200
-            max-h-[calc(100dvh-5rem)] overflow-y-auto">
-            <div className="max-w-[1200px] mx-auto px-4 py-4 flex flex-col gap-4">
+      {/* ── Mobile / tablet drawer (< lg) ────────────────────────────── */}
+      <div className={`lg:hidden fixed inset-0 z-[60] transition-all duration-300 ${mobileOpen ? "pointer-events-auto" : "pointer-events-none"}`}>
+        {/* Backdrop */}
+        <div
+          onClick={() => setMobileOpen(false)}
+          className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${mobileOpen ? "opacity-100" : "opacity-0"}`}
+        />
 
-              {/* Auth */}
-              {user ? (
-                <div className="flex items-center gap-3 pb-4 border-b border-[#F0EEE9]">
-                  <div className="w-9 h-9 rounded-full bg-[#0D1F17] flex items-center justify-center shrink-0">
-                    <span className="font-body text-[13px] font-bold text-[#FFC928]">{initials}</span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-body text-[13.5px] font-semibold text-[#111] truncate leading-snug">
-                      {user.displayName ?? user.email?.split("@")[0]}
-                    </p>
-                    <p className="font-body text-[11px] text-[#999] truncate mt-0.5">{user.email}</p>
-                  </div>
+        {/* Panel */}
+        <div className={`absolute left-0 top-0 bottom-0 w-[300px] max-w-[85vw] bg-[#0D1F17] flex flex-col shadow-2xl transition-transform duration-300 ease-out ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
+
+          {/* Drawer header */}
+          <div className="flex items-center justify-between px-5 h-[56px] border-b border-white/[0.07] shrink-0">
+            <Link href="/" onClick={() => setMobileOpen(false)}>
+              <Image src="/Horizontal_Logo.png" alt="AR Books" width={120} height={30}
+                className="h-[22px] w-auto brightness-0 invert" sizes="120px" />
+            </Link>
+            <button onClick={() => setMobileOpen(false)} aria-label="Close menu"
+              className="w-8 h-8 flex items-center justify-center rounded-xl text-white/40 hover:text-white hover:bg-white/[0.08] transition-all">
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Scrollable body */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-3 flex flex-col gap-0.5 scrollbar-none">
+
+            {/* User card / auth buttons */}
+            {user ? (
+              <div className="mx-1 mb-3 rounded-2xl bg-white/[0.06] border border-white/[0.07] px-4 py-3 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#203A2B] border-2 border-[#FFC928]/30 flex items-center justify-center shrink-0">
+                  <span className="font-body text-[13px] font-bold text-[#FFC928]">{initials}</span>
                 </div>
-              ) : (
-                <div className="flex gap-2.5 pb-4 border-b border-[#F0EEE9]">
-                  <Link href="/login" onClick={() => setMobileOpen(false)}
-                    className="flex-1 flex items-center justify-center py-2.5 rounded-xl bg-[#0D1F17] text-white font-body text-[12.5px] font-semibold hover:bg-[#203A2B] transition-colors">
-                    Sign In
-                  </Link>
-                  <Link href="/register" onClick={() => setMobileOpen(false)}
-                    className="flex-1 flex items-center justify-center py-2.5 rounded-xl border border-[#E8E6E1] text-[#666] font-body text-[12.5px] font-semibold hover:text-[#111] hover:border-[#CCC] transition-colors">
-                    Register
-                  </Link>
+                <div className="min-w-0 flex-1">
+                  <p className="font-body text-[13px] font-semibold text-white truncate leading-snug">
+                    {user.displayName ?? user.email?.split("@")[0]}
+                  </p>
+                  <p className="font-body text-[11px] text-white/35 truncate mt-0.5">{user.email}</p>
                 </div>
-              )}
-
-              {/* Search */}
-              <button onClick={() => { setMobileOpen(false); setSearchOpen(true); }}
-                className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-[#F5F4F1] border border-[#E8E6E1] hover:border-[#D0CEC9] transition-colors">
-                <Search size={15} strokeWidth={1.8} className="shrink-0 text-[#AAA]" />
-                <span className="flex-1 text-left font-body text-[13px] text-[#AAA]">Search books…</span>
-              </button>
-
-              {/* Nav links */}
-              <nav className="flex flex-col gap-0.5">
-                {navLinks.map((l) => {
-                  const active = isActive(l.href);
-                  return (
-                    <Link key={l.label} href={l.href} onClick={() => setMobileOpen(false)}
-                      className={`flex items-center justify-between px-3.5 py-3 rounded-xl font-body text-[14px] font-medium transition-colors
-                        ${active ? "bg-[#F5F4F1] text-[#111]" : "text-[#666] hover:text-[#111] hover:bg-[#FAFAF8]"}`}>
-                      {l.label}
-                      <ArrowRight size={12} className="text-[#CCC]" />
-                    </Link>
-                  );
-                })}
-              </nav>
-
-              {/* Quick links */}
-              <div className="flex flex-col gap-0.5 pt-2 border-t border-[#F0EEE9]">
-                <Link href="/cart" onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between px-3.5 py-3 rounded-xl font-body text-[14px] font-medium text-[#666] hover:text-[#111] hover:bg-[#FAFAF8] transition-colors">
-                  <span className="flex items-center gap-3"><ShoppingCart size={15} strokeWidth={1.8} /> Cart</span>
-                  {count > 0 && <span className="text-[10px] font-bold text-white bg-[#0D1F17] rounded-full px-1.5 py-0.5 leading-none">{count > 9 ? "9+" : count}</span>}
+                {role === "admin" && (
+                  <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider bg-[#FFC928] text-[#0D1F17] px-2 py-0.5 rounded-full">
+                    Admin
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="mx-1 mb-3 flex gap-2">
+                <Link href="/login" onClick={() => setMobileOpen(false)}
+                  className="flex-1 flex items-center justify-center py-2.5 rounded-xl bg-[#FFC928] text-[#0D1F17] font-body text-[12.5px] font-bold hover:opacity-90 transition-opacity">
+                  Sign In
                 </Link>
-                <Link href="/account/library" onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-3.5 py-3 rounded-xl font-body text-[14px] font-medium text-[#666] hover:text-[#111] hover:bg-[#FAFAF8] transition-colors">
-                  <Heart size={15} strokeWidth={1.8} /> Wishlist
+                <Link href="/register" onClick={() => setMobileOpen(false)}
+                  className="flex-1 flex items-center justify-center py-2.5 rounded-xl border border-white/[0.12] text-white/70 font-body text-[12.5px] font-medium hover:bg-white/[0.06] hover:text-white transition-all">
+                  Register
                 </Link>
               </div>
+            )}
 
-              {/* Account links */}
-              {user && (
-                <div className="flex flex-col gap-0.5 pt-2 border-t border-[#F0EEE9] pb-2">
-                  {role === "admin" ? (
-                    <MobileItem href="/admin/dashboard" icon={<LayoutDashboard size={14} />} onClick={() => setMobileOpen(false)}>Admin Dashboard</MobileItem>
-                  ) : (
-                    <>
-                      <MobileItem href="/account/dashboard"          icon={<User size={14} />}     onClick={() => setMobileOpen(false)}>My Profile</MobileItem>
-                      <MobileItem href="/account/membership"         icon={<Tag size={14} />}      onClick={() => setMobileOpen(false)}>Membership</MobileItem>
-                      <MobileItem href="/account/membership/library" icon={<Library size={14} />}  onClick={() => setMobileOpen(false)}>Member Library</MobileItem>
-                      <MobileItem href="/account/library"            icon={<BookOpen size={14} />} onClick={() => setMobileOpen(false)}>Purchased Books</MobileItem>
-                      <MobileItem href="/account/orders"             icon={<Package size={14} />}  onClick={() => setMobileOpen(false)}>My Orders</MobileItem>
-                    </>
-                  )}
-                  <button onClick={() => { signOut(); setMobileOpen(false); }}
-                    className="flex items-center gap-3 px-3.5 py-3 rounded-xl font-body text-[13.5px] text-[#E53935] hover:bg-red-50 transition-colors mt-1">
-                    <LogOut size={14} /> Sign Out
-                  </button>
-                </div>
+            {/* Search */}
+            <button
+              onClick={() => { setMobileOpen(false); setSearchOpen(true); }}
+              className="mx-1 mb-2 flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] hover:bg-white/[0.09] transition-colors"
+            >
+              <Search size={14} strokeWidth={1.8} className="shrink-0 text-white/40" />
+              <span className="flex-1 text-left font-body text-[13px] text-white/30">Search books…</span>
+              <span className="font-body text-[10px] text-white/20 border border-white/[0.1] rounded px-1.5 py-0.5">⌘K</span>
+            </button>
+
+            {/* Browse */}
+            <p className="px-4 pt-2 pb-1 font-body text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/25 select-none">Browse</p>
+            {navLinks.map((l) => {
+              const active = !l.noActive && isActive(l.href);
+              const Icon = l.icon;
+              return (
+                <Link key={l.label} href={l.href} onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl font-body text-[13.5px] font-medium transition-all ${
+                    active ? "bg-white text-[#0D1F17] shadow-sm" : "text-white/60 hover:bg-white/[0.06] hover:text-white"
+                  }`}>
+                  <Icon size={15} strokeWidth={active ? 2.5 : 1.8} className={active ? "text-[#0D1F17]" : "text-white/30"} />
+                  <span className="flex-1">{l.label}</span>
+                  {active && <span className="w-1.5 h-1.5 rounded-full bg-[#FFC928] shrink-0" />}
+                </Link>
+              );
+            })}
+
+            {/* Quick access */}
+            <p className="px-4 pt-4 pb-1 font-body text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/25 select-none">Quick Access</p>
+            <Link href="/cart" onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl font-body text-[13.5px] font-medium text-white/60 hover:bg-white/[0.06] hover:text-white transition-all">
+              <ShoppingCart size={15} strokeWidth={1.8} className="text-white/30" />
+              <span className="flex-1">Cart</span>
+              {count > 0 && (
+                <span className="text-[10px] font-bold text-[#0D1F17] bg-[#FFC928] rounded-full px-2 py-0.5 leading-none">
+                  {count > 9 ? "9+" : count}
+                </span>
               )}
-            </div>
+            </Link>
+            <Link href="/account/library" onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl font-body text-[13.5px] font-medium text-white/60 hover:bg-white/[0.06] hover:text-white transition-all">
+              <Heart size={15} strokeWidth={1.8} className="text-white/30" />
+              <span className="flex-1">Wishlist</span>
+            </Link>
+
+            {/* Account links */}
+            {user && (
+              <>
+                <p className="px-4 pt-4 pb-1 font-body text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/25 select-none">Account</p>
+                {role === "admin" ? (
+                  <DrawerItem href="/admin/dashboard" icon={<LayoutDashboard size={15} />} onClick={() => setMobileOpen(false)}>Admin Dashboard</DrawerItem>
+                ) : (
+                  <>
+                    <DrawerItem href="/account/dashboard"          icon={<User size={15} />}     onClick={() => setMobileOpen(false)}>My Profile</DrawerItem>
+                    <DrawerItem href="/account/membership"         icon={<Tag size={15} />}      onClick={() => setMobileOpen(false)}>Membership</DrawerItem>
+                    <DrawerItem href="/account/membership/library" icon={<Library size={15} />}  onClick={() => setMobileOpen(false)}>Member Library</DrawerItem>
+                    <DrawerItem href="/account/library"            icon={<BookOpen size={15} />} onClick={() => setMobileOpen(false)}>Purchased Books</DrawerItem>
+                    <DrawerItem href="/account/orders"             icon={<Package size={15} />}  onClick={() => setMobileOpen(false)}>My Orders</DrawerItem>
+                  </>
+                )}
+              </>
+            )}
           </div>
-        )}
-      </header>
+
+          {/* Drawer footer */}
+          <div className="shrink-0 border-t border-white/[0.07] p-3">
+            {user ? (
+              <button
+                onClick={() => { signOut(); setMobileOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-body text-[13px] text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                <LogOut size={15} strokeWidth={1.8} className="shrink-0" />
+                Sign Out
+              </button>
+            ) : (
+              <p className="text-center font-body text-[11px] text-white/20 py-2">
+                AR Books · Official eBook Store
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
 
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
@@ -371,13 +454,12 @@ function DropItem({ href, icon, onClick, children }: { href: string; icon: React
   );
 }
 
-function MobileItem({ href, icon, onClick, children }: { href: string; icon: React.ReactNode; onClick: () => void; children: React.ReactNode }) {
+function DrawerItem({ href, icon, onClick, children }: { href: string; icon: React.ReactNode; onClick: () => void; children: React.ReactNode }) {
   return (
     <Link href={href} onClick={onClick}
-      className="flex items-center gap-3 px-3.5 py-3 rounded-xl font-body text-[13.5px] text-[#555] hover:text-[#111] hover:bg-[#FAFAF8] transition-colors">
-      <span className="text-[#999] shrink-0">{icon}</span>
+      className="flex items-center gap-3 px-4 py-2.5 rounded-2xl font-body text-[13.5px] font-medium text-white/60 hover:bg-white/[0.06] hover:text-white transition-all">
+      <span className="text-white/30 shrink-0">{icon}</span>
       <span className="flex-1">{children}</span>
-      <ArrowRight size={11} className="text-[#DDD] shrink-0" />
     </Link>
   );
 }

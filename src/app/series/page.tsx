@@ -55,7 +55,7 @@ export default async function SeriesListPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {allSeries.map((s) => {
+              {allSeries.map((s, i) => {
                 const bookCount = countMap[s.id] ?? 0;
                 return (
                   <Link
@@ -74,6 +74,7 @@ export default async function SeriesListPage() {
                           fill
                           className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          priority={i < 3}
                         />
                       ) : (
                         <>

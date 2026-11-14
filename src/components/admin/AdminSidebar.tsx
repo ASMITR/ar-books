@@ -105,17 +105,20 @@ function SectionLabel({ label, collapsed }: { label: string; collapsed: boolean 
 }
 
 // ─── Sidebar content ──────────────────────────────────────────────────────────
+type AuthProps = { user: ReturnType<typeof useAuth>["user"]; signOut: ReturnType<typeof useAuth>["signOut"] };
+
 function SidebarContent({
   collapsed,
   setCollapsed,
   onNavClick,
+  user,
+  signOut,
 }: {
   collapsed: boolean;
   setCollapsed?: (v: boolean) => void;
   onNavClick?: () => void;
-}) {
+} & AuthProps) {
   const pathname = usePathname();
-  const { user, signOut } = useAuth();
 
   return (
     <div className="flex flex-col h-full">
@@ -232,7 +235,7 @@ function SidebarContent({
 }
 
 // ─── Mobile drawer ────────────────────────────────────────────────────────────
-function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+function MobileDrawer({ open, onClose, user, signOut }: { open: boolean; onClose: () => void } & AuthProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -271,7 +274,7 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
         >
           <X size={15} />
         </button>
-        <SidebarContent collapsed={false} onNavClick={onClose} />
+        <SidebarContent collapsed={false} onNavClick={onClose} user={user} signOut={signOut} />
       </div>
     </div>
   );
@@ -315,18 +318,19 @@ function MobileTopBar({ onOpen }: { onOpen: () => void }) {
 export function AdminSidebar() {
   const [collapsed, setCollapsed]   = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <>
       <MobileTopBar onOpen={() => setMobileOpen(true)} />
-      <MobileDrawer open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <MobileDrawer open={mobileOpen} onClose={() => setMobileOpen(false)} user={user} signOut={signOut} />
 
       <aside className={cn(
         "hidden lg:flex shrink-0 h-screen bg-[#0a1a10] text-white flex-col",
         "transition-[width] duration-300 ease-in-out border-r border-white/[0.05]",
         collapsed ? "w-[58px]" : "w-[240px]",
       )}>
-        <SidebarContent collapsed={collapsed} setCollapsed={setCollapsed} />
+        <SidebarContent collapsed={collapsed} setCollapsed={setCollapsed} user={user} signOut={signOut} />
       </aside>
     </>
   );

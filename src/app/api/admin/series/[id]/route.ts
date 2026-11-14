@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const parsed = seriesSchema.partial().safeParse(body);
     if (!parsed.success) return NextResponse.json({ error: "Invalid fields" }, { status: 400 });
     await adminDb.collection("series").doc(id).update({ ...parsed.data, updatedAt: new Date().toISOString() });
-    revalidateTag("series", { expire: 0 });
+    revalidateTag("series", "default");
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {
@@ -34,8 +34,8 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     booksSnap.docs.forEach((d) => batch.update(d.ref, { seriesId: null, seriesOrder: null }));
     batch.delete(adminDb.collection("series").doc(id));
     await batch.commit();
-    revalidateTag("series", { expire: 0 });
-    revalidateTag("books", { expire: 0 });
+    revalidateTag("series", "default");
+    revalidateTag("books", "default");
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     if (err instanceof Error && (err.message === "UNAUTHENTICATED" || err.message === "FORBIDDEN")) {

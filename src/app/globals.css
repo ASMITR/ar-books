@@ -144,6 +144,15 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  img, a {
+    -webkit-user-drag: none;
+    user-drag: none;
+    pointer-events: auto;
   }
   html, body {
     overflow-x: hidden;

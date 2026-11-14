@@ -8,9 +8,10 @@ import { ArrowRight, BookOpen, Download, ShieldCheck, Star, Sparkles } from "luc
 import type { Book } from "@/types";
 
 interface HeroSectionProps {
-  books:     Book[];
-  headline?: string;
-  subtext?:  string;
+  books:      Book[];
+  latestBook?: Book | null;
+  headline?:  string;
+  subtext?:   string;
 }
 
 // ─── Rotating words ───────────────────────────────────────────────────────────
@@ -158,7 +159,7 @@ function TrustBadge({ Icon, text }: { Icon: React.ElementType; text: string }) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export function HeroSection({ books, headline, subtext }: HeroSectionProps) {
+export function HeroSection({ books, latestBook, headline, subtext }: HeroSectionProps) {
 
   return (
     <section
@@ -218,6 +219,25 @@ export function HeroSection({ books, headline, subtext }: HeroSectionProps) {
             </span>
             <span className="h-px w-7 bg-[#C6A66B]" />
           </div>
+
+          {/* New Release pill */}
+          {latestBook && (
+            <Link
+              href={`/books/${latestBook.slug}`}
+              className="inline-flex items-center gap-2.5 self-center lg:self-start
+                bg-[#203A2B]/8 border border-[#203A2B]/20 rounded-full
+                px-4 py-2 mb-5 hover:bg-[#203A2B]/14 transition-colors hero-fade-up"
+              style={{ animationDelay: "0.04s" }}
+            >
+              <span className="flex items-center gap-1 bg-[#C6A66B] text-white font-body text-[9px] font-bold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full">
+                <Sparkles size={8} /> New
+              </span>
+              <span className="font-body text-[11.5px] font-semibold text-[#203A2B] truncate max-w-[220px]">
+                {latestBook.title}
+              </span>
+              <ArrowRight size={11} className="text-[#203A2B] shrink-0" />
+            </Link>
+          )}
 
           {/* Headline */}
           <h1

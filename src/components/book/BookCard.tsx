@@ -9,9 +9,9 @@ import { formatINR } from "@/lib/currency";
 import { ShoppingCart, Zap, Minus, Plus, Trash2, Check, BookOpen } from "lucide-react";
 import type { Book } from "@/types";
 
-interface BookCardProps { book: Book; }
+interface BookCardProps { book: Book; priority?: boolean; }
 
-export function BookCard({ book }: BookCardProps) {
+export function BookCard({ book, priority = false }: BookCardProps) {
   const { addItem, removeItem, updateQuantity, items } = useCart();
   const requireAuth = useRequireAuth();
   const router = useRouter();
@@ -74,6 +74,8 @@ export function BookCard({ book }: BookCardProps) {
               group-hover:-translate-y-1 group-hover:scale-[1.04]"
             style={{ filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.18))" }}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+            priority={priority}
+            loading={priority ? "eager" : "lazy"}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center p-8">

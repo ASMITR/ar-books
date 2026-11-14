@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { PublicShell } from "@/components/layout/PublicShell";
+import { ContentProtection } from "@/components/shared/ContentProtection";
 import { CartProvider } from "@/hooks/useCart";
 import { AuthProvider } from "@/hooks/useAuth";
 
@@ -62,7 +63,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
       </head>
-      <body className="min-h-screen flex flex-col bg-[#FAF9F6] antialiased">
+      <body className="min-h-screen flex flex-col bg-[#FAF9F6] antialiased select-none">
+        <ContentProtection />
         <AuthProvider>
           <CartProvider>
             <PublicShell>{children}</PublicShell>

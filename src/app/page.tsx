@@ -63,6 +63,7 @@ export default async function HomePage() {
       ══════════════════════════════════════════════════════════════ */}
       <HeroSection
         books={featuredBooks}
+        latestBook={allPublished[0] ?? null}
         headline={settings?.homepageSettings?.heroHeadline}
         subtext={settings?.homepageSettings?.heroSubtext}
       />

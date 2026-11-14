@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
     const ref = adminDb.collection("series").doc();
     await ref.set({
       ...parsed.data,
-      coverImageUrl: body.coverImageUrl ?? null,
       createdAt: now,
       updatedAt: now,
     });
