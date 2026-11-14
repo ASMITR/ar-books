@@ -82,7 +82,7 @@ export async function getActiveSubscriptionForCustomer(
   const snap = await adminDb
     .collection("membershipSubscriptions")
     .where("customerId", "==", customerId)
-    .where("status", "in", ["active", "authenticated", "past_due"])
+    .where("status", "in", ["active", "authenticated", "created", "past_due"])
     .orderBy("createdAt", "desc")
     .limit(1)
     .get();

@@ -206,9 +206,16 @@ async function handleEvent(
 
       await logSubscriptionAudit({ subscriptionId: sub.id, customerId: sub.customerId, action: "charged", performedBy: "system" });
 
-      // Send renewal email only for renewals (not first charge)
-      if (sub.status === "active" && plan) {
-        try { await sendSubscriptionRenewed({ ...sub, status: "active" }, plan, amountPaise); } catch {}
+      // Send activation email on first charge (status was created/authenticated)
+      if (plan) {
+        const wasNew = sub.status === "created" || sub.status === "authenticated";
+        try {
+          if (wasNew) {
+            await sendSubscriptionActivated({ ...sub, status: "active" }, plan);
+          } else {
+            await sendSubscriptionRenewed({ ...sub, status: "active" }, plan, amountPaise);
+          }
+        } catch {}
       }
       break;
     }

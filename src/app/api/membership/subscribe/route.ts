@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
       plan_id: razorpayPlanId,
       customer_notify: 0, // we send our own emails
       quantity: 1,
-      total_count: 0,       // unlimited recurring cycles
+      total_count: 120,     // 120 months (~10 years), effectively indefinite
       expire_by: expireBy,
       notes: {
         customer_id: user.uid,
