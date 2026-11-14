@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 
 type NewsletterFormProps = {
-  source: "homepage" | "footer";
+  source: "homepage" | "footer" | "membership-waitlist";
   variant?: "banner" | "footer";
 };
 

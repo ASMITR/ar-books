@@ -1,14 +1,3 @@
-// Re-export subscription types for convenience
-export type {
-  MembershipPlan,
-  MembershipSubscription,
-  SubscriptionStatus,
-  SubscriptionPayment,
-  MembershipBookAccess,
-  MembershipDownload,
-  MembershipCoupon,
-  ActiveMembership,
-} from "./subscription";
 // ─── Series ──────────────────────────────────────────────────────────────────
 export interface Series {
   id: string;

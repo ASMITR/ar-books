@@ -7,7 +7,6 @@ import {
   getStoreSettings,
   getActivePublicOffers,
 } from "@/lib/firebase/firestore";
-import { getActiveMembershipPlans } from "@/lib/firebase/subscriptions";
 import { HeroSection }         from "@/components/home/HeroSection";
 import { CategorySection }     from "@/components/home/CategorySection";
 import { BookCarousel }        from "@/components/home/BookCarousel";
@@ -15,7 +14,6 @@ import { BrandStoryBanner }    from "@/components/home/BrandStoryBanner";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { NewsletterForm }      from "@/components/home/NewsletterForm";
 import { OffersSection }       from "@/components/home/OffersSection";
-import { MembershipSection }   from "@/components/home/MembershipSection";
 import {
   Sparkles,
   CheckCircle,
@@ -37,14 +35,13 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [featuredBooks, allPublished, categories, settings, activeOffers, membershipPlans] =
+  const [featuredBooks, allPublished, categories, settings, activeOffers] =
     await Promise.all([
       getFeaturedBooks(),
       getPublishedBooks(),
       getVisibleCategories(),
       getStoreSettings(),
       getActivePublicOffers(),
-      getActiveMembershipPlans(),
     ]);
 
   // Bestselling = featured books (admin-curated)
@@ -164,13 +161,6 @@ export default async function HomePage() {
           books={exploreBooks}
           bgColor="#FFFCF7"
         />
-      </div>
-
-      {/* ══════════════════════════════════════════════════════════════
-          7 · MEMBERSHIP PLANS
-      ══════════════════════════════════════════════════════════════ */}
-      <div className="cv-auto">
-        <MembershipSection plans={membershipPlans} />
       </div>
 
       {/* ══════════════════════════════════════════════════════════════

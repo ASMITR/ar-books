@@ -87,32 +87,49 @@ export async function GET(req: NextRequest) {
       if (membership) {
         const safeBookTitle = (typeof title === "string" ? title : "")
           .replace(/[^a-zA-Z0-9 _\-.,!?']/g, "").trim().slice(0, 200) || "unknown";
+        const safeSubId = typeof membership.subscription.id === "string"
+          && /^[a-zA-Z0-9_-]{1,128}$/.test(membership.subscription.id)
+          ? membership.subscription.id : null;
+        const safeCustomerId = typeof user.uid === "string"
+          && /^[a-zA-Z0-9_-]{1,128}$/.test(user.uid)
+          ? user.uid : null;
+        const isoRe = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
         const safePeriodStart = typeof membership.subscription.currentPeriodStart === "string"
+          && isoRe.test(membership.subscription.currentPeriodStart)
           ? membership.subscription.currentPeriodStart : null;
         const safePeriodEnd = typeof membership.subscription.currentPeriodEnd === "string"
+          && isoRe.test(membership.subscription.currentPeriodEnd)
           ? membership.subscription.currentPeriodEnd : null;
-        await adminDb.collection("membershipDownloads").add({
-          subscriptionId: membership.subscription.id,
-          customerId:     user.uid,
-          bookId,
-          bookTitle:      safeBookTitle,
-          downloadedAt:   new Date().toISOString(),
-          periodStart:    safePeriodStart,
-          periodEnd:      safePeriodEnd,
-        });
+        if (!safeSubId || !safeCustomerId) {
+          console.error("[membership/download] invalid subscription fields, skipping log");
+        } else {
+          await adminDb.collection("membershipDownloads").add({
+            subscriptionId: safeSubId,
+            customerId:     safeCustomerId,
+            bookId,
+            bookTitle:      safeBookTitle,
+            downloadedAt:   new Date().toISOString(),
+            periodStart:    safePeriodStart,
+            periodEnd:      safePeriodEnd,
+          });
+        }
       }
     } else {
       const rawOrderId = purchaseEntSnap.docs[0]?.data()?.orderId;
       const safeOrderId = typeof rawOrderId === "string" && /^[a-zA-Z0-9_-]{1,128}$/.test(rawOrderId)
-        ? rawOrderId
-        : null;
-      await adminDb.collection("downloadLogs").add({
-        customerId: user.uid,
-        productId:  bookId,
-        orderId:    safeOrderId,
-        timestamp:  new Date().toISOString(),
-        outcome:    "success",
-      });
+        ? rawOrderId : null;
+      const safePurchaseCustomerId = typeof user.uid === "string"
+        && /^[a-zA-Z0-9_-]{1,128}$/.test(user.uid)
+        ? user.uid : null;
+      if (safePurchaseCustomerId) {
+        await adminDb.collection("downloadLogs").add({
+          customerId: safePurchaseCustomerId,
+          productId:  bookId,
+          orderId:    safeOrderId,
+          timestamp:  new Date().toISOString(),
+          outcome:    "success",
+        });
+      }
     }
 
     const safeTitle = (typeof title === "string" ? title : "")

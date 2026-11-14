@@ -1,210 +1,192 @@
-import { getActiveMembershipPlans } from "@/lib/firebase/subscriptions";
-import { getSessionUser } from "@/lib/firebase/auth-server";
-import { MembershipPricingCards } from "@/components/membership/MembershipPricingCards";
-import { ArrowRight, BookOpen, Download, Shield, Zap, Check, X } from "lucide-react";
-import Link from "next/link";
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight, BookOpen, Download, Sparkles, Shield, Zap, Bell } from "lucide-react";
+import { NewsletterForm } from "@/components/home/NewsletterForm";
 
 export const metadata: Metadata = {
-  title: "Membership Plans — AR Books",
-  description: "Join Asmit Rajaramkar Books membership and get unlimited access to handpicked eBooks for ₹199–₹599/month.",
+  title: "Membership — Coming Soon | AR Books",
+  description:
+    "AR Books membership is coming soon. Unlimited access to handpicked eBooks — one monthly plan.",
 };
 
-export const revalidate = 300;
-
-const FAQ = [
-  {
-    q: "What is an AR Books membership?",
-    a: "A membership gives you monthly access to a curated library of eBooks by Asmit Rajaramkar. Depending on your plan, you can read online, download PDFs, and access exclusive collections.",
-  },
-  {
-    q: "Can I cancel anytime?",
-    a: "Yes. You can cancel your membership at any time from your account dashboard. Your access continues until the end of the paid billing period.",
-  },
-  {
-    q: "What happens to my access after cancellation?",
-    a: "You retain full membership access until your current billing period ends. After that, membership-only books will no longer be accessible. Books you individually purchased remain yours permanently.",
-  },
-  {
-    q: "Can I still buy individual eBooks without a membership?",
-    a: "Absolutely. Individual book purchases and membership are completely independent. You can do either, both, or switch between them at any time.",
-  },
-  {
-    q: "Can I upgrade or downgrade my plan?",
-    a: "Yes. You can change your plan at any time from your account dashboard. Upgrades take effect immediately; downgrades apply from the next billing cycle.",
-  },
-  {
-    q: "How does billing work?",
-    a: "Your membership is billed monthly on the same date each month via Razorpay's secure recurring payment system. You authorise the mandate once and renewals happen automatically.",
-  },
-  {
-    q: "Are downloads permanent?",
-    a: "Downloads are available while your membership is active. If your membership expires or is cancelled, membership-downloaded files remain on your device but new downloads require an active membership.",
-  },
-  {
-    q: "Is my payment information secure?",
-    a: "Yes. Payments are processed entirely by Razorpay — we never store card details. All transactions use industry-standard SSL encryption.",
-  },
+const UPCOMING_FEATURES = [
+  { Icon: BookOpen, title: "Curated eBook Library",   desc: "Unlimited access to handpicked titles across every genre." },
+  { Icon: Download, title: "PDF Downloads",           desc: "Download and read offline on any device, anytime." },
+  { Icon: Zap,      title: "Instant Access",          desc: "New books added regularly — always something fresh to read." },
+  { Icon: Shield,   title: "Secure & Flexible",       desc: "Cancel anytime. No lock-ins, no hidden fees." },
 ];
 
-export default async function MembershipPage() {
-  const [plans, user] = await Promise.all([
-    getActiveMembershipPlans(),
-    getSessionUser(),
-  ]);
-
+export default function MembershipPage() {
   return (
-    <div className="bg-[#F5EFE6] min-h-screen">
+    <div className="bg-[#FFFCF7] min-h-screen">
+
+      {/* ── Top gold rule ─────────────────────────────────────────────────── */}
+      <div className="h-[3px] bg-gradient-to-r from-transparent via-[#C6A66B]/70 to-transparent" />
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="bg-[#FFFCF7] border-b border-[#E6DFD5]">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 text-center">
+      <section className="relative overflow-hidden py-20 sm:py-28 lg:py-36">
+
+        {/* Subtle radial glow */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(198,166,107,0.10) 0%, transparent 70%)",
+          }}
+        />
+
+        <div className="relative max-w-[760px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
 
           {/* Eyebrow */}
-          <div className="flex items-center justify-center gap-2.5 mb-4">
-            <span className="w-5 h-px bg-[#C6A66B]" />
-            <p className="font-body text-[10px] font-bold uppercase tracking-[0.25em] text-[#A8B5A0]">
-              Membership Plans
+          <div className="flex items-center justify-center gap-2.5 mb-6">
+            <span className="w-6 h-px bg-[#C6A66B]" />
+            <p className="font-body text-[10px] font-bold uppercase tracking-[0.28em] text-[#8B5E3C]">
+              AR Books &nbsp;·&nbsp; Membership
             </p>
-            <span className="w-5 h-px bg-[#C6A66B]" />
+            <span className="w-6 h-px bg-[#C6A66B]" />
+          </div>
+
+          {/* Coming Soon badge */}
+          <div className="inline-flex items-center gap-2 bg-[#203A2B]/8 border border-[#203A2B]/20 rounded-full px-4 py-2 mb-8">
+            <Sparkles size={11} className="text-[#C6A66B]" />
+            <span className="font-body text-[11px] font-semibold text-[#203A2B] uppercase tracking-[0.15em]">
+              Coming Soon
+            </span>
           </div>
 
           {/* Heading */}
-          <h1 className="font-heading text-[36px] sm:text-[48px] lg:text-[56px] font-bold text-[#242824] leading-[1.06] mb-4">
-            Choose Your Reading Membership
+          <h1 className="font-heading text-[40px] sm:text-[54px] lg:text-[62px] font-bold text-[#242824] leading-[1.06] tracking-tight mb-6">
+            One Membership.
+            <br />
+            <span className="italic" style={{ color: "#8B5E3C" }}>Unlimited Reading.</span>
           </h1>
 
+          {/* Sparkle divider */}
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <span className="h-px w-12 bg-[#C6A66B]/40" />
+            <Sparkles size={11} className="text-[#C6A66B]" />
+            <span className="h-px w-12 bg-[#C6A66B]/40" />
+          </div>
+
           {/* Subtext */}
-          <p className="font-body text-[14px] sm:text-[16px] text-[#777970] leading-relaxed max-w-xl mx-auto mb-8">
-            Discover more. Read more. Learn more.
-            One monthly membership, unlimited reading.
+          <p className="font-body text-[15px] sm:text-[16px] text-[#777970] leading-[1.85] max-w-[520px] mx-auto mb-10">
+            We&apos;re putting the finishing touches on our membership programme —
+            handpicked eBooks, PDF downloads, and exclusive collections, all for one
+            simple monthly price.
           </p>
 
-          {/* Feature pills */}
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {[
-              { Icon: BookOpen,  text: "Curated eBook library" },
-              { Icon: Download,  text: "PDF downloads"         },
-              { Icon: Zap,       text: "Instant access"        },
-              { Icon: Shield,    text: "Secure payments"       },
-            ].map(({ Icon, text }) => (
-              <span key={text}
-                className="inline-flex items-center gap-2 bg-[#F5EFE6] border border-[#E6DFD5] text-[#242824]
-                  font-body text-[11px] font-semibold px-4 py-2 rounded-full">
-                <Icon size={12} className="text-[#203A2B]" strokeWidth={2} />
-                {text}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Pricing cards ─────────────────────────────────────────────────── */}
-      <section className="py-14 lg:py-20 -mt-8">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-          <MembershipPricingCards plans={plans} isLoggedIn={!!user} />
-        </div>
-      </section>
-
-      {/* ── Plan comparison table ──────────────────────────────────────────── */}
-      <section className="bg-[#FFFCF7] border-y border-[#E6DFD5] py-14 lg:py-20">
-        <div className="max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="font-heading text-[28px] sm:text-[36px] font-bold text-[#242824]">Compare Plans</h2>
-            <p className="font-body text-[13px] text-[#777970] mt-2">Everything you get with each membership tier.</p>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-[13px] font-body">
-              <thead>
-                <tr className="border-b-2 border-[#E6DFD5]">
-                  <th className="text-left py-3 pr-4 font-body text-[11px] font-bold uppercase tracking-[0.15em] text-[#A8B5A0] w-1/2">Feature</th>
-                  {["Starter", "Plus", "Premium"].map((name) => (
-                    <th key={name} className="text-center py-3 px-3 font-heading text-[15px] font-bold text-[#242824]">{name}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ["Monthly price",         "₹199", "₹399", "₹599"],
-                  ["Read eBooks online",    true,   true,   true  ],
-                  ["PDF downloads",         false,  true,   true  ],
-                  ["Starter collection",    true,   true,   true  ],
-                  ["Plus collection",       false,  true,   true  ],
-                  ["Premium collection",    false,  false,  true  ],
-                  ["Exclusive collections", false,  false,  true  ],
-                  ["Early access releases", false,  true,   true  ],
-                  ["Latest releases",       false,  true,   true  ],
-                  ["Member library",        true,   true,   true  ],
-                  ["Support",               "Standard", "Standard", "Priority"],
-                ].map(([feature, starter, plus, premium], i) => (
-                  <tr key={i} className={`border-b border-[#F0EDE8] ${i % 2 === 0 ? "" : "bg-[#FAF9F6]"}`}>
-                    <td className="py-3 pr-4 text-[#555] font-medium">{feature as string}</td>
-                    {[starter, plus, premium].map((val, j) => (
-                      <td key={j} className="text-center py-3 px-3">
-                        {typeof val === "boolean" ? (
-                          val
-                            ? <Check size={15} className="text-emerald-600 mx-auto" strokeWidth={2.5} />
-                            : <X    size={14} className="text-[#C0BAB2] mx-auto" strokeWidth={2} />
-                        ) : (
-                          <span className={`font-semibold ${j === 1 ? "text-[#203A2B]" : "text-[#555]"}`}>{val as string}</span>
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Individual purchase CTA ───────────────────────────────────────── */}
-      <section className="py-12 lg:py-14">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[#FFFCF7] border border-[#E6DFD5] rounded-sm px-7 py-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-            <div>
-              <p className="font-body text-[10px] font-bold uppercase tracking-[0.2em] text-[#C6A66B] mb-1">Not ready to subscribe?</p>
-              <h3 className="font-heading text-[20px] font-bold text-[#242824] mb-1">Buy individual eBooks instead</h3>
-              <p className="font-body text-[13px] text-[#777970]">Purchase any eBook once and own it permanently — no membership required.</p>
-            </div>
-            <Link href="/books"
-              className="shrink-0 inline-flex items-center gap-2 border-2 border-[#203A2B] text-[#203A2B] font-body text-[11px] font-bold uppercase tracking-[0.15em] px-6 py-3 hover:bg-[#203A2B] hover:text-[#FFFCF7] transition-all duration-200 rounded-sm">
-              Browse All eBooks <ArrowRight size={13} />
+          {/* CTAs */}
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/books"
+              className="group inline-flex items-center gap-2.5 bg-[#203A2B] text-[#FFFCF7]
+                font-body text-[11px] font-bold uppercase tracking-[0.16em]
+                px-8 py-[15px] hover:bg-[#2a4d36] transition-colors duration-200
+                shadow-md shadow-[#203A2B]/20"
+            >
+              Browse eBooks Now
+              <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-1" />
+            </Link>
+            <Link
+              href="/about"
+              className="inline-flex items-center gap-2 font-body text-[11px] font-semibold
+                text-[#203A2B] border border-[#203A2B]/35 px-7 py-[14px]
+                hover:bg-[#203A2B] hover:text-[#FFFCF7] hover:border-[#203A2B]
+                transition-all duration-200"
+            >
+              About the Author
+              <ArrowRight size={12} />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── FAQ ───────────────────────────────────────────────────────────── */}
-      <section className="bg-[#FFFCF7] border-t border-[#E6DFD5] py-14 lg:py-20">
-        <div className="max-w-[800px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="font-heading text-[28px] sm:text-[36px] font-bold text-[#242824]">Frequently Asked Questions</h2>
+      {/* ── What's coming ─────────────────────────────────────────────────── */}
+      <section className="bg-[#F5EFE6] border-y border-[#E6DFD5] py-16 lg:py-20">
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8">
+
+          <div className="text-center mb-12">
+            <p className="font-body text-[10px] font-bold uppercase tracking-[0.25em] text-[#A8B5A0] mb-3">
+              What to Expect
+            </p>
+            <h2 className="font-heading text-[28px] sm:text-[36px] font-bold text-[#242824]">
+              Everything in One Plan
+            </h2>
           </div>
-          <div className="flex flex-col divide-y divide-[#E6DFD5]">
-            {FAQ.map(({ q, a }) => (
-              <div key={q} className="py-5">
-                <p className="font-heading text-[16px] font-bold text-[#242824] mb-2">{q}</p>
-                <p className="font-body text-[13px] text-[#777970] leading-relaxed">{a}</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-[#E6DFD5]">
+            {UPCOMING_FEATURES.map(({ Icon, title, desc }) => (
+              <div key={title} className="bg-[#FFFCF7] px-7 py-8 flex flex-col gap-4">
+                <div
+                  className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "rgba(32,58,43,0.08)" }}
+                >
+                  <Icon size={18} strokeWidth={1.5} className="text-[#203A2B]" />
+                </div>
+                <div>
+                  <p className="font-heading text-[15px] font-bold text-[#242824] mb-1.5">{title}</p>
+                  <p className="font-body text-[12.5px] text-[#777970] leading-relaxed">{desc}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Terms note ────────────────────────────────────────────────────── */}
-      <section className="bg-[#F5EFE6] border-t border-[#E6DFD5] py-8">
-        <div className="max-w-[800px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="font-body text-[11px] text-[#A8B5A0] leading-relaxed">
-            By subscribing you agree to our{" "}
-            <Link href="/terms" className="underline hover:text-[#203A2B] transition-colors">Terms of Service</Link>
-            {" "}and{" "}
-            <Link href="/privacy" className="underline hover:text-[#203A2B] transition-colors">Privacy Policy</Link>.
-            Memberships auto-renew monthly. Cancel anytime from your account dashboard before the renewal date.
-            Refunds are subject to our{" "}
-            <Link href="/refund-policy" className="underline hover:text-[#203A2B] transition-colors">Refund Policy</Link>.
+      {/* ── Notify me ─────────────────────────────────────────────────────── */}
+      <section className="py-16 lg:py-20">
+        <div className="max-w-[600px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+
+          <div className="w-12 h-12 bg-[#203A2B]/8 rounded-full flex items-center justify-center mx-auto mb-5">
+            <Bell size={20} strokeWidth={1.5} className="text-[#203A2B]" />
+          </div>
+
+          <h2 className="font-heading text-[26px] sm:text-[32px] font-bold text-[#242824] mb-3">
+            Be the First to Know
+          </h2>
+          <p className="font-body text-[13px] text-[#777970] leading-relaxed mb-8">
+            Subscribe to our newsletter and we&apos;ll notify you the moment membership launches —
+            along with an exclusive early-bird offer.
           </p>
+
+          <div className="bg-[#F5EFE6] border border-[#E6DFD5] p-6 sm:p-8">
+            <NewsletterForm source="membership-waitlist" variant="banner" />
+            <p className="font-body text-[10px] text-[#A8B5A0] mt-4 leading-relaxed">
+              No spam, ever. Unsubscribe at any time. See our{" "}
+              <Link href="/privacy" className="underline hover:text-[#203A2B] transition-colors">
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Individual purchase CTA ───────────────────────────────────────── */}
+      <section className="bg-[#F5EFE6] border-t border-[#E6DFD5] py-12 lg:py-14">
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-[#FFFCF7] border border-[#E6DFD5] px-7 py-7
+            flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+            <div>
+              <p className="font-body text-[10px] font-bold uppercase tracking-[0.2em] text-[#C6A66B] mb-1">
+                Available right now
+              </p>
+              <h3 className="font-heading text-[20px] font-bold text-[#242824] mb-1">
+                Buy individual eBooks
+              </h3>
+              <p className="font-body text-[13px] text-[#777970]">
+                Purchase any eBook once and own it permanently — no membership required.
+              </p>
+            </div>
+            <Link
+              href="/books"
+              className="shrink-0 inline-flex items-center gap-2 border-2 border-[#203A2B]
+                text-[#203A2B] font-body text-[11px] font-bold uppercase tracking-[0.15em]
+                px-6 py-3 hover:bg-[#203A2B] hover:text-[#FFFCF7] transition-all duration-200"
+            >
+              Browse All eBooks <ArrowRight size={13} />
+            </Link>
+          </div>
         </div>
       </section>
 
