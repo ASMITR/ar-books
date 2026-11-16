@@ -299,6 +299,8 @@ export default async function AccountDashboardPage() {
                       </Link>
                       <a
                         href={`/api/downloads/secure?bookId=${book.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="shrink-0 w-7 h-7 rounded-xl bg-[#F2EFE9] hover:bg-[#0D1F17] flex items-center justify-center transition-colors group/dl"
                       >
                         <Download size={11} className="text-[#203A2B] group-hover/dl:text-[#FFC928] transition-colors" strokeWidth={2} />

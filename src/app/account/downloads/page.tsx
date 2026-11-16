@@ -92,6 +92,8 @@ export default async function DownloadsPage() {
 
               {/* Action */}
               <a href={`/api/downloads/secure?bookId=${log.productId}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="shrink-0 flex items-center gap-1.5 bg-[#0D1F17] text-[#FFC928] font-body text-[10px] font-bold uppercase tracking-[0.08em] px-3 py-2.5 rounded-xl hover:bg-[#203A2B] transition-colors">
                 <Download size={11} />
                 <span className="hidden sm:inline">Download</span>

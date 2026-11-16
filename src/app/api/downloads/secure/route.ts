@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "PDF not available" }, { status: 404 });
     }
 
-    // Short-lived signed URL (1 hour) — redirect so browser downloads directly from Cloudinary
+    // Short-lived signed URL (1 hour) — stream through server so Chrome never sees a raw PDF URL
     const signedUrl = cloudinary.url(publicId, {
       resource_type: "raw",
       type: "upload",
@@ -75,7 +75,24 @@ export async function GET(req: NextRequest) {
       expires_at: Math.floor(Date.now() / 1000) + 3600,
     });
 
-    return NextResponse.redirect(signedUrl);
+    const upstream = await fetch(signedUrl);
+    if (!upstream.ok) {
+      return NextResponse.json({ error: "PDF fetch failed" }, { status: 502 });
+    }
+
+    // Stream PDF through server with headers that suppress Chrome's toolbar actions
+    const headers = new Headers();
+    headers.set("Content-Type", "application/pdf");
+    headers.set("Content-Disposition", "inline; filename=\"protected.pdf\"");
+    headers.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    headers.set("X-Content-Type-Options", "nosniff");
+    headers.set("X-Robots-Tag", "noindex, nofollow");
+    // Prevent the PDF from being embedded anywhere else
+    headers.set("X-Frame-Options", "SAMEORIGIN");
+    // Block saving/printing via CSP
+    headers.set("Content-Security-Policy", "default-src 'none'; object-src 'none';");
+
+    return new NextResponse(upstream.body, { status: 200, headers });
   } catch (err: unknown) {
     if (err instanceof Error && err.message === "UNAUTHENTICATED") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

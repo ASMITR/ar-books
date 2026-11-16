@@ -8,8 +8,8 @@ import {
   LayoutDashboard, BookOpen, Tag, ShoppingBag,
   CreditCard, Users, Download, FileText,
   Settings, LogOut, Gift, Menu, X,
-  Library, ExternalLink, ChevronRight,
-  Layers, Receipt, Crown, Sparkles,
+  ExternalLink, ChevronRight,
+  Layers, Receipt, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,10 +32,6 @@ const NAV: NavEntry[] = [
   { href: "/admin/downloads", label: "Downloads",        icon: Download   },
   { href: "/admin/offers",    label: "Offers & Coupons", icon: Gift       },
   { href: "/admin/coupons",   label: "Referrals",        icon: Layers     },
-  { section: "Membership" },
-  { href: "/admin/membership",               label: "Overview",    icon: Library },
-  { href: "/admin/membership/plans",         label: "Plans",       icon: Crown   },
-  { href: "/admin/membership/subscriptions", label: "Subscribers", icon: Users   },
   { section: "System" },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];

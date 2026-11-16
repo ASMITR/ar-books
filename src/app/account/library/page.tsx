@@ -98,6 +98,8 @@ export default async function LibraryPage() {
                   </div>
                 </div>
                 <a href={`/api/downloads/secure?bookId=${book.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 bg-[#0D1F17] text-[#FFC928] font-body text-[10.5px] font-bold uppercase tracking-[0.1em] px-4 py-2.5 rounded-xl hover:bg-[#203A2B] transition-colors">
                   <Download size={11} /> Download PDF
                 </a>

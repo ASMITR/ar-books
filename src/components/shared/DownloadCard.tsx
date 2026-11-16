@@ -92,6 +92,8 @@ export function DownloadCard({
           {/* Download CTA */}
           <a
             href={downloadUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={handleClick}
             className={`relative shrink-0 flex flex-col items-center justify-center gap-1.5 w-[88px] h-[64px] font-body text-[10px] font-bold uppercase tracking-[0.1em] transition-all duration-300 overflow-hidden
               ${

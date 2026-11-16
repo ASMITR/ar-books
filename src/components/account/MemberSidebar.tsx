@@ -8,7 +8,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   LayoutDashboard, BookOpen, ShoppingBag, Download,
   User, Shield, HelpCircle, LogOut, Menu, X,
-  Library, Gift, ChevronRight, Layers, Receipt,
+  Gift, ChevronRight, Receipt,
   ArrowDownToLine, Share2, ShieldCheck, UserCircle2,
   Sparkles, ExternalLink,
 } from "lucide-react";
@@ -22,9 +22,7 @@ type NavItem2 = NavSection | NavLink;
 const NAV: NavItem2[] = [
   { href: "/account/dashboard", label: "Overview",        icon: LayoutDashboard },
   { section: "Library" },
-  { href: "/account/membership",         label: "My Membership",   icon: Library        },
-  { href: "/account/membership/library", label: "Member Library",  icon: Layers         },
-  { href: "/account/library",            label: "Purchased Books", icon: BookOpen       },
+  { href: "/account/library", label: "Purchased Books", icon: BookOpen },
   { section: "Activity" },
   { href: "/account/orders",    label: "My Orders",        icon: Receipt        },
   { href: "/account/downloads", label: "Downloads",        icon: ArrowDownToLine },
