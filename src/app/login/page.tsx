@@ -11,7 +11,7 @@ import {
   GoogleAuthProvider,
   getIdToken,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase/client";
+import { getClientAuth } from "@/lib/firebase/client";
 import { loginSchema, type LoginInput } from "@/lib/validations";
 import { Eye, EyeOff, Lock, AlertTriangle, ArrowRight } from "lucide-react";
 
@@ -104,7 +104,7 @@ export default function LoginPage() {
 
     setLoading(true); setError(null);
     try {
-      const cred = await signInWithEmailAndPassword(auth, data.email, data.password);
+      const cred = await signInWithEmailAndPassword(getClientAuth(), data.email, data.password);
       const idToken = await getIdToken(cred.user);
       await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken }) });
       await fetch("/api/auth/record-success", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.email }) });
@@ -126,7 +126,7 @@ export default function LoginPage() {
   const handleGoogle = async () => {
     setLoading(true); setError(null);
     try {
-      const cred = await signInWithPopup(auth, new GoogleAuthProvider());
+      const cred = await signInWithPopup(getClientAuth(), new GoogleAuthProvider());
       const email = cred.user.email ?? "";
       const lockRes = await fetch("/api/auth/check-lockout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
       const lockStatus = await lockRes.json();
@@ -318,6 +318,10 @@ export default function LoginPage() {
           <p className="text-center text-[13px] font-body text-[#999] mt-6">
             Don&apos;t have an account?{" "}
             <Link href="/register" className="text-[#203A2B] font-semibold hover:text-[#789185] transition-colors">Create one free</Link>
+          </p>
+          <p className="text-center text-[11px] font-body text-[#bbb] mt-4">
+            First admin?{" "}
+            <Link href="/admin-setup" className="text-[#789185] hover:text-[#203A2B] transition-colors">Set up the admin account</Link>
           </p>
         </div>
       </div>

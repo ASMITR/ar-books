@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, getIdToken, sendEmailVerification } from "firebase/auth";
-import { auth } from "@/lib/firebase/client";
+import { getClientAuth } from "@/lib/firebase/client";
 import { registerSchema, type RegisterInput } from "@/lib/validations";
 import { Eye, EyeOff, ArrowRight, Gift } from "lucide-react";
 import PasswordRules from "@/components/auth/PasswordRules";
@@ -72,7 +72,7 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterInput) => {
     setLoading(true); setError(null);
     try {
-      const cred = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      const cred = await createUserWithEmailAndPassword(getClientAuth(), data.email, data.password);
       await updateProfile(cred.user, { displayName: data.displayName });
       await sendEmailVerification(cred.user);
       const idToken = await getIdToken(cred.user);
@@ -90,7 +90,7 @@ export default function RegisterPage() {
     setLoading(true); setError(null);
     try {
       const ref = searchParams.get("ref")?.toUpperCase() ?? null;
-      const cred = await signInWithPopup(auth, new GoogleAuthProvider());
+      const cred = await signInWithPopup(getClientAuth(), new GoogleAuthProvider());
       const idToken = await getIdToken(cred.user);
       await createSession(idToken);
       await sendWelcome(idToken, ref);

@@ -13,6 +13,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   compress: true,
   serverExternalPackages: ["firebase-admin", "jose", "jwks-rsa"],
+  experimental: {
+    agentUpgrade: "security",
+  },
 
   async headers() {
     const isProd = process.env.NODE_ENV === "production";

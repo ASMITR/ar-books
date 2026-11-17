@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "@/lib/firebase/client";
+import { getClientAuth } from "@/lib/firebase/client";
 import { CheckCircle, ArrowLeft, ArrowRight, Mail } from "lucide-react";
 
 const inputBase = "w-full bg-[#F7F5F2] border border-[#E2DDD8] px-4 py-3 text-[14px] font-body text-[#111] placeholder:text-[#C4BFB9] focus:outline-none focus:border-[#203A2B] focus:bg-white focus:ring-2 focus:ring-[#203A2B]/8 transition-all rounded-lg";
@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setLoading(true); setError(null);
     try {
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(getClientAuth(), email);
       setSent(true);
     } catch { setError("Could not send reset email. Please check the address and try again."); }
     finally { setLoading(false); }
