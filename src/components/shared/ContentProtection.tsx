@@ -14,11 +14,16 @@ export function ContentProtection() {
     const noDrag = (e: DragEvent) => e.preventDefault();
 
     // Block long-press save/download on mobile (iOS & Android Chrome)
+    // Only prevent default after a genuine long-press (500ms), not on quick taps
+    let longPressTimer: ReturnType<typeof setTimeout> | null = null;
     const noLongPress = (e: TouchEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName === "IMG" || target.tagName === "A" || target.closest("a")) {
-        e.preventDefault();
+        longPressTimer = setTimeout(() => { e.preventDefault(); }, 500);
       }
+    };
+    const cancelLongPress = () => {
+      if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
     };
 
     // Block keyboard shortcuts
@@ -51,7 +56,9 @@ export function ContentProtection() {
     document.addEventListener("selectstart", noSelect);
     document.addEventListener("dragstart", noDrag);
     document.addEventListener("keydown", noKeys);
-    document.addEventListener("touchstart", noLongPress, { passive: false });
+    document.addEventListener("touchstart", noLongPress, { passive: true });
+    document.addEventListener("touchend", cancelLongPress, { passive: true });
+    document.addEventListener("touchmove", cancelLongPress, { passive: true });
 
     return () => {
       window.removeEventListener("beforeprint", noPrint);
@@ -60,6 +67,8 @@ export function ContentProtection() {
       document.removeEventListener("dragstart", noDrag);
       document.removeEventListener("keydown", noKeys);
       document.removeEventListener("touchstart", noLongPress);
+      document.removeEventListener("touchend", cancelLongPress);
+      document.removeEventListener("touchmove", cancelLongPress);
       observer.disconnect();
     };
   }, []);
