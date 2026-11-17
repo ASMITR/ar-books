@@ -281,7 +281,7 @@ function MobileDrawer({ open, onClose, user, signOut }: { open: boolean; onClose
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex transition-all duration-300",
+        "lg:hidden fixed inset-0 z-50 flex transition-all duration-300",
         open ? "pointer-events-auto" : "pointer-events-none",
       )}
     >
@@ -291,7 +291,7 @@ function MobileDrawer({ open, onClose, user, signOut }: { open: boolean; onClose
         onClick={onClose}
         className={cn(
           "absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300",
-          open ? "opacity-100" : "opacity-0",
+          open ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
       />
 
@@ -299,7 +299,7 @@ function MobileDrawer({ open, onClose, user, signOut }: { open: boolean; onClose
       <div className={cn(
         "relative w-[272px] max-w-[85vw] h-full bg-[#0a1a10] flex flex-col",
         "transition-transform duration-300 ease-out shadow-2xl border-r border-white/[0.05]",
-        open ? "translate-x-0" : "-translate-x-full",
+        open ? "translate-x-0" : "-translate-x-full pointer-events-none",
       )}>
         <button
           onClick={onClose}

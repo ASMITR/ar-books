@@ -301,11 +301,11 @@ export function SiteHeader() {
         {/* Backdrop */}
         <div
           onClick={() => setMobileOpen(false)}
-          className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${mobileOpen ? "opacity-100" : "opacity-0"}`}
+          className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         />
 
         {/* Panel */}
-        <div className={`absolute left-0 top-0 bottom-0 w-[300px] max-w-[85vw] bg-[#0D1F17] flex flex-col shadow-2xl transition-transform duration-300 ease-out ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className={`absolute left-0 top-0 bottom-0 w-[300px] max-w-[85vw] bg-[#0D1F17] flex flex-col shadow-2xl transition-transform duration-300 ease-out ${mobileOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"}`}>
 
           {/* Drawer header */}
           <div className="flex items-center justify-between px-5 h-[56px] border-b border-white/[0.07] shrink-0">
