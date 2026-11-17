@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
-const FROM = process.env.EMAIL_FROM ?? "AR Books <noreply@arbooks.in>";
-const TO   = process.env.CONTACT_EMAIL ?? process.env.SUPPORT_EMAIL ?? "support@asmitrajaramkarbooks.store";
-
 export async function POST(req: NextRequest) {
+  const resend = new Resend(process.env.RESEND_API_KEY!);
+  const FROM = process.env.EMAIL_FROM ?? "AR Books <noreply@arbooks.in>";
+  const TO   = process.env.CONTACT_EMAIL ?? process.env.SUPPORT_EMAIL ?? "support@asmitrajaramkarbooks.store";
+
   const { name, email, subject, message } = await req.json();
 
   if (!name || !email || !subject || !message) {
