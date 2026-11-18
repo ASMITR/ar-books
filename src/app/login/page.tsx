@@ -84,7 +84,7 @@ export default function LoginPage() {
     const next = params.get("next");
     const me = await fetch("/api/auth/me").then((r) => r.json());
     if (next && next.startsWith("/") && !next.startsWith("//")) window.location.href = next;
-    else window.location.href = me.role === "admin" ? "/admin/dashboard" : "/account/dashboard";
+    else window.location.href = me.role === "admin" ? "/admin/dashboard" : me.role === "author" ? "/author/dashboard" : "/account/dashboard";
   };
 
   const applyLockout = (

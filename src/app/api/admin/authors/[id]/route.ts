@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/firebase/auth-server";
 import { writeAuditLog } from "@/lib/audit";
 import { createNotification } from "@/lib/notifications";
 import { z } from "zod";
+import { passwordSchema } from "@/lib/validations";
 
 interface Params { params: Promise<{ id: string }> }
 
@@ -12,6 +13,8 @@ const patchSchema = z.object({
   displayName: z.string().min(2).optional(),
   bio: z.string().max(1000).optional(),
   institution: z.string().optional(),
+  // Owner can reset the author's password directly
+  newPassword: passwordSchema.optional(),
 });
 
 function sanitizeLog(v: string) { return v.replace(/[\r\n]/g, "_"); }
@@ -47,8 +50,15 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
     }
 
-    const { accountStatus, ...otherFields } = parsed.data;
+    const { accountStatus, newPassword, ...otherFields } = parsed.data;
     const now = new Date().toISOString();
+
+    // Owner resets password directly via Firebase Admin SDK
+    if (newPassword) {
+      await adminAuth.updateUser(id, { password: newPassword });
+      // Revoke existing sessions so the new password takes effect immediately
+      await adminAuth.revokeRefreshTokens(id);
+    }
 
     // If changing account status, also update Firebase Auth and user doc
     if (accountStatus && accountStatus !== profileData.accountStatus) {
@@ -93,12 +103,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       actorUid: admin.uid,
       actorEmail: admin.email ?? "",
       actorRole: "admin",
-      action: accountStatus ? `author_${accountStatus}` : "author_updated",
+      action: accountStatus ? `author_${accountStatus}` : newPassword ? "author_password_reset" : "author_updated",
       resourceType: "authorProfile",
       resourceId: id,
       resourceTitle: profileData.displayName as string,
       previousValues: { accountStatus: profileData.accountStatus },
-      newValues: parsed.data,
+      newValues: { ...parsed.data, newPassword: newPassword ? "[redacted]" : undefined },
     }).catch(() => {});
 
     return NextResponse.json({ success: true });

@@ -2,15 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Loader2, Save } from "lucide-react";
+import { Save, User } from "lucide-react";
 import type { AuthorProfile } from "@/types";
+import { AuthorShell } from "@/components/author/AuthorShell";
+
+const inputCls = "w-full bg-[#F7F5F2] border border-[#E2DDD8] px-4 py-3 text-[13px] font-body text-[#111] placeholder:text-[#C4BFB9] focus:outline-none focus:border-[#203A2B] focus:bg-white focus:ring-2 focus:ring-[#203A2B]/8 transition-all rounded-lg";
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return <label className="block text-[11px] font-body font-semibold uppercase tracking-[0.1em] text-[#6B6B6B] mb-1.5">{children}</label>;
+}
 
 export default function AuthorProfilePage() {
-  const [profile, setProfile] = useState<AuthorProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [profile, setProfile]   = useState<AuthorProfile | null>(null);
+  const [loading, setLoading]   = useState(true);
+  const [saving, setSaving]     = useState(false);
+  const [success, setSuccess]   = useState(false);
+  const [error, setError]       = useState<string | null>(null);
 
   const { register, handleSubmit, reset } = useForm<Partial<AuthorProfile>>();
 
@@ -18,20 +25,15 @@ export default function AuthorProfilePage() {
     fetch("/api/author/profile")
       .then((r) => r.json())
       .then((json) => {
-        if (json.success) {
-          setProfile(json.data);
-          reset(json.data);
-        }
+        if (json.success) { setProfile(json.data); reset(json.data); }
       })
       .finally(() => setLoading(false));
   }, [reset]);
 
   const onSubmit = async (data: Partial<AuthorProfile>) => {
-    setSaving(true);
-    setError(null);
-    setSuccess(false);
+    setSaving(true); setError(null); setSuccess(false);
     try {
-      const res = await fetch("/api/author/profile", {
+      const res  = await fetch("/api/author/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -39,60 +41,122 @@ export default function AuthorProfilePage() {
       const json = await res.json();
       if (!json.success) throw new Error(json.error ?? "Save failed");
       setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   };
 
-  if (loading) return <div className="h-48 bg-gray-100 rounded-xl animate-pulse" />;
-
   return (
-    <div className="max-w-xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-heading font-bold text-[#080808]">My Profile</h1>
-        <p className="text-sm text-[#888] mt-1">Update your author bio and public information.</p>
+    <AuthorShell title="My Profile" subtitle="Update your author bio and public information">
+      <div className="max-w-xl space-y-5">
+
+        {/* Account info card */}
+        {!loading && profile && (
+          <div className="bg-white border border-[#E8E4DE] rounded-2xl p-5 shadow-sm">
+            <p className="text-[10.5px] font-body font-semibold uppercase tracking-[0.09em] text-[#b5b0a9] mb-4">Account Info</p>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-[#FFC928]/20 flex items-center justify-center shrink-0">
+                <User size={20} className="text-[#0D1F17]" />
+              </div>
+              <div className="min-w-0 space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-[13.5px] font-body font-semibold text-[#0a0a0a]">{profile.email}</p>
+                  <span className={`inline-flex items-center px-2 py-0.5 text-[10.5px] rounded-full font-semibold font-body ring-1 ${
+                    profile.accountStatus === "active"
+                      ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                      : "bg-red-50 text-red-700 ring-red-200"
+                  }`}>
+                    {profile.accountStatus}
+                  </span>
+                </div>
+                {profile.institution && (
+                  <p className="text-[12px] font-body text-[#999]">{profile.institution}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {loading && (
+          <div className="bg-white border border-[#E8E4DE] rounded-2xl p-5 shadow-sm animate-pulse">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-[#F2F0EC]" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3.5 bg-[#F2F0EC] rounded w-40" />
+                <div className="h-3 bg-[#F2F0EC] rounded w-24" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 border border-red-200/80 rounded-xl px-4 py-3 text-[13px] font-body text-red-700">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl px-4 py-3 text-[13px] font-body text-emerald-700">
+            Profile updated successfully.
+          </div>
+        )}
+
+        {/* Edit form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-[#E8E4DE] rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-5 sm:px-6 py-4 border-b border-[#EDE9E3]">
+            <h2 className="font-heading text-[15px] font-bold text-[#0a0a0a]">Edit Profile</h2>
+          </div>
+
+          <div className="p-5 sm:p-6 space-y-4">
+            <div>
+              <FieldLabel>Display Name</FieldLabel>
+              <input {...register("displayName")} className={inputCls} placeholder="Your full name" />
+            </div>
+
+            <div>
+              <FieldLabel>Bio</FieldLabel>
+              <textarea
+                {...register("bio")}
+                rows={4}
+                className={`${inputCls} resize-none`}
+                placeholder="A short author bio for your public profile…"
+              />
+            </div>
+
+            <div>
+              <FieldLabel>Website</FieldLabel>
+              <input
+                {...register("website")}
+                type="url"
+                className={inputCls}
+                placeholder="https://yoursite.com"
+              />
+            </div>
+
+            <div>
+              <FieldLabel>Institution / College</FieldLabel>
+              <input {...register("institution")} className={inputCls} />
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={saving}
+                className="inline-flex items-center gap-2 bg-[#0D1F17] text-white font-body font-bold text-[13px] uppercase tracking-[0.1em] px-6 py-3 rounded-xl hover:bg-[#203A2B] disabled:opacity-50 transition-colors"
+              >
+                {saving ? (
+                  <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                ) : (
+                  <Save size={13} />
+                )}
+                {saving ? "Saving…" : "Save Profile"}
+              </button>
+            </div>
+          </div>
+        </form>
+
       </div>
-
-      <div className="bg-white border border-[#E6E3DD] rounded-xl p-5">
-        <div className="mb-4 p-3 bg-[#F4F2EE] rounded-lg">
-          <p className="text-xs text-[#666]">Email: <span className="font-medium text-[#080808]">{profile?.email}</span></p>
-          <p className="text-xs text-[#666] mt-0.5">Institution: <span className="font-medium text-[#080808]">{profile?.institution ?? "—"}</span></p>
-          <p className="text-xs text-[#666] mt-0.5">Status: <span className={`font-medium ${profile?.accountStatus === "active" ? "text-green-600" : "text-red-600"}`}>{profile?.accountStatus}</span></p>
-        </div>
-      </div>
-
-      {error && <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">{error}</div>}
-      {success && <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700">Profile updated successfully.</div>}
-
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-[#E6E3DD] rounded-xl p-5 space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-[#555] mb-1.5">Display Name</label>
-          <input {...register("displayName")} className="w-full px-3 py-2.5 border border-[#E6E3DD] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FFC928]/30 focus:border-[#FFC928]" />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-[#555] mb-1.5">Bio</label>
-          <textarea {...register("bio")} rows={4} className="w-full px-3 py-2.5 border border-[#E6E3DD] rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#FFC928]/30 focus:border-[#FFC928]" placeholder="A short author bio…" />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-[#555] mb-1.5">Website</label>
-          <input {...register("website")} type="url" className="w-full px-3 py-2.5 border border-[#E6E3DD] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FFC928]/30 focus:border-[#FFC928]" placeholder="https://yoursite.com" />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-[#555] mb-1.5">Institution / College</label>
-          <input {...register("institution")} className="w-full px-3 py-2.5 border border-[#E6E3DD] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FFC928]/30 focus:border-[#FFC928]" />
-        </div>
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="flex items-center gap-2 bg-[#080808] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#111] disabled:opacity-50 transition-colors"
-        >
-          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-          {saving ? "Saving…" : "Save Profile"}
-        </button>
-      </form>
-    </div>
+    </AuthorShell>
   );
 }

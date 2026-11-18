@@ -1,232 +1,246 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Edit2, Send, Eye, AlertCircle, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { ArrowLeft, Edit2, Send, Eye, AlertCircle, CheckCircle2 } from "lucide-react";
 import type { Book } from "@/types";
 import Link from "next/link";
 import { formatINR } from "@/lib/currency";
 
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; icon: React.ElementType; className: string }> = {
-    draft:            { label: "Draft",            icon: Clock,        className: "bg-gray-100 text-gray-600"     },
-    pending_approval: { label: "Pending Review",   icon: Clock,        className: "bg-yellow-100 text-yellow-700" },
-    changes_requested:{ label: "Changes Needed",   icon: AlertCircle,  className: "bg-orange-100 text-orange-700" },
-    approved:         { label: "Approved",         icon: CheckCircle2, className: "bg-blue-100 text-blue-700"     },
-    published:        { label: "Published",        icon: CheckCircle2, className: "bg-green-100 text-green-700"   },
-    rejected:         { label: "Rejected",         icon: XCircle,      className: "bg-red-100 text-red-700"       },
-    unpublished:      { label: "Unpublished",      icon: Clock,        className: "bg-gray-100 text-gray-500"     },
-  };
-  const cfg = map[status] ?? { label: status, icon: Clock, className: "bg-gray-100 text-gray-600" };
-  const Icon = cfg.icon;
+const statusConfig: Record<string, { label: string; cls: string; dot: string }> = {
+  draft:            { label: "Draft",           cls: "bg-slate-50 text-slate-500 ring-1 ring-slate-200",         dot: "bg-slate-400"   },
+  pending_approval: { label: "Pending Review",  cls: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",          dot: "bg-amber-400"   },
+  changes_requested:{ label: "Changes Needed",  cls: "bg-orange-50 text-orange-700 ring-1 ring-orange-200",       dot: "bg-orange-400"  },
+  approved:         { label: "Approved",         cls: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",             dot: "bg-blue-500"    },
+  published:        { label: "Published",        cls: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",    dot: "bg-emerald-500" },
+  rejected:         { label: "Rejected",         cls: "bg-red-50 text-red-700 ring-1 ring-red-200",               dot: "bg-red-500"     },
+  unpublished:      { label: "Unpublished",      cls: "bg-slate-50 text-slate-400 ring-1 ring-slate-200",         dot: "bg-slate-300"   },
+};
+
+function StatusPill({ status }: { status: string }) {
+  const cfg = statusConfig[status];
+  if (!cfg) return <span className="inline-flex items-center px-2.5 py-1 text-[11px] rounded-full font-semibold font-body bg-gray-100 text-gray-600 ring-1 ring-gray-200">{status}</span>;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${cfg.className}`}>
-      <Icon size={13} />
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] rounded-full font-semibold font-body ${cfg.cls}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
       {cfg.label}
     </span>
   );
 }
 
 export default function AuthorBookDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  const router = useRouter();
-  const [book, setBook] = useState<Book | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { id }         = use(params);
+  const [book, setBook]         = useState<Book | null>(null);
+  const [loading, setLoading]   = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitError, setSubmitError]   = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  useEffect(() => {
-    fetch(`/api/author/books/${id}`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (json.success) setBook(json.data);
-        else setNotFound(true);
-      })
-      .catch(() => setNotFound(true))
-      .finally(() => setLoading(false));
-  }, [id]);
+  const fetchBook = async () => {
+    const res  = await fetch(`/api/author/books/${id}`);
+    const json = await res.json();
+    if (json.success) setBook(json.data);
+    else setNotFound(true);
+  };
+
+  useEffect(() => { fetchBook().finally(() => setLoading(false)); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [id]);
 
   const handleSubmit = async () => {
-    setSubmitting(true);
-    setSubmitError(null);
+    setSubmitting(true); setSubmitError(null);
     try {
-      const res = await fetch(`/api/author/books/${id}/submit`, { method: "POST" });
+      const res  = await fetch(`/api/author/books/${id}/submit`, { method: "POST" });
       const json = await res.json();
       if (!json.success) throw new Error(json.error ?? "Submission failed");
       setSubmitSuccess(true);
-      // Refresh book data
-      const refreshed = await fetch(`/api/author/books/${id}`).then((r) => r.json());
-      if (refreshed.success) setBook(refreshed.data);
-    } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : "Something went wrong");
-    } finally {
-      setSubmitting(false);
-    }
+      await fetchBook();
+    } catch (e) { setSubmitError(e instanceof Error ? e.message : "Something went wrong"); }
+    finally { setSubmitting(false); }
   };
 
-  if (loading) {
-    return (
-      <div className="max-w-2xl mx-auto space-y-4">
-        <div className="h-8 bg-gray-200 rounded w-32 animate-pulse" />
-        <div className="h-48 bg-gray-100 rounded-xl animate-pulse" />
+  if (loading) return (
+    <div className="flex flex-col h-full overflow-hidden bg-[#F3F1ED]">
+      <div className="shrink-0 bg-white border-b border-[#E8E4DE] px-5 sm:px-7 lg:px-8 h-16 animate-pulse" />
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-2xl mx-auto w-full">
+        {[...Array(3)].map((_, i) => <div key={i} className="bg-white rounded-2xl h-28 animate-pulse border border-[#E8E4DE]" />)}
       </div>
-    );
-  }
+    </div>
+  );
 
-  if (notFound || !book) {
-    return (
-      <div className="max-w-2xl mx-auto text-center py-16">
-        <p className="text-[#888]">Book not found or you don&apos;t have permission to view it.</p>
-        <Link href="/author/books" className="mt-4 inline-block text-sm text-[#789185] hover:underline">← Back to My Books</Link>
+  if (notFound || !book) return (
+    <div className="flex flex-col h-full overflow-hidden bg-[#F3F1ED]">
+      <div className="shrink-0 bg-white border-b border-[#E8E4DE] px-5 sm:px-7 lg:px-8 h-16 flex items-center">
+        <Link href="/author/books" className="inline-flex items-center gap-2 text-[13px] font-body text-[#789185] hover:text-[#0a0a0a] transition-colors">
+          <ArrowLeft size={14} /> Back to books
+        </Link>
       </div>
-    );
-  }
+      <div className="flex-1 flex items-center justify-center">
+        <p className="text-[14px] font-body text-[#bbb]">Book not found or you don&apos;t have access.</p>
+      </div>
+    </div>
+  );
 
-  const status = book.submissionStatus ?? "draft";
-  const isEditable = status === "draft" || status === "changes_requested";
-  const isSubmittable = isEditable;
+  const status    = book.submissionStatus ?? "draft";
+  const editable  = status === "draft" || status === "changes_requested";
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/author/books" className="p-2 rounded-lg hover:bg-[#F0EDE7] transition-colors">
-          <ArrowLeft size={16} className="text-[#666]" />
-        </Link>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-heading font-bold text-[#080808] truncate">{book.title}</h1>
-        </div>
-        <StatusBadge status={status} />
-      </div>
-
-      {/* Owner feedback callout */}
-      {book.ownerFeedback && (
-        <div className={`rounded-xl p-4 border flex gap-3 ${
-          status === "changes_requested"
-            ? "bg-orange-50 border-orange-200"
-            : status === "rejected"
-            ? "bg-red-50 border-red-200"
-            : "bg-blue-50 border-blue-200"
-        }`}>
-          <AlertCircle size={18} className={`shrink-0 mt-0.5 ${
-            status === "changes_requested" ? "text-orange-500" :
-            status === "rejected" ? "text-red-500" : "text-blue-500"
-          }`} />
-          <div>
-            <p className={`text-sm font-semibold ${
-              status === "changes_requested" ? "text-orange-800" :
-              status === "rejected" ? "text-red-800" : "text-blue-800"
-            }`}>
-              {status === "rejected" ? "Rejection reason" : "Owner feedback"}
-            </p>
-            <p className={`text-sm mt-0.5 ${
-              status === "changes_requested" ? "text-orange-700" :
-              status === "rejected" ? "text-red-700" : "text-blue-700"
-            }`}>{book.ownerFeedback}</p>
+    <div className="flex flex-col h-full overflow-hidden bg-[#F3F1ED]">
+      {/* Header */}
+      <div className="shrink-0 bg-white border-b border-[#E8E4DE] px-5 sm:px-7 lg:px-8" style={{ minHeight: 64 }}>
+        <div className="flex items-center justify-between gap-4 h-full py-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Link href="/author/books" className="w-8 h-8 flex items-center justify-center rounded-lg text-[#999] hover:text-[#0a0a0a] hover:bg-[#F0EEE9] transition-all shrink-0">
+              <ArrowLeft size={15} />
+            </Link>
+            <div className="min-w-0">
+              <h1 className="font-heading text-[18px] sm:text-[21px] font-bold text-[#0a0a0a] leading-tight tracking-tight truncate">{book.title}</h1>
+            </div>
+          </div>
+          <div className="shrink-0">
+            <StatusPill status={status} />
           </div>
         </div>
-      )}
+      </div>
 
-      {submitError && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">{submitError}</div>
-      )}
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <div className="max-w-2xl mx-auto space-y-5">
 
-      {submitSuccess && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 flex items-center gap-2">
-          <CheckCircle2 size={16} />
-          Book submitted for owner review. You&apos;ll be notified when there&apos;s a decision.
-        </div>
-      )}
-
-      {/* Book details */}
-      <div className="bg-white border border-[#E6E3DD] rounded-xl overflow-hidden shadow-sm">
-        <div className="flex gap-4 p-5">
-          {book.coverImageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={book.coverImageUrl} alt={book.title} className="w-24 h-32 object-cover rounded-lg border border-[#E6E3DD] shrink-0" />
-          ) : (
-            <div className="w-24 h-32 rounded-lg bg-[#F4F2EE] border-2 border-dashed border-[#DDD] shrink-0 flex items-center justify-center">
-              <span className="text-xs text-[#CCC]">No cover</span>
+          {/* Owner feedback */}
+          {book.ownerFeedback && (
+            <div className={`rounded-2xl p-5 border flex gap-4 ${
+              status === "changes_requested" ? "bg-orange-50 border-orange-200" :
+              status === "rejected"          ? "bg-red-50 border-red-200" :
+                                               "bg-blue-50 border-blue-200"
+            }`}>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                status === "changes_requested" ? "bg-orange-100" :
+                status === "rejected"          ? "bg-red-100" : "bg-blue-100"
+              }`}>
+                <AlertCircle size={16} className={
+                  status === "changes_requested" ? "text-orange-500" :
+                  status === "rejected"          ? "text-red-500" : "text-blue-500"
+                } />
+              </div>
+              <div>
+                <p className={`text-[13px] font-body font-semibold ${
+                  status === "changes_requested" ? "text-orange-800" :
+                  status === "rejected"          ? "text-red-800" : "text-blue-800"
+                }`}>
+                  {status === "rejected" ? "Rejection reason" : "Owner feedback"}
+                </p>
+                <p className={`text-[13px] font-body mt-1 leading-relaxed ${
+                  status === "changes_requested" ? "text-orange-700" :
+                  status === "rejected"          ? "text-red-700" : "text-blue-700"
+                }`}>{book.ownerFeedback}</p>
+              </div>
             </div>
           )}
-          <div className="flex-1 min-w-0 space-y-1.5">
-            <h2 className="font-bold text-[#080808]">{book.title}</h2>
-            {book.subtitle && <p className="text-sm text-[#666]">{book.subtitle}</p>}
-            <p className="text-xs text-[#888]">{book.language} · {book.pageCount ? `${book.pageCount} pages` : "Pages not set"}</p>
-            {book.suggestedPriceRupees && (
-              <p className="text-xs text-[#888]">Suggested price: <span className="font-medium text-[#080808]">{formatINR(book.suggestedPriceRupees)}</span></p>
+
+          {submitError && (
+            <div className="bg-red-50 border border-red-200/80 rounded-xl px-4 py-3 text-[13px] font-body text-red-700">{submitError}</div>
+          )}
+
+          {submitSuccess && (
+            <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-5 flex items-center gap-3">
+              <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+              <p className="text-[13px] font-body text-emerald-700">Book submitted for owner review. You&apos;ll be notified when there&apos;s a decision.</p>
+            </div>
+          )}
+
+          {/* Book card */}
+          <div className="bg-white border border-[#E8E4DE] rounded-2xl overflow-hidden shadow-sm">
+            <div className="flex gap-5 p-5 sm:p-6 border-b border-[#EDE9E3]">
+              {book.coverImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={book.coverImageUrl} alt={book.title} className="w-24 h-32 object-cover rounded-xl border border-[#E8E4DE] shadow-sm shrink-0" />
+              ) : (
+                <div className="w-24 h-32 rounded-xl bg-[#F7F5F2] border-2 border-dashed border-[#E2DDD8] flex items-center justify-center shrink-0">
+                  <span className="text-[9px] font-body text-[#C4BFB9] uppercase tracking-wider">No cover</span>
+                </div>
+              )}
+              <div className="flex-1 min-w-0 space-y-2 pt-1">
+                <h2 className="font-heading font-bold text-[#0a0a0a] text-[16px] leading-snug">{book.title}</h2>
+                {book.subtitle && <p className="text-[13px] font-body text-[#777]">{book.subtitle}</p>}
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px] font-body text-[#999]">
+                  <span>{book.language}</span>
+                  {book.pageCount && <span>{book.pageCount} pages</span>}
+                </div>
+                {book.suggestedPriceRupees && (
+                  <p className="text-[12.5px] font-body text-[#777]">
+                    Suggested: <span className="font-semibold text-[#0a0a0a]">{formatINR(book.suggestedPriceRupees)}</span>
+                  </p>
+                )}
+                {book.published && book.priceRupees > 0 && (
+                  <p className="text-[12.5px] font-body text-emerald-600">
+                    Final price: <span className="font-semibold">{formatINR(book.priceRupees)}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {book.description && (
+              <div className="px-5 sm:px-6 py-4 border-b border-[#EDE9E3]">
+                <p className="text-[10.5px] font-body font-semibold uppercase tracking-[0.09em] text-[#b5b0a9] mb-2">Description</p>
+                <p className="text-[13px] font-body text-[#555] leading-relaxed">{book.description}</p>
+              </div>
             )}
-            {book.published && book.priceRupees > 0 && (
-              <p className="text-xs text-green-700">Final price: <span className="font-medium">{formatINR(book.priceRupees)}</span></p>
+
+            <div className="px-5 sm:px-6 py-4 grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-[10.5px] font-body text-[#b5b0a9] uppercase tracking-[0.07em] mb-1">Manuscript</p>
+                <p className={`text-[12.5px] font-body font-semibold ${book.privatePdfUrl ? "text-emerald-600" : "text-red-500"}`}>
+                  {book.privatePdfUrl ? "✓ Uploaded" : "✗ Not uploaded"}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10.5px] font-body text-[#b5b0a9] uppercase tracking-[0.07em] mb-1">Preview PDF</p>
+                <p className={`text-[12.5px] font-body font-semibold ${book.previewPdfUrl ? "text-emerald-600" : "text-[#999]"}`}>
+                  {book.previewPdfUrl ? "✓ Uploaded" : "— Not uploaded"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-wrap gap-3">
+            {editable && (
+              <Link
+                href={`/author/books/${id}/edit`}
+                className="inline-flex items-center gap-2 bg-white border border-[#E8E4DE] text-[#0a0a0a] font-body font-semibold text-[12.5px] px-4 py-2.5 rounded-xl hover:border-[#203A2B] transition-colors shadow-sm"
+              >
+                <Edit2 size={13} /> Edit Book
+              </Link>
+            )}
+
+            {editable && !submitSuccess && (
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="inline-flex items-center gap-2 bg-[#0D1F17] text-white font-body font-bold text-[12.5px] uppercase tracking-[0.09em] px-5 py-2.5 rounded-xl hover:bg-[#203A2B] disabled:opacity-50 transition-colors shadow-sm"
+              >
+                {submitting ? <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" /> : <Send size={13} />}
+                {submitting ? "Submitting…" : "Submit for Approval"}
+              </button>
+            )}
+
+            {status === "published" && (
+              <Link
+                href={`/books/${book.slug}`}
+                target="_blank"
+                className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 font-body font-semibold text-[12.5px] px-4 py-2.5 rounded-xl hover:bg-emerald-100 transition-colors shadow-sm"
+              >
+                <Eye size={13} /> View Live
+              </Link>
             )}
           </div>
+
+          <p className="text-[11.5px] font-body text-[#aaa]">
+            Last updated {new Date(book.updatedAt).toLocaleDateString("en-IN", {
+              day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+            })}
+          </p>
+
         </div>
-
-        {book.description && (
-          <div className="border-t border-[#F0EDE7] px-5 py-4">
-            <p className="text-xs font-semibold text-[#888] uppercase tracking-wider mb-2">Description</p>
-            <p className="text-sm text-[#555] leading-relaxed">{book.description}</p>
-          </div>
-        )}
-
-        <div className="border-t border-[#F0EDE7] px-5 py-4 grid grid-cols-2 gap-3">
-          <div>
-            <p className="text-xs text-[#888]">Manuscript PDF</p>
-            <p className={`text-xs font-medium mt-0.5 ${book.privatePdfUrl ? "text-green-600" : "text-red-500"}`}>
-              {book.privatePdfUrl ? "✓ Uploaded" : "✗ Not uploaded"}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-[#888]">Preview PDF</p>
-            <p className={`text-xs font-medium mt-0.5 ${book.previewPdfUrl ? "text-green-600" : "text-[#999]"}`}>
-              {book.previewPdfUrl ? "✓ Uploaded" : "— Not uploaded"}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Action buttons */}
-      <div className="flex flex-wrap gap-3">
-        {isEditable && (
-          <Link
-            href={`/author/books/${id}/edit`}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-[#E6E3DD] rounded-xl text-sm font-semibold text-[#080808] hover:border-[#080808] transition-colors"
-          >
-            <Edit2 size={14} />
-            Edit Book
-          </Link>
-        )}
-
-        {isSubmittable && !submitSuccess && (
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#080808] text-white rounded-xl text-sm font-semibold hover:bg-[#111] disabled:opacity-50 transition-colors"
-          >
-            {submitting ? (
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Send size={14} />
-            )}
-            {submitting ? "Submitting…" : "Submit for Approval"}
-          </button>
-        )}
-
-        {status === "published" && (
-          <Link
-            href={`/books/${book.slug}`}
-            target="_blank"
-            className="flex items-center gap-2 px-5 py-2.5 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm font-semibold hover:bg-green-100 transition-colors"
-          >
-            <Eye size={14} />
-            View Live
-          </Link>
-        )}
-      </div>
-
-      <div className="text-xs text-[#999]">
-        Last updated {new Date(book.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
       </div>
     </div>
   );
