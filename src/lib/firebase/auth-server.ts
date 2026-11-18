@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { adminAuth } from "./admin";
+import { adminAuth, adminDb } from "./admin";
 import type { AppUser, UserRole } from "@/types";
 
 export async function getSessionUser(): Promise<AppUser | null> {
@@ -10,17 +10,32 @@ export async function getSessionUser(): Promise<AppUser | null> {
 
     // verifySessionCookie with checkRevoked=false is ~3x faster (no network call).
     // We only do the extra getUser() call when the cookie doesn't already carry
-    // the admin claim — i.e. the first session after provisioning.
+    // the admin/author claim — i.e. the first session after provisioning.
     const decoded = await adminAuth.verifySessionCookie(token, false);
     const cookieClaims = (decoded as Record<string, unknown>);
 
     let role: UserRole = "member";
     if (cookieClaims.admin === true) {
       role = "admin";
+    } else if (cookieClaims.author === true) {
+      role = "author";
     } else {
       // Only hit the network when the claim isn't baked into the cookie yet.
       const userRecord = await adminAuth.getUser(decoded.uid);
       if (userRecord.customClaims?.admin === true) role = "admin";
+      else if (userRecord.customClaims?.author === true) role = "author";
+    }
+
+    // For authors, check account status in Firestore
+    if (role === "author") {
+      const profileDoc = await adminDb.collection("authorProfiles").doc(decoded.uid).get();
+      if (profileDoc.exists) {
+        const profile = profileDoc.data()!;
+        if (profile.accountStatus !== "active") {
+          // Suspended/deactivated authors cannot use author-role routes
+          role = "member";
+        }
+      }
     }
 
     return {
@@ -50,7 +65,27 @@ export async function requireAdmin(): Promise<AppUser> {
   return user;
 }
 
+export async function requireAuthor(): Promise<AppUser> {
+  const user = await requireAuthenticatedUser();
+  if (user.role !== "author" && user.role !== "admin") throw new Error("FORBIDDEN");
+  return user;
+}
+
+/** Returns the user if they are admin, or if they are the author who owns the resource. */
+export async function requireOwnerOrAuthor(resourceAuthorUid: string): Promise<AppUser> {
+  const user = await requireAuthenticatedUser();
+  if (user.role === "admin") return user;
+  if (user.role === "author" && user.uid === resourceAuthorUid) return user;
+  throw new Error("FORBIDDEN");
+}
+
 export async function requireMember(): Promise<AppUser> {
   const user = await requireAuthenticatedUser();
   return user;
+}
+
+/** Returns the UID of the active session, or null. No role check. */
+export async function getSessionUid(): Promise<string | null> {
+  const user = await getSessionUser();
+  return user?.uid ?? null;
 }

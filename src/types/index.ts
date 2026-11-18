@@ -5,6 +5,15 @@ export interface Series {
   slug: string;
   description?: string;
   coverImageUrl?: string;
+  coverImagePath?: string;
+  bannerImageUrl?: string;
+  bannerImagePath?: string;
+  genre?: string;
+  plannedBooks?: number;
+  authorUid?: string;        // Firebase UID of the creating author (null for owner)
+  author?: string;           // display name
+  submissionStatus?: SubmissionStatus;
+  ownerFeedback?: string;
   sortOrder: number;
   visible: boolean;
   createdAt: string;
@@ -16,10 +25,12 @@ export interface Book {
   title: string;
   slug: string;
   subtitle?: string;
-  author: string;
+  author: string;             // display name string (kept for backwards compat)
+  authorUid?: string;         // Firebase UID of the author (null for owner's own books)
   description: string;
   priceRupees: number;
   originalPriceRupees?: number;
+  suggestedPriceRupees?: number;    // author-suggested price (read-only after owner sets final)
   currency: string;
   categoryIds: string[];
   seriesId?: string | null;
@@ -34,11 +45,14 @@ export interface Book {
   language: string;
   published: boolean;
   featured: boolean;
+  submissionStatus?: SubmissionStatus;  // workflow status
+  ownerFeedback?: string;               // last owner comment
   whatYouLearn?: string[];
   targetAudience?: string;
   tableOfContents?: string[];
   seoTitle?: string;
   seoDescription?: string;
+  seoKeywords?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -54,7 +68,7 @@ export interface Category {
 }
 
 // ─── User ────────────────────────────────────────────────────────────────────
-export type UserRole = "member" | "admin";
+export type UserRole = "member" | "admin" | "author";
 
 export interface AppUser {
   uid: string;
@@ -270,6 +284,127 @@ export interface StoreSettings {
     heroHeadline?: string;
     heroSubtext?: string;
   };
+}
+
+// ─── Author Invitation ───────────────────────────────────────────────────────
+export type InvitationStatus = "pending" | "accepted" | "expired" | "revoked";
+
+export interface AuthorInvitation {
+  id: string;
+  email: string;
+  name: string;
+  institution?: string;
+  token: string;             // secure random token stored hashed in DB
+  tokenHash: string;         // SHA-256 hash of the raw token
+  status: InvitationStatus;
+  expiresAt: string;         // ISO — 7-day window
+  invitedBy: string;         // admin UID
+  acceptedAt?: string;
+  acceptedByUid?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── Author Profile ──────────────────────────────────────────────────────────
+export type AuthorAccountStatus = "active" | "suspended" | "deactivated";
+
+export interface AuthorProfile {
+  id: string;               // same as Firebase UID
+  uid: string;
+  displayName: string;
+  email: string;
+  bio?: string;
+  photoURL?: string;
+  institution?: string;
+  website?: string;
+  socialLinks?: { platform: string; url: string }[];
+  accountStatus: AuthorAccountStatus;
+  invitationId: string;     // reference to the invitation that created this account
+  invitedBy: string;        // admin UID
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── Book / Series Submission Status ─────────────────────────────────────────
+export type SubmissionStatus =
+  | "draft"
+  | "pending_approval"
+  | "changes_requested"
+  | "rejected"
+  | "approved"
+  | "published"
+  | "unpublished";
+
+// ─── Approval Record ─────────────────────────────────────────────────────────
+export type ApprovalAction =
+  | "submitted"
+  | "approved"
+  | "rejected"
+  | "changes_requested"
+  | "published"
+  | "unpublished"
+  | "edited_by_owner"
+  | "price_set";
+
+export interface ApprovalRecord {
+  id: string;
+  resourceType: "book" | "series";
+  resourceId: string;
+  action: ApprovalAction;
+  actorUid: string;
+  actorRole: UserRole;
+  comment?: string;           // owner feedback / rejection reason
+  priceRupees?: number;       // when action is "price_set"
+  originalPriceRupees?: number;
+  snapshotTitle?: string;     // snapshot of title at time of action
+  createdAt: string;
+}
+
+// ─── Notification ─────────────────────────────────────────────────────────────
+export type NotificationType =
+  | "book_submitted"
+  | "series_submitted"
+  | "book_approved"
+  | "book_rejected"
+  | "book_changes_requested"
+  | "book_published"
+  | "book_unpublished"
+  | "series_approved"
+  | "series_rejected"
+  | "series_changes_requested"
+  | "series_published"
+  | "author_invited"
+  | "author_registered"
+  | "author_suspended"
+  | "price_updated";
+
+export interface Notification {
+  id: string;
+  recipientUid: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  resourceType?: "book" | "series";
+  resourceId?: string;
+  resourceTitle?: string;
+  read: boolean;
+  createdAt: string;
+}
+
+// ─── Audit Log ───────────────────────────────────────────────────────────────
+export interface AuditLog {
+  id: string;
+  actorUid: string;
+  actorEmail: string;
+  actorRole: UserRole;
+  action: string;
+  resourceType: string;
+  resourceId: string;
+  resourceTitle?: string;
+  previousValues?: Record<string, unknown>;
+  newValues?: Record<string, unknown>;
+  ipAddress?: string;
+  createdAt: string;
 }
 
 // ─── API Response ────────────────────────────────────────────────────────────

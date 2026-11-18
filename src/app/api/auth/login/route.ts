@@ -43,7 +43,9 @@ export async function POST(req: NextRequest) {
             email: userRecord.email,
             emailVerified: userRecord.emailVerified ?? false,
             photoURL: userRecord.photoURL ?? null,
-            role: "member",
+            role: userRecord.customClaims?.admin === true ? "admin"
+                : userRecord.customClaims?.author === true ? "author"
+                : "member",
             updatedAt: now,
             lastLoginAt: now,
             provider: userRecord.providerData?.[0]?.providerId ?? "password",

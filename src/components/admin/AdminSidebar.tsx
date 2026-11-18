@@ -10,6 +10,7 @@ import {
   Settings, LogOut, Gift, Menu, X,
   ExternalLink, ChevronRight,
   Layers, Receipt, Sparkles,
+  UserCheck, ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,9 @@ type NavEntry = NavItem | NavSection;
 
 const NAV: NavEntry[] = [
   { href: "/admin/dashboard", label: "Dashboard",  icon: LayoutDashboard },
+  { section: "Authors" },
+  { href: "/admin/authors",   label: "Authors",    icon: UserCheck       },
+  { href: "/admin/approvals", label: "Approvals",  icon: ClipboardCheck  },
   { section: "Catalog" },
   { href: "/admin/books",      label: "Books",      icon: BookOpen  },
   { href: "/admin/series",     label: "Series",     icon: Layers    },

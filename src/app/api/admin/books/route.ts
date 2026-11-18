@@ -31,7 +31,8 @@ export async function POST(req: NextRequest) {
     const ref = adminDb.collection("books").doc();
     await ref.set({
       ...parsed.data,
-      author: "Asmit Rajaramkar",
+      author: body.author ?? "Asmit Rajaramkar",  // owner can override
+      authorUid: body.authorUid ?? null,            // null = owner's own book
       currency: "INR",
       coverImageUrl: body.coverImageUrl ?? null,
       coverImagePath: body.coverImagePath ?? null,
@@ -44,6 +45,7 @@ export async function POST(req: NextRequest) {
       whatYouLearn: body.whatYouLearn ?? [],
       targetAudience: body.targetAudience ?? null,
       tableOfContents: body.tableOfContents ?? [],
+      submissionStatus: "published",   // admin-created books are published directly
       createdAt: now,
       updatedAt: now,
     });

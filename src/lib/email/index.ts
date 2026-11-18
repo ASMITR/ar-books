@@ -325,3 +325,97 @@ export async function sendPaymentFailureEmail(
   });
 }
 
+
+export async function sendAuthorInvitationEmail(
+  email: string,
+  name: string,
+  invitationLink: string
+): Promise<void> {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.asmitrajaramkarbooks.store";
+  await getResend().emails.send({
+    from: FROM,
+    to: email,
+    subject: "You've been invited to publish on AR Books",
+    text: `Hi ${name}, you've been invited to become an author on AR Books. Set up your account: ${invitationLink} — This link expires in 7 days.`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #FAF9F6;">
+        <div style="background: #080808; padding: 28px 40px;">
+          <h1 style="color: #FFC928; font-size: 22px; margin: 0; letter-spacing: 2px;">AR BOOKS</h1>
+          <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin: 4px 0 0; letter-spacing: 1px; text-transform: uppercase;">by Asmit Rajaramkar</p>
+        </div>
+        <div style="height: 4px; background: linear-gradient(to right, #FFC928, #789185, #080808);"></div>
+        <div style="padding: 40px;">
+          <h2 style="font-size: 24px; color: #080808; margin: 0 0 8px;">You're invited to publish on AR Books</h2>
+          <p style="color: #777; font-size: 15px; line-height: 1.7; margin: 0 0 20px;">
+            Hi ${name}, Asmit Rajaramkar has invited you to become an author on AR Books — a curated digital publishing platform. You can upload and submit your books and series for review.
+          </p>
+          <p style="color: #777; font-size: 14px; line-height: 1.7; margin: 0 0 28px;">
+            This invitation expires in <strong style="color: #080808;">7 days</strong>. Click below to create your author account.
+          </p>
+          <a href="${invitationLink}"
+             style="display: inline-block; background: #FFC928; color: #080808; font-weight: 700;
+                    font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase;
+                    padding: 14px 32px; text-decoration: none;">
+            Accept Invitation &rarr;
+          </a>
+          <p style="color: #aaa; font-size: 13px; margin: 28px 0 0; line-height: 1.6;">
+            Or paste this link into your browser:<br/>
+            <a href="${invitationLink}" style="color: #789185; word-break: break-all; font-size: 12px;">${invitationLink}</a>
+          </p>
+          <p style="color: #aaa; font-size: 13px; margin: 20px 0 0;">
+            Questions? Contact us at <a href="mailto:support@arbooks.in" style="color: #789185;">support@arbooks.in</a>.
+          </p>
+        </div>
+        <div style="padding: 20px 40px; background: #080808;">
+          <p style="color: rgba(255,255,255,0.3); font-size: 12px; margin: 0; line-height: 1.6;">
+            &copy; 2025 Asmit Rajaramkar. All rights reserved.<br/>
+            ${baseUrl}
+          </p>
+        </div>
+      </div>
+    `,
+  });
+}
+
+export async function sendAuthorNotificationEmail(
+  email: string,
+  name: string,
+  subject: string,
+  heading: string,
+  body: string,
+  ctaLabel?: string,
+  ctaUrl?: string
+): Promise<void> {
+  await getResend().emails.send({
+    from: FROM,
+    to: email,
+    subject,
+    text: `Hi ${name}, ${body}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #FAF9F6;">
+        <div style="background: #080808; padding: 28px 40px;">
+          <h1 style="color: #FFC928; font-size: 22px; margin: 0; letter-spacing: 2px;">AR BOOKS</h1>
+          <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin: 4px 0 0; letter-spacing: 1px; text-transform: uppercase;">by Asmit Rajaramkar</p>
+        </div>
+        <div style="height: 4px; background: linear-gradient(to right, #FFC928, #789185, #080808);"></div>
+        <div style="padding: 40px;">
+          <h2 style="font-size: 22px; color: #080808; margin: 0 0 8px;">${heading}</h2>
+          <p style="color: #777; font-size: 15px; line-height: 1.7; margin: 0 0 ${ctaLabel ? "28px" : "0"};">Hi ${name},<br/><br/>${body}</p>
+          ${ctaLabel && ctaUrl ? `
+          <a href="${ctaUrl}"
+             style="display: inline-block; background: #FFC928; color: #080808; font-weight: 700;
+                    font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase;
+                    padding: 14px 32px; text-decoration: none;">
+            ${ctaLabel} &rarr;
+          </a>` : ""}
+          <p style="color: #aaa; font-size: 13px; margin: 28px 0 0;">
+            Need help? Contact <a href="mailto:support@arbooks.in" style="color: #789185;">support@arbooks.in</a>.
+          </p>
+        </div>
+        <div style="padding: 20px 40px; background: #080808;">
+          <p style="color: rgba(255,255,255,0.3); font-size: 12px; margin: 0;">&copy; 2025 Asmit Rajaramkar. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+  });
+}

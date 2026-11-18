@@ -143,16 +143,21 @@ service firebase.storage {
 
 ## Provision an Admin Account
 
-1. Register a normal account on the website (or create one in Firebase Console).
-2. Run the provisioning script:
+For the first admin, configure a one-time server-only setup key with at least 32 characters:
+
+```env
+ADMIN_SETUP_SECRET=<random secret of at least 32 characters>
+```
+
+Open `/admin-setup`, enter the setup key, and create the admin account. Firebase Authentication securely stores the password; the application does not store it in Firestore or plaintext. After setup succeeds, remove `ADMIN_SETUP_SECRET` from the server environment and sign in at `/login`.
+
+The setup endpoint accepts only the configured key, provisions exactly one admin through the Firebase Admin SDK, and records a one-time Firestore lock. Never expose the setup key in client-side environment variables or grant admin privileges based only on browser-submitted role data.
+
+Existing accounts can still be provisioned by a trusted operator with the CLI script:
 
 ```bash
 npx ts-node --project tsconfig.json scripts/provision-admin.ts your@email.com
 ```
-
-3. Sign out and sign back in at `/admin/login`.
-
-**Never grant admin access through a public form or browser-submitted data.**
 
 ---
 
