@@ -19,7 +19,15 @@ const nextConfig: NextConfig = {
 
   async headers() {
     const isProd = process.env.NODE_ENV === "production";
+    const denyHeaders = [
+      { key: "Cache-Control", value: "no-store" },
+      { key: "X-Robots-Tag", value: "noindex, nofollow" },
+    ];
     return [
+      // Block direct HTTP access to sensitive files
+      { source: "/.env",          headers: denyHeaders },
+      { source: "/.env.:path*",   headers: denyHeaders },
+      { source: "/.gitignore",    headers: denyHeaders },
       { source: "/(.*)", headers: securityHeaders },
       ...(isProd ? [
         {
